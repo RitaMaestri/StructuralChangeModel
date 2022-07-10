@@ -7,10 +7,11 @@ def eqKLj(KLj, bKLj, Lj, Kj, alphaLj, alphaKj):
     
     return zero
 
-#same equation for Lj and Kj (Factors)
-def eqFj(Fj,pL,KLj,pKLj,alphaFj):
+#same equation for Lj and Kj (Factors) Fbar is the complementary factor (K if F=L and viceversa)
+
+def eqFj(Fj,GDP,pFbar,Fbar,F,KLj,pKLj,alphaFj):
     
-    zero= Fj-np.prod(np.vstack([pKLj,KLj,alphaFj]), axis=0)/pL
+    zero= Fj-(np.prod(np.vstack([pKLj,KLj,alphaFj]), axis=0)*F)/(GDP-pFbar*Fbar)
     
     return zero
 
@@ -44,9 +45,9 @@ def eqpYj(pYj,aKLj,pKLj,aYij):
     return zero
 
 
-def eqCj(Cj,alphaCj,pCj,pL,L,pK,K):
+def eqCj(Cj,alphaCj,pCj,GDP):
     
-    zero=Cj-alphaCj*(pL*L+pK*K)/pCj
+    zero=Cj-alphaCj*GDP/pCj
     
     return zero
     
