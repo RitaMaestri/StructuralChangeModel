@@ -2,7 +2,9 @@
 import numpy as np
 
 def eqKLj(KLj, bKLj, Lj, Kj, alphaLj, alphaKj):
-
+    
+    
+    
     zero = KLj - bKLj * np.power(Lj,alphaLj) * np.power(Kj,alphaKj)
     
     return zero
