@@ -8,7 +8,7 @@ from math import sqrt
 # TYPE CONVERTERS 
 
 def to_dict(vec, dvec):  #takes array, returns dict of arrays (of equal dimensions and keys as dvec)
-    lengths = np.array([sum(np.shape(item)) for item in dvec.values()])
+    lengths = np.array([np.product(np.shape(item)) for item in dvec.values()])
     N=int(sqrt(max(lengths)))
     keys=dvec.keys()
     #create array of arrays
@@ -71,7 +71,7 @@ def dict_minimize(f, dvar, dpar):
 
 
 
-########################  LEAST_SQUARE  ########################
+####################  LEAST_SQUARE  #########################
 
 def dict_least_squares(f, dvar, dpar):
     result = optimize.least_squares(

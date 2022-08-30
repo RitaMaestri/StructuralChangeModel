@@ -36,11 +36,11 @@ def system_reduced(var, par):
         eq.eqKLj(KLj =d['KLj'], bKL=d['bKL'], Lj=d['Lj'], Kj=d['Kj'], alphaLj=d['alphaLj'], alphaKj=d['alphaKj']),
         eq.eqFj(Fj=d['Lj'],pF=d['pL'],KLj=d['KLj'],pKLj= d['pKLj'],alphaFj=d['alphaLj']),
         eq.eqFj(Fj=d['Kj'],pF=d['pK'],KLj=d['KLj'],pKLj=d['pKLj'],alphaFj=d['alphaKj']),        
-        eq.eqCj(Cj=d['Cj'],alphaCj=d['alphaCj'],pCj=d['pCj'],pL=d['pL'],Lj=d['Lj'],pK=d['pK'],Kj=d['Kj']),
+        eq.eqCj(Cj=d['KLj'],alphaCj=d['alphaCj'],pCj=d['pKLj'],pL=d['pL'],Lj=d['Lj'],pK=d['pK'],Kj=d['Kj']),
         eq.eqF(F=d['L'],Fj=d['Lj']),
         eq.eqF(F=d['K'],Fj=d['Kj']),
-        eq.eqpCj(pCj=d['pCj'],pYj=d['pKLj']),
-        eq.eqpCj(pCj=d['Cj'],pYj=d['KLj']),
+        #eq.eqpCj(pCj=d['pCj'],pYj=d['pKLj']),
+        #eq.eqpCj(pCj=d['Cj'],pYj=d['KLj']),
         #eq.eqGDP(d['GDP'], d['pL'], d['L'], d['pK'], d['K'])
         ])
 
@@ -64,12 +64,10 @@ def dict_least_squares(f, dvar, dpar):
         #verbose=2,
         x_scale=np.concatenate(list({#same order of magnitude as initial guess
             'pK':np.array([1]),
-            'KLj':np.array([100,100]),
             'Lj':np.array([100,100]),
             'Kj':np.array([100,100]),
             'pKLj':np.array([1,1]),
             'alphaCj':np.array([0.1,0.1]),
-            'pCj':np.array([1,1])
             }.values()))
     )
     return result;
@@ -79,7 +77,7 @@ def dict_minimize(f, dvar, dpar):
     result = optimize.minimize(
         lambda x,y: cost_function(f(to_dict(x,dvar), to_dict(y,dpar))),# wrap the argument in a dict
         to_array(dvar), # unwrap the initial dictionary
-        bounds=((0, None), (0, None),(0, None),(0, None),(0, None),(0, None),(0, None), (0, None),(0, None), (0,1),(0,1),(0, None),(0, None)),
+        bounds=((0, None),(0, None),(0, None),(0, None),(0, None),(0, None), (0, None),(0, None), (0,None),(0,None)),
         args= to_array(dpar),
         method="SLSQP"
         #verbose=2,
@@ -105,7 +103,7 @@ sol= dict_minimize(system_reduced, variables, parameters)
 #sol= dict_fsolve(system, variables, parameters)
 
 
-print("\n system of equations calculated at the solution found by least square (an array of zeros is expected): \n \n", system_reduced(to_dict(sol.x,variables), parameters))
+print("\n system of equations calculated at the solution found by minimize (an array of zeros is expected): \n \n", system_reduced(to_dict(sol.x,variables), parameters))
 
 
 print("\n solution attributes: \n \n",sol)

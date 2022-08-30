@@ -2,8 +2,11 @@ import pandas as pd
 
 import numpy as np
 
+import random
 
-N=15
+random.seed(10)
+
+N=2
 
 
 Mmin=100
@@ -21,7 +24,7 @@ rowsum=np.random.randint(Mmin,Mmax,size=N+2)
 colsum=np.append(rowsum[:-2],rowsum[-1]+rowsum[-2])
 rowsum = np.array([rowsum]).T
 
-while (not (np.all(abs(rowsum.T-M.sum(axis=1))<1e-15) and np.all(abs(colsum-M.sum(axis=0))<1e-15))):
+while (not (np.all(abs(rowsum.T-M.sum(axis=1))<1e-15) and np.all(abs(colsum-M.sum(axis=0))<1e-10))):
         
     colsummat=np.tile(colsum,(N+2,1))
     Mmult = np.multiply(M, colsummat)
