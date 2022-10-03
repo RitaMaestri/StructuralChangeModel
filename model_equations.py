@@ -18,24 +18,24 @@ from math import sqrt
 #         raise Exception("Array needed")
 
 
-
-
 #EQUATIONS
 
-def eqKLj(KLj, bKLj, Lj, Kj, alphaLj, alphaKj):
+def eqKLj(KLj, bKL, Lj, Kj, alphaLj, alphaKj):
     #print("eqKLj")
 
-    zero = KLj - bKLj * np.float_power(Lj,alphaLj) * np.float_power(Kj,alphaKj)
+    zero = KLj - bKL* np.float_power(Lj,alphaLj) * np.float_power(Kj,alphaKj)
     
     return zero 
 
+
 # same equation for Lj and Kj (Factors)
+
 
 def eqFj(Fj,pF,KLj,pKLj,alphaFj):   
     #print("eqFj")
     pF=pF.item()
     
-    zero= Fj-(np.prod(np.vstack([pKLj,KLj,alphaFj]), axis=0))/pF
+    zero= Fj-(np.prod(np.vstack([pKLj,KLj,alphaFj]), axis=0)) / pF
     
     return zero
 
@@ -54,19 +54,63 @@ def eqYij(Yij,aYij,Yj):
 
 def eqKL(KLj,aKLj,Yj):
     #print("eqKL")
-    zero=KLj- np.multiply(aKLj,Yj)
+    zero=KLj - aKLj*Yj
     
     return zero
 
 
-def eqpYj(pYj,aKLj,pKLj,aYij):
+def eqpYj(pYj,pSj,aKLj,pKLj,aYij):
     #print("eqpYj")
-    pYjd=np.diag(pYj)
+    pSjd=np.diag(pSj)
     
-    zero=pYj - (np.multiply(aKLj,pKLj) + np.dot(pYjd,aYij).sum(axis=0))
+    zero= pYj - ( aKLj * pKLj + np.dot(pSjd,aYij).sum(axis=1) ) #AXIS=1 sum over the rows CHECKED
     
     return zero
 
+
+def eqCET(Zj, alphaXj,alphaYj,Xj,Yj,sigmaj):
+    
+    etaj = (sigmaj-1)/sigmaj 
+    
+    partj = alphaXj * np.float_power(Xj,etaj) + alphaYj * np.float_power(Yj,etaj)
+    
+    zero = Zj - np.float_power(partj,(1/etaj))  
+    
+    return zero
+
+
+def eqCESquantity(Xj, Zj, alphaXj, alphaYj, pXj, pYj, sigmaj):
+    
+    #etaj=(sigmaj-1)/sigmaj 
+    
+    partj = np.float_power(alphaXj,sigmaj) * np.float_power(pXj,1-sigmaj) + np.float_power(alphaYj,sigmaj) * np.float_power(pYj,1-sigmaj)
+
+    zero= Xj - np.float_power(alphaXj/pXj, sigmaj) * np.float_power(partj , sigmaj/(1-sigmaj) ) * Zj
+    
+    return zero
+
+
+def eqCESprice(pZj,pXj,pYj,alphaXj,alphaYj,sigmaj):
+    
+    partj= np.float_power(alphaXj,sigmaj) * np.float_power(pXj,1-sigmaj) + np.float_power(alphaYj,sigmaj) * np.float_power(pYj,1-sigmaj)
+
+    zero= pZj - np.float_power(partj, 1/(1-sigmaj))
+    
+    return zero
+    
+
+def eqB(B,pXj,Xj,pMj,Mj):
+    
+    zero = B - sum(pXj*Xj-pMj*Mj)
+    
+    return zero
+
+
+def eqw(B,wB,GDP):
+    
+    zero = B - wB*GDP
+    
+    return(zero)
 
 def eqCj(Cj,alphaCj,pCj,pL,Lj,pK,Kj):
     #print("eqCj")
@@ -77,9 +121,9 @@ def eqCj(Cj,alphaCj,pCj,pL,Lj,pK,Kj):
     return zero
     
     
-def eqYj(Yj,Cj,Yij):
-    #print("eqYj")
-    zero = Yj-(Cj + Yij.sum(axis=1))
+def eqSj(Sj,Cj,Yij):
+    #print("eqSj")
+    zero = Sj - (Cj + np.sum(Yij,axis=1))#sum over the rows
     
     return zero
 
@@ -102,11 +146,15 @@ def eqID(x,y):
     
     return zero
 
-def eqGDP(GDP,pCj,Cj):
+def eqGDP(GDP,pCj,Cj,pXj,Xj,pMj,Mj):
     #print("eqGDP")
     GDP=GDP.item()
-    zero= GDP - sum(pCj*Cj)
+    
+    zero= GDP - sum(pCj*Cj+pXj*Xj-pMj*Mj)
+    
     return zero
+
+
 
 #tp=time_previous
 def eqGDPPI(GDPPI,pCj,pCtp,Cj, Ctp):
@@ -138,3 +186,27 @@ def eqCalibij(pYi, Yij, data):
     zero=zero.flatten()
     return zero
 
+
+# def eqpKLj(pKLj,Lj,pL,Kj,pK):
+    
+#     zero = pKLj - (pL*Lj + pK*Kj)
+    
+#     return zero
+
+
+
+
+# def eqCETquantity(Xj,Yj,alphaXj,pXj,pYj,sigmaj):
+    
+#     zero = Xj - np.float_power(alphaXj*pYj/pXj, sigmaj)*Yj
+    
+#     return zero
+
+
+# def eqGDPreduced(GDP,pCj,Cj,pMj,Mj):
+#     #print("eqGDP")
+#     GDP=GDP.item()
+    
+#     zero= GDP - sum(pCj*Cj-pMj*Mj)
+    
+#     return zero

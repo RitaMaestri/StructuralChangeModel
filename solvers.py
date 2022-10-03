@@ -70,7 +70,6 @@ def dict_minimize(f, dvar, dpar):
     return result;
 
 
-
 ####################  LEAST_SQUARE  #########################
 
 def dict_least_squares(f, dvar, dpar):
