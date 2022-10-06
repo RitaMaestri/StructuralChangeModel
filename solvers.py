@@ -41,22 +41,22 @@ def cost_function(array):
     return np.mean(np.square(array))
 
 
-def bounds(array_var):
-    bounds=list()
-    for variables in array_var:
-        if variables < 1 :
-            bounds.append((0, 1))
-        else:
-            bounds.append((10e-16, np.inf))
-    return bounds
+# def bounds(array_var):
+#     bounds=list()
+#     for variables in array_var:
+#         if variables < 1 :
+#             bounds.append((0, 1))
+#         else:
+#             bounds.append((10e-16, np.inf))
+#     return bounds
 
 #the bounds are (0,1) for variables whose initial guess is <1, (0,inf) for the rest
 
-def dict_minimize(f, dvar, dpar):
+def dict_minimize(f, dvar, dpar, bounds):
     result = optimize.minimize(
         fun=lambda x,y: cost_function(f(to_dict(x,dvar), to_dict(y,dpar))),# wrap the argument in a dict
         x0=to_array(dvar), # unwrap the initial dictionary
-        bounds=bounds(to_array(dvar)),
+        bounds=bounds,
         args= to_array(dpar),
         method="SLSQP",
         options=dict(
@@ -72,11 +72,11 @@ def dict_minimize(f, dvar, dpar):
 
 ####################  LEAST_SQUARE  #########################
 
-def dict_least_squares(f, dvar, dpar):
+def dict_least_squares(f, dvar, dpar,bounds):
     result = optimize.least_squares(
         lambda x,y: f(to_dict(x,dvar), to_dict(y,dpar)),# wrap the argument in a dict
         to_array(dvar), # unwrap the initial dictionary
-        bounds=(0,np.inf),
+        bounds=bounds,
         args= list([to_array(dpar)],),
     )
     result.dvar= to_dict(result.x, dvar)
