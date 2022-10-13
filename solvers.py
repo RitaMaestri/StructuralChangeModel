@@ -38,19 +38,9 @@ def dict_fsolve(f, dvar, dpar):
 
 ########################  MINIMIZE  ########################
 def cost_function(array):
-    return np.mean(np.square(array))
+    return sqrt(sum(np.square(array)))
 
 
-# def bounds(array_var):
-#     bounds=list()
-#     for variables in array_var:
-#         if variables < 1 :
-#             bounds.append((0, 1))
-#         else:
-#             bounds.append((10e-16, np.inf))
-#     return bounds
-
-#the bounds are (0,1) for variables whose initial guess is <1, (0,inf) for the rest
 
 def dict_minimize(f, dvar, dpar, bounds):
     result = optimize.minimize(
@@ -58,12 +48,12 @@ def dict_minimize(f, dvar, dpar, bounds):
         x0=to_array(dvar), # unwrap the initial dictionary
         bounds=bounds,
         args= to_array(dpar),
-        method="SLSQP",
-        options=dict(
-            maxiter=1000000,
-            iprint=2,
-        )
-        #verbose=2,
+        method='TNC',
+        #options=dict(
+        #    maxiter=1000000,
+        #    iprint=2,
+        #)
+        verbose=2,
     )
     result.dvar= to_dict(result.x, dvar)
     result.d= {**result.dvar, **dpar}
@@ -78,6 +68,53 @@ def dict_least_squares(f, dvar, dpar,bounds):
         to_array(dvar), # unwrap the initial dictionary
         bounds=bounds,
         args= list([to_array(dpar)],),
+    )
+    result.dvar= to_dict(result.x, dvar)
+    result.d= {**result.dvar, **dpar}
+    return result;
+
+##########   BASINHOPPING   ###############
+
+
+class MyBounds:
+    def __init__(self, bounds ):
+        self.xmin,self.xmax= [[row[i] for row in bounds] for i in (0,1)]
+        self.bounds = [np.array([row[0]+1e-14,row[1]]) for row in bounds]
+ 
+        self.epsilon = 1e-14
+    def __call__(self, **kwargs):
+        x = kwargs["x_new"]
+        tmax = bool(np.all(x < self.xmax))
+        tmin = bool(np.all(x > self.xmin))
+        return tmax and tmin
+    
+
+def dict_basinhopping(f, dvar, dpar, mybounds):
+    result = optimize.basinhopping(
+        lambda x,y: cost_function(f(to_dict(x,dvar), to_dict(y,dpar))),# wrap the argument in a dict
+        x0=to_array(dvar), # unwrap the initial dictionary     
+        #niter=2,
+        minimizer_kwargs = dict(method="L-BFGS-B",  bounds=mybounds.bounds, args= to_array(dpar)),
+        accept_test=mybounds,
+        stepsize=10
+    )
+    
+    result.dvar= to_dict(result.x, dvar)
+    result.d= {**result.dvar, **dpar}
+    return result
+
+
+
+
+##########   SHGO NOT WORKONG   ###############
+
+
+def dict_shgo(f, dvar, dpar,bounds): # unwrap the initial dictionary
+    result = optimize.shgo(
+        lambda x,y: cost_function(f(to_dict(x,dvar), to_dict(y,dpar))),# wrap the argument in a dict
+        bounds=bounds,
+        args= list([to_array(dpar)],),
+        minimizer_kwargs = dict(method="L-BFGS-B"),
     )
     result.dvar= to_dict(result.x, dvar)
     result.d= {**result.dvar, **dpar}

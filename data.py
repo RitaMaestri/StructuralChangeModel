@@ -10,39 +10,36 @@ variables = {
     'B':np.array([100]),
     'R':np.array([.2]),
     'bKL':np.array([.2]),
-    'GDPPI':np.array([900]),
-    'GDP':np.array([1000]),
-
-
- # must be greater than pL L
-
-    'Cj':np.array([438,378]),
-    'pCj':np.array([4,2]),  
-
-    'Sj':np.array([438,378]),
-    'pSj':np.array([4,3]),#nice
-   
-    'Kj':np.array([100,11]),
-    'Lj':np.array([100,202]),
-
-    'KLj':np.array([106,330]),
-    'pKLj':np.array([3,7]),
-    
-    'Dj':np.array([438,378]), 
-    'pDj':np.array([4,2]),
-
-    'Xj':np.array([300,400]),
-
-
-    'Yj':np.array([110,201]),
-    'pYj':np.array([4,5]), 
+    #'GDPPI':np.array([1]),
 
     
-    'Mj':np.array([408,308]),
-    'pMj':np.array([4,2]),
+    'Kj':np.array([100,200,150]),
+    'Lj':np.array([120,50,140]),
+    
+    'KLj':np.array([200,300,320]),
+    'pKLj':np.array([4,7,5]),
+    
+    'Yj':np.array([300,320,450]),
+    'pYj':np.array([4,5,7]), 
+    
+    'Cj':np.array([570,450,620]),
+    'pCj':np.array([5,6,8]), 
+    
+    'Mj':np.array([408,308,400]),
+    'pMj':np.array([4,2,9]),
+    
+    'Xj':np.array([300,400,500]),
+    
+    'Dj':np.array([438,378,730]), 
+    'pDj':np.array([4,2,8]),
 
-       
-    'Yij':np.array([[148,157],[202,265]]),
+    'Sj':np.array([438,378,650]),
+    'pSj':np.array([4,3,4]),
+
+    'Gj':np.array([200,200,200]),
+    'Ij':np.array([200,200,200]),
+    
+    'Yij':np.array([[148,157,400],[202,265,300],[202,265,300]]),
     }
 
 
@@ -50,25 +47,32 @@ parameters= {
     'L':np.array([111]),
     'K':np.array([111]),
     'wB':np.array([.1]),
-    'GDPreal':np.array([2000]), 
+    #'GDPreal':np.array([2000]), 
+    'GDP':np.array([4000]),
 
-    'pXj':np.array([10,10]),
+    'pXj':np.array([10,10,15]),
+    #'pCtp':np.array([50, 34.6692715,24 ]),
+    #'Ctp':np.array([ 7.95933127, 15.69112867,13]),
+    #'Gtp':np.array([2.92622473, 1.44219933,1.5]),
+    #'Itp':np.array([3.51146968, 1.73063919,2.5]),
+    'alphaKj':np.array([.1,.6,.3]),
+    'alphaLj':np.array([.2,.7,.1]),
+    'aKLj':np.array([0.2,0.3,.4]),
+    'alphaCj':np.array([0.2,0.3,.5]),
+    'alphaXj':np.array([0.2,0.5,.3]),
+    'alphaDj':np.array([0.2,0.2,.6]),
+    'betaDj':np.array([0.1,0.2,.7]),
+    'betaMj':np.array([0.3,0.3,.4]),
+    'sigmaXj':np.array([0.5,0.1,.4]),
+    'sigmaSj':np.array([-.8,-0.8,-.8]),
+    'wGj':np.array([0.05,0.05,.05]),
+    'wIj':np.array([0.06,0.06,.06]),
     
-    'pCtp':np.array([20,20]),
-    'Ctp':np.array([300,400]),
-    'alphaKj':np.array([.3,.7]),
-    'alphaLj':np.array([.2,.8]),
-    'aKLj':np.array([0.2,0.3]),
-    'alphaCj':np.array([0.2,0.8]),
-    'alphaXj':np.array([0.4,0.6]),
-    'alphaDj':np.array([0.3,0.7]),
-    'betaDj':np.array([0.8,0.2]),
-    'betaMj':np.array([0.3,0.7]),
-    'sigmaXj':np.array([0.9,0.5]),
-    'sigmaSj':np.array([-.8,-0.8]),
-    
-    'aYij':np.array([[0.5,0.5],[0.5,0.5]])
+    'aYij':np.array([[0.2,0.1,.2],[0.3,0.2,.2],[.3,.4,.2]])
     }
+
+
+
 
 bounds={    
     'pL':(0,np.inf),
@@ -98,9 +102,13 @@ bounds={
     'Yj':(0,np.inf),
     'pYj':(0,np.inf),
     'Mj':(0,np.inf),
-    'pMj':(0,np.inf),    
+    'pMj':(0,np.inf),  
+    'Gj':(0,np.inf),
+    'Ij':(0,np.inf),
     'pCtp':(0,np.inf),
     'Ctp':(0,np.inf),
+    'Gtp':(0,np.inf),
+    'Itp':(0,np.inf),
     'alphaKj':(0,1),
     'alphaLj':(0,1),
     'aKLj':(0,1),
@@ -111,6 +119,8 @@ bounds={
     'betaMj':(0,1),
     'sigmaXj':(-np.inf,np.inf),
     'sigmaSj':(-np.inf,np.inf),
+    'wGj':(-1,1),
+    'wIj':(-1,1),
     
     'aYij':(0,1),
     'Yij':(0,np.inf),

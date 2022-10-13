@@ -44,7 +44,7 @@ investment = clean_data(investment)
 export=employment_table["Exportations de biens et de services"]
 export = clean_data(export)
 
-    #costs
+#costs
 imports= resources_table["Importations de biens et de services"] + resources_table["Correction CAF/FAB"]
 imports=clean_data(imports)
 
@@ -52,7 +52,22 @@ sales_taxes = resources_table["Impôts sur les produits - total -"] + resources_
 sales_taxes=clean_data(sales_taxes)
 
 
-pCjCj=households+government+investment+export-imports-sales_taxes
+pCjCj=households
+pCjGj=government
+pCjIj=investment
+pXjXj=export
+pMjMj=imports
+
+com_margins=resources_table["Marges commerciales"]
+com_margins=shorten(com_margins)
+
+
+#distribute sales taxes and commercial margins
+total_domestic_production=households+government+investment+export
+pCjCj=pCjCj-(sales_taxes+com_margins)*(pCjCj/total_domestic_production)
+pCjGj=pCjGj-(sales_taxes+com_margins)*(pCjGj/total_domestic_production)
+pCjIj=pCjIj-(sales_taxes+com_margins)*(pCjIj/total_domestic_production)
+pXjXj=pXjXj-(sales_taxes+com_margins)*(pXjXj/total_domestic_production)
 
 
 #production
@@ -78,41 +93,25 @@ pLLj=pLLj+(taxes_production+transfer)*proportionL
 pKKj=pKKj+(taxes_production+transfer)*(1-proportionL)
 
 
+
 #intermediate consumption
 
-pYiYij=intermediate_cons_table
-pYiYij=pYiYij.drop(["TOTAL" ],axis=1)
-pYiYij=pYiYij.drop(["PCHTR ", "PCAFAB","TOTAL "],axis=0)
-pYiYij.astype(float)
+pSiYij=intermediate_cons_table
+pSiYij=pSiYij.drop(["TOTAL" ],axis=1)
+pSiYij=pSiYij.drop(["PCHTR ", "PCAFAB","TOTAL "],axis=0)
+pSiYij.astype(float)
 
-com_margins=resources_table["Marges commerciales"]
-com_margins=shorten(com_margins)
 
 trans_margins= resources_table["Marges de transport"]
 trans_margins=shorten(trans_margins)
 
-pYiYij.loc["GZ"]= pYiYij.loc["GZ"]+com_margins
-pYiYij.loc["HZ"]= pYiYij.loc["HZ"]+trans_margins
+#pSiYij.loc["GZ"]= pSiYij.loc["GZ"]+com_margins
+pSiYij.loc["HZ"]= pSiYij.loc["HZ"]+trans_margins
 
-pYiYij=pYiYij.to_numpy()
-
-
-
-#other quantities
-
-pKLjKLj=pLLj+pKKj
-
-KLj=pLLj+pKKj
-
-pYj=np.ones(len(pYjYj))
-
-K=sum(pKKj)
-pL=1
-
+pSiYij=pSiYij.to_numpy()
 
 
 #check goods poorly consumed by final consumers 
-#plt.hist(employment_table.loc[(employment_table['Ménages'] < 1e5) & (employment_table['Ménages']>0)]['Ménages'])
 
 quartile = np.percentile(employment_table['Ménages'], 25)
 
@@ -120,11 +119,55 @@ employment_table.loc[(employment_table['Ménages'] < quartile) & (employment_tab
 
 #check for equilibrium
 
-cons_cost_diff=pYiYij.sum(axis=0)+pLLj+pKKj-(pYiYij.sum(axis=1)+pCjCj)
+cons_cost_diff=pSiYij.sum(axis=0)+pLLj+pKKj-(pSiYij.sum(axis=1)+pCjCj+pCjGj+pCjIj-pMjMj+pXjXj)
 
 #list(exploitation_table.index[:-1])
 cons_cost_diff=dict(zip(list(exploitation_table.index[:-1]),cons_cost_diff))
 
-print(cons_cost_diff)
  
 
+# for i in intermediate_cons_table.columns:
+#     for j in intermediate_cons_table.index:
+#         if intermediate_cons_table[i][j]<0:
+#             print(i,j)
+            
+# for i in range(len(pSiYij)):
+#     for j in range(len(pSiYij[0])):
+#         if pSiYij[i][j]<0:
+#             print(i,j)            
+
+#build the indexes for matrix format imaclim-py
+sectors=list(resources_table.index)[:-3]
+colA=sectors
+colZ=[s+'-KL' for s in sectors]
+colD=sectors+list(["C","G","I"])
+colX=sectors
+
+rowA=sectors
+rowZ=[s+'-KL' for s in sectors]
+rowD=sectors+list(["K","L"])
+rowM=sectors
+
+index1col = ["A"]*len(colA)+["Z"]*len(colZ)+["D"]*len(colD)+["X"]*len(colX)
+index2col = colA+colZ+colD+colX
+index0col=["N"]*len(index1col)
+
+index1row = ["A"]*len(rowA)+["Z"]*len(rowZ)+["D"]*len(rowD)+["M"]*len(rowM)
+index2row = rowA+rowZ+rowD+rowM
+index0row=["N"]*len(index1row)
+
+multi_index_matrix=pd.DataFrame(0,index=[index0row, index1row, index2row], columns=[index0col, index1col, index2col])
+
+
+multi_index_matrix.loc[('N'),('A'), ('D', sectors)] = pSiYij
+multi_index_matrix.loc[('N'),('A'), ('D','C')] = pCjCj
+multi_index_matrix.loc[('N'),('A'), ('D','G')] = pCjGj
+multi_index_matrix.loc[('N'),('A'), ('D','I')] = pCjIj
+multi_index_matrix.loc[('N'),('A'), ('X')] = np.diag(pXjXj)
+multi_index_matrix.loc[('N'),('D','K'), ('Z')] = pKKj
+multi_index_matrix.loc[('N'),('D','L'), ('Z')] = pLLj
+multi_index_matrix.loc[('N'),('M'), ('A')] = np.diag(pMjMj)
+multi_index_matrix.loc[('N'),('D', sectors),('A')] = np.diag([float("nan")]*len(sectors))
+multi_index_matrix.loc[('N'),('Z'),('D', sectors)] = np.diag([float("nan")]*len(sectors))
+
+multi_index_matrix.to_csv("matrix.csv")

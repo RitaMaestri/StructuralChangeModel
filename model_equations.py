@@ -2,20 +2,6 @@
 import numpy as np
 from math import sqrt
 
-# def shapeError(*args):
-#     if not all(x.shape[0] == args[0].shape[0] for x in args):
-#         raise Exception("Wrong shape")
-
-
-# def notScalarError(*args):
-#     if not all(np.isscalar(x) for x in args):
-#         raise Exception("Scalar needed")
-
-
-# def notArrayError(*args):
-
-#     if not all(isinstance(i, np.ndarray) for i in args):
-#         raise Exception("Array needed")
 
 
 #EQUATIONS
@@ -40,13 +26,13 @@ def eqFj(Fj,pF,KLj,pKLj,alphaFj):
 
 def eqYij(Yij,aYij,Yj):
     #print("eqYij")
+
     Yjd=np.diag(Yj)
     
     zero=Yij-np.dot(aYij,Yjd)
     
     #convert matrix to vector
     zero=zero.flatten()
-    
     return zero
 
 
@@ -58,7 +44,7 @@ def eqKL(KLj,aKLj,Yj):
 
 
 def eqpYj(pYj,pSj,aKLj,pKLj,aYij):
-    #print("eqpYj")
+
     pSjd=np.diag(pSj)
     
     zero= pYj - ( aKLj * pKLj + np.dot(pSjd,aYij).sum(axis=0) ) #AXIS=1 sum over the rows CHECKED
@@ -104,34 +90,36 @@ def eqB(B,pXj,Xj,pMj,Mj):
     return zero
 
 
-def eqw(B,wB,GDP):
+def eqwB(X,wX,GDP):
     
-    zero = B - wB*GDP
+    zero = X - wX*GDP
     
     return(zero)
 
 
-def eqCj(Cj,alphaCj,pCj,R):         #eq.eqCj(Cj=d['Cj'],alphaCj=d['alphaCj'],pCj=d['pCj'],R=d['R']),
-    #print("eqCj")
-    #pL,pK=pL.item(),pK.item()
+def eqCj(Cj,alphaCj,pCj,R):         
 
     zero= Cj - alphaCj * (R/ pCj)
     
     return zero
 
-# def eqCj(Cj,alphaCj,pCj,pL,Lj,pK,Kj):         #eq.eqCj(Cj=d['Cj'],alphaCj=d['alphaCj'],pCj=d['pCj'],pL=d['pL'],Lj=d['Lj'],pK=d['pK'],Kj=d['Kj']),
+def eqR(R,Cj,pCj):
+    
+    zero = R - sum(Cj*pCj)
+    
+    return zero
 
-#     #print("eqCj")
-#     pL,pK=pL.item(),pK.item()
 
-#     zero= Cj - alphaCj * ((pL*sum(Lj)+pK*sum(Kj))/ pCj)
+def eqw(pXj,Xj,wXj,GDP):
     
-#     return zero
+    zero = pXj * Xj - wXj * GDP
     
-    
-def eqSj(Sj,Cj,Yij):
+    return zero
+
+
+def eqSj(Sj,Cj,Gj,Ij,Yij): 
     #print("eqSj")
-    zero = Sj - (Cj + Yij.sum(axis=1))#sum over the rows
+    zero = Sj - (Cj + Gj + Ij + Yij.sum(axis=1))#sum over the rows 
     
     return zero
 
@@ -154,22 +142,24 @@ def eqID(x,y):
     
     return zero
 
-def eqGDP(GDP,pCj,Cj,pXj,Xj,pMj,Mj):
+
+
+def eqGDP(GDP,pCj,Cj,Gj,Ij,pXj,Xj,pMj,Mj):
     #print("eqGDP")
     GDP=GDP.item()
     
-    zero= GDP - sum(pCj*Cj+pXj*Xj-pMj*Mj)
+    zero= GDP - sum(pCj*(Cj+Gj+Ij)+pXj*Xj-pMj*Mj)
     
     return zero
 
 
 
 #tp=time_previous
-def eqGDPPI(GDPPI,pCj,pCtp,Cj, Ctp):
+def eqGDPPI(GDPPI,pCj,pCtp,Cj,Gj,Ij,Ctp,Gtp,Itp):
     
     GDPPI=GDPPI.item()
     
-    zero=GDPPI - sqrt( ( sum(pCj*Cj)/sum(pCtp*Cj) ) * ( sum(pCj*Ctp)/sum(pCtp*Ctp) ) )
+    zero=GDPPI - sqrt( ( sum( pCj*(Cj+Gj+Ij) ) / sum( pCtp*(Cj+Gj+Ij) ) ) * ( sum( pCj*(Ctp+Gtp+Itp) ) / sum( pCtp*(Ctp+Gtp+Itp) ) ) )
     
     return zero
 
@@ -179,29 +169,23 @@ def eqGDPreal(GDPreal, GDP, GDPPI):
     zero=GDPreal - GDP / np.prod(GDPPI)
     return zero
 
+
+
 def eqCalibi(pX, Xj, data):
     #print("eqCalibi")
-    zero=data - pX*Xj
+    zero = data - pX*Xj
     
     return zero
 
 def eqCalibij(pYi, Yij, data):
     #print("eqCalibij")
-    pYid=np.diag(pYi)
+    pYid = np.diag(pYi)
     
     zero = data - np.dot(pYid,Yij)
     
     zero=zero.flatten()
+    
     return zero
-
-
-# def eqpKLj(pKLj,Lj,pL,Kj,pK):
-    
-#     zero = pKLj - (pL*Lj + pK*Kj)
-    
-#     return zero
-
-
 
 
 def eqCETquantity(Xj,Yj,alphaXj,pXj,pYj,sigmaj):
