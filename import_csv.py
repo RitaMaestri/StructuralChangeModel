@@ -71,9 +71,6 @@ pXjXj=pXjXj-(sales_taxes+com_margins)*(pXjXj/total_domestic_production)
 
 
 #production
-pYjYj=resources_table["Production des produits (1)"]
-pYjYj=clean_data(pYjYj)
-
 pLLj=exploitation_table["Rémunération des salariés"]
 pLLj=shorten(pLLj)
 
@@ -95,12 +92,10 @@ pKKj=pKKj+(taxes_production+transfer)*(1-proportionL)
 
 
 #intermediate consumption
-
 pSiYij=intermediate_cons_table
 pSiYij=pSiYij.drop(["TOTAL" ],axis=1)
 pSiYij=pSiYij.drop(["PCHTR ", "PCAFAB","TOTAL "],axis=0)
 pSiYij.astype(float)
-
 
 trans_margins= resources_table["Marges de transport"]
 trans_margins=shorten(trans_margins)
@@ -109,6 +104,18 @@ trans_margins=shorten(trans_margins)
 pSiYij.loc["HZ"]= pSiYij.loc["HZ"]+trans_margins
 
 pSiYij=pSiYij.to_numpy()
+
+#gross domestic product
+pYjYj=pSiYij.sum(axis=0)+pLLj+pKKj
+
+#KL good
+pKLjKLj=pKKj+pLLj
+
+#Armington good
+pSjSj=pCjCj+pCjGj+pCjIj+pSiYij.sum(axis=1)
+
+#domestic good
+pDjDj=pSjSj-pMjMj
 
 
 #check goods poorly consumed by final consumers 
@@ -124,7 +131,30 @@ cons_cost_diff=pSiYij.sum(axis=0)+pLLj+pKKj-(pSiYij.sum(axis=1)+pCjCj+pCjGj+pCjI
 #list(exploitation_table.index[:-1])
 cons_cost_diff=dict(zip(list(exploitation_table.index[:-1]),cons_cost_diff))
 
- 
+non_zero_index_G=np.array(np.where(pCjGj != 0)).flatten()
+non_zero_index_I=np.array(np.where(pCjIj != 0)).flatten()
+non_zero_index_X=np.array(np.where(pXjXj != 0)).flatten()
+non_zero_index_M=np.array(np.where(pMjMj != 0)).flatten()
+non_zero_index_C=np.array(np.where(pCjCj != 0)).flatten()
+non_zero_index_Yij=np.array(np.where(pSiYij != 0))
+
+
+N=len(pLLj)
+
+#elasticità
+
+sigmaXj=np.array([1]*N)
+
+
+revenue_elasticities=pd.read_csv("data/revenue_elasticities.csv")
+
+epsilonRj=np.array(revenue_elasticities['Revenue elasticity of consumption'])
+
+Armington_elasticities=pd.read_csv("data/Armington_elasticities.csv")
+
+sigmaSj=np.array(Armington_elasticities[" elasticity"])
+
+
 
 # for i in intermediate_cons_table.columns:
 #     for j in intermediate_cons_table.index:
@@ -136,38 +166,15 @@ cons_cost_diff=dict(zip(list(exploitation_table.index[:-1]),cons_cost_diff))
 #         if pSiYij[i][j]<0:
 #             print(i,j)            
 
-#build the indexes for matrix format imaclim-py
-sectors=list(resources_table.index)[:-3]
-colA=sectors
-colZ=[s+'-KL' for s in sectors]
-colD=sectors+list(["C","G","I"])
-colX=sectors
-
-rowA=sectors
-rowZ=[s+'-KL' for s in sectors]
-rowD=sectors+list(["K","L"])
-rowM=sectors
-
-index1col = ["A"]*len(colA)+["Z"]*len(colZ)+["D"]*len(colD)+["X"]*len(colX)
-index2col = colA+colZ+colD+colX
-index0col=["N"]*len(index1col)
-
-index1row = ["A"]*len(rowA)+["Z"]*len(rowZ)+["D"]*len(rowD)+["M"]*len(rowM)
-index2row = rowA+rowZ+rowD+rowM
-index0row=["N"]*len(index1row)
-
-multi_index_matrix=pd.DataFrame(0,index=[index0row, index1row, index2row], columns=[index0col, index1col, index2col])
 
 
-multi_index_matrix.loc[('N'),('A'), ('D', sectors)] = pSiYij
-multi_index_matrix.loc[('N'),('A'), ('D','C')] = pCjCj
-multi_index_matrix.loc[('N'),('A'), ('D','G')] = pCjGj
-multi_index_matrix.loc[('N'),('A'), ('D','I')] = pCjIj
-multi_index_matrix.loc[('N'),('A'), ('X')] = np.diag(pXjXj)
-multi_index_matrix.loc[('N'),('D','K'), ('Z')] = pKKj
-multi_index_matrix.loc[('N'),('D','L'), ('Z')] = pLLj
-multi_index_matrix.loc[('N'),('M'), ('A')] = np.diag(pMjMj)
-multi_index_matrix.loc[('N'),('D', sectors),('A')] = np.diag([float("nan")]*len(sectors))
-multi_index_matrix.loc[('N'),('Z'),('D', sectors)] = np.diag([float("nan")]*len(sectors))
 
-multi_index_matrix.to_csv("matrix.csv")
+
+
+
+
+
+
+
+
+

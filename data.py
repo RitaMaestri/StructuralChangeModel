@@ -1,74 +1,78 @@
 import numpy as np
+import simple_calibration as cal
+import import_csv as imp
 
 #CAUTION: if you use the solver dict_minimize, 
 #the bounds for the variables are (0,1) for variables whose initial guess is <1, (0,inf) for the rest
 #if you use least_square it's (0,inf) in any case
+N=cal.N
 
 variables = {
     'pL':np.array([1]),
-    'pK':np.array([4]),
-    'B':np.array([100]),
-    'R':np.array([.2]),
-    'bKL':np.array([.2]),
-    #'GDPPI':np.array([1]),
+    'pK':np.array([1]),
+    'B':np.array(cal.B0),
+    'R':np.array(cal.R0),
+    'bKL':np.array([1]),
+    'GDP':cal.GDPreal,
+    'GDPPI':np.array([1]),
 
-    
-    'Kj':np.array([100,200,150]),
-    'Lj':np.array([120,50,140]),
-    
-    'KLj':np.array([200,300,320]),
-    'pKLj':np.array([4,7,5]),
-    
-    'Yj':np.array([300,320,450]),
-    'pYj':np.array([4,5,7]), 
-    
-    'Cj':np.array([570,450,620]),
-    'pCj':np.array([5,6,8]), 
-    
-    'Mj':np.array([408,308,400]),
-    'pMj':np.array([4,2,9]),
-    
-    'Xj':np.array([300,400,500]),
-    
-    'Dj':np.array([438,378,730]), 
-    'pDj':np.array([4,2,8]),
 
-    'Sj':np.array([438,378,650]),
-    'pSj':np.array([4,3,4]),
-
-    'Gj':np.array([200,200,200]),
-    'Ij':np.array([200,200,200]),
+    'Kj':imp.pKKj,
+    'Lj':imp.pLLj,
     
-    'Yij':np.array([[148,157,400],[202,265,300],[202,265,300]]),
+    'KLj':cal.KLj0,
+    'pKLj':cal.pKLj0,
+    
+    'Yj':cal.Yj0,
+    'pYj':cal.pYj0, 
+    
+    'Cjn0':cal.Cj0[cal.Cj0!=0],
+    'pCj':cal.pCj0, 
+    
+    'Mjn0':cal.Mj0[cal.Mj0!=0],
+    'pMj':cal.pMj0,
+    
+    'Xjn0':cal.Xj0[cal.Xj0!=0],
+    
+    'Dj':cal.Dj0, 
+    'pDj':cal.pDj0,
+
+    'Sj':cal.Sj0,
+    'pSj':cal.pCj0,
+
+    'Gjn0':cal.Gj0[cal.Gj0!=0],
+    'Ijn0':cal.Ij0[cal.Ij0!=0],
+    
+    'Yijn0':cal.Yij0[cal.Yij0!=0],
     }
 
 
 parameters= {
-    'L':np.array([111]),
-    'K':np.array([111]),
-    'wB':np.array([.1]),
-    #'GDPreal':np.array([2000]), 
-    'GDP':np.array([4000]),
+    'L':np.array([sum(cal.L)]),
+    'K':np.array([sum(cal.K)]),
+    'wB':cal.wB,
+    'GDPreal':cal.GDPreal,
 
-    'pXj':np.array([10,10,15]),
-    #'pCtp':np.array([50, 34.6692715,24 ]),
-    #'Ctp':np.array([ 7.95933127, 15.69112867,13]),
-    #'Gtp':np.array([2.92622473, 1.44219933,1.5]),
-    #'Itp':np.array([3.51146968, 1.73063919,2.5]),
-    'alphaKj':np.array([.1,.6,.3]),
-    'alphaLj':np.array([.2,.7,.1]),
-    'aKLj':np.array([0.2,0.3,.4]),
-    'alphaCj':np.array([0.2,0.3,.5]),
-    'alphaXj':np.array([0.2,0.5,.3]),
-    'alphaDj':np.array([0.2,0.2,.6]),
-    'betaDj':np.array([0.1,0.2,.7]),
-    'betaMj':np.array([0.3,0.3,.4]),
-    'sigmaXj':np.array([0.5,0.1,.4]),
-    'sigmaSj':np.array([-.8,-0.8,-.8]),
-    'wGj':np.array([0.05,0.05,.05]),
-    'wIj':np.array([0.06,0.06,.06]),
+
+    'pXj':np.array([100]*N),
+    'pCtp':cal.pCjtp,
+    'Ctp':cal.Ctp,
+    'Gtp':cal.Gtp,
+    'Itp':cal.Itp,
+    'alphaKj':cal.alphaKj,
+    'alphaLj':cal.alphaLj,
+    'aKLj':cal.aKLj,
+    'alphaCj':cal.alphaCj,
+    'alphaXj':cal.alphaXj,
+    'alphaDj':cal.alphaDj,
+    'betaDj':cal.betaDj,
+    'betaMj':cal.betaMj,
+    'sigmaXj':cal.sigmaXj,
+    'sigmaSj':cal.sigmaSj,
+    'wGj':cal.wGj,
+    'wIj':cal.wIj,
     
-    'aYij':np.array([[0.2,0.1,.2],[0.3,0.2,.2],[.3,.4,.2]])
+    'aYij':cal.aYij
     }
 
 
@@ -87,7 +91,7 @@ bounds={
     'bKL':(0,np.inf),
     'R':(0,np.inf),
 
-    'Cj':(0,np.inf),
+    'Cjn0':(0,np.inf),
     'pCj':(0,np.inf),
     'Sj':(0,np.inf),
     'pSj':(0,np.inf),
@@ -97,14 +101,14 @@ bounds={
     'pKLj':(0,np.inf),
     'Dj':(0,np.inf),
     'pDj':(0,np.inf),
-    'Xj':(0,np.inf),
+    'Xjn0':(0,np.inf),
     'pXj':(0,np.inf),
     'Yj':(0,np.inf),
     'pYj':(0,np.inf),
-    'Mj':(0,np.inf),
+    'Mjn0':(0,np.inf),
     'pMj':(0,np.inf),  
-    'Gj':(0,np.inf),
-    'Ij':(0,np.inf),
+    'Gjn0':(0,np.inf),
+    'Ijn0':(0,np.inf),
     'pCtp':(0,np.inf),
     'Ctp':(0,np.inf),
     'Gtp':(0,np.inf),
@@ -113,17 +117,17 @@ bounds={
     'alphaLj':(0,1),
     'aKLj':(0,1),
     'alphaCj':(0,1),
-    'alphaXj':(0,1),
-    'alphaDj':(0,1),
-    'betaDj':(0,1),
-    'betaMj':(0,1),
+    'alphaXj':(0,np.inf),
+    'alphaDj':(0,np.inf),
+    'betaDj':(0,np.inf),
+    'betaMj':(0,np.inf),
     'sigmaXj':(-np.inf,np.inf),
     'sigmaSj':(-np.inf,np.inf),
     'wGj':(-1,1),
     'wIj':(-1,1),
     
-    'aYij':(0,1),
-    'Yij':(0,np.inf),
+    'aYij':(0,np.inf),
+    'Yijn0':(0,np.inf),
         }
 
 

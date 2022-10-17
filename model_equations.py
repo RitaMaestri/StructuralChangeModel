@@ -1,7 +1,7 @@
 #equations cge
 import numpy as np
 from math import sqrt
-
+import data_calibration_from_matrix as dt
 
 
 #EQUATIONS
@@ -9,118 +9,151 @@ from math import sqrt
 def eqKLj(KLj, bKL, Lj, Kj, alphaLj, alphaKj):
     #print("eqKLj")
 
-    zero = KLj - bKL * np.float_power(Lj,alphaLj) * np.float_power(Kj,alphaKj)
-    
-    return zero 
+    zero = -1 + KLj /(
+        bKL * np.float_power(Lj,alphaLj) * np.float_power(Kj,alphaKj)
+    )
+
+    return zero
 
 # same equation for Lj and Kj (Factors)
 
-def eqFj(Fj,pF,KLj,pKLj,alphaFj):   
-    #print("eqFj")
+def eqFj(Fj,pF,KLj,pKLj,alphaFj):
     pF=pF.item()
-    
-    zero= Fj-(np.prod(np.vstack([pKLj,KLj,alphaFj]), axis=0))/pF
-    
+
+    zero= -1 + Fj / (
+        (np.prod(np.vstack([pKLj,KLj,alphaFj]), axis=0))/pF
+    )
+
     return zero
 
 
-def eqYij(Yij,aYij,Yj):
-    #print("eqYij")
-
+def eqYij(Yij,aYij,Yj, _index=None):
+    
     Yjd=np.diag(Yj)
     
-    zero=Yij-np.dot(aYij,Yjd)
-    
+    if isinstance(_index, np.ndarray):
+        #print("Yij check: ",(Yij[_index[0],_index[1]]==dt.variables['Yijn0']).all())
+        
+        zero= -1 + Yij[_index[0],_index[1]] / np.dot(aYij,Yjd)[_index[0],_index[1]]
+    else:
+        zero= -1 + Yij / np.dot(aYij,Yjd)
+        zero=zero.flatten()
     #convert matrix to vector
-    zero=zero.flatten()
+
     return zero
 
 
 def eqKL(KLj,aKLj,Yj):
-    #print("eqKL")
-    zero=KLj- np.multiply(aKLj,Yj)
-    
+
+    zero=-1 + KLj / np.multiply(aKLj,Yj)
+
     return zero
 
 
 def eqpYj(pYj,pSj,aKLj,pKLj,aYij):
 
     pSjd=np.diag(pSj)
-    
-    zero= pYj - ( aKLj * pKLj + np.dot(pSjd,aYij).sum(axis=0) ) #AXIS=1 sum over the rows CHECKED
-    
+
+    zero= -1 + pYj / (
+        ( aKLj * pKLj + np.dot(pSjd,aYij).sum(axis=0) ) #AXIS=1 sum over the rows CHECKED
+    )
+
     return zero
 
 
 def eqCET(Zj, alphaXj,alphaYj,Xj,Yj,sigmaj):
-    
-    etaj = (sigmaj-1)/sigmaj 
-    
-    partj = alphaXj * np.float_power(Xj,etaj) + alphaYj * np.float_power(Yj,etaj)
-    
-    zero = Zj - np.float_power(partj,(1/etaj))  
-    
+
+    etaj = (sigmaj-1)/sigmaj
+
+    partj = alphaXj * np.float_power(Xj,etaj, out=np.zeros(len(Xj)),where=(Xj!=0)) + alphaYj * np.float_power(Yj,etaj)
+
+    zero = -1 + Zj / np.float_power(partj, 1/etaj)
+
     return zero
 
 
-def eqCESquantity(Xj, Zj, alphaXj, alphaYj, pXj, pYj, sigmaj):
+def eqCESquantity(Xj, Zj, alphaXj, alphaYj, pXj, pYj, sigmaj, _index=None):
+        
+    if isinstance(_index, np.ndarray):
+        Xj=Xj[_index]
+        Zj=Zj[_index]
+        alphaXj=alphaXj[_index]
+        alphaYj=alphaYj[_index]
+        pXj=pXj[_index]
+        pYj=pYj[_index]
+        sigmaj=sigmaj[_index]
+        
     
-    #etaj=(sigmaj-1)/sigmaj 
+    #is it correct??? TODO
+    partj = np.float_power(alphaXj,sigmaj, out=np.zeros(len(alphaXj)),where=(alphaXj!=0)) * np.float_power(pXj,1-sigmaj) + np.float_power(alphaYj,sigmaj, out=np.zeros(len(alphaYj)),where=(alphaYj!=0))* np.float_power(pYj,1-sigmaj)
     
-    partj = np.float_power(alphaXj,sigmaj) * np.float_power(pXj,1-sigmaj) + np.float_power(alphaYj,sigmaj) * np.float_power(pYj,1-sigmaj)
-
-    zero= Xj - np.float_power(alphaXj/pXj, sigmaj) * np.float_power(partj , sigmaj/(1-sigmaj) ) * Zj
-    
+    zero= -1 + Xj / (
+        np.float_power(alphaXj/pXj, sigmaj) * np.float_power(partj , sigmaj/(1-sigmaj) ) * Zj
+    )
     return zero
 
 
 def eqCESprice(pZj,pXj,pYj,alphaXj,alphaYj,sigmaj):
-    
-    partj= np.float_power(alphaXj,sigmaj) * np.float_power(pXj,1-sigmaj) + np.float_power(alphaYj,sigmaj) * np.float_power(pYj,1-sigmaj)
 
-    zero= pZj - np.float_power(partj, 1/(1-sigmaj))
-    
+    partj= np.float_power(alphaXj,sigmaj, out=np.zeros(len(alphaXj)),where=(alphaXj!=0)) * np.float_power(pXj,1-sigmaj) + np.float_power(alphaYj,sigmaj, out=np.zeros(len(alphaYj)),where=(alphaYj!=0)) * np.float_power(pYj,1-sigmaj)
+
+    zero= -1 + pZj / (
+        np.float_power(partj, 1/(1-sigmaj))
+    )
+
     return zero
-    
+
 
 def eqB(B,pXj,Xj,pMj,Mj):
     
-    zero = B - sum(pXj*Xj-pMj*Mj)
+    zero = -1 + B / sum(pXj*Xj-pMj*Mj)
     
     return zero
 
 
 def eqwB(X,wX,GDP):
     
-    zero = X - wX*GDP
+    zero = -1 + X / (wX*GDP)
     
     return(zero)
 
-
-def eqCj(Cj,alphaCj,pCj,R):         
-
-    zero= Cj - alphaCj * (R/ pCj)
+##check for the case where the index is an empty array! TODO
+def eqCj(Cj,alphaCj,pCj,R,_index=None):
+    
+    if isinstance(_index, np.ndarray):
+        zero= -1 + Cj[_index] / ( alphaCj[_index] * (R/ pCj[_index]) )
+    else:
+        zero= -1 + Cj / ( alphaCj * (R/ pCj) )
     
     return zero
 
 def eqR(R,Cj,pCj):
-    
-    zero = R - sum(Cj*pCj)
-    
+
+    zero = -1 + R / sum(Cj*pCj)
+
     return zero
 
 
-def eqw(pXj,Xj,wXj,GDP):
+def eqw(pXj,Xj,wXj,GDP, _index = None):
     
-    zero = pXj * Xj - wXj * GDP
+    if isinstance(_index, np.ndarray):
+        deno = (pXj * Xj)[_index]
+        nume = (wXj * GDP)[_index]
+    else:
+        deno = (pXj * Xj)
+        nume = (wXj * GDP)
     
+    zero = -1 + nume / deno
+
     return zero
 
 
-def eqSj(Sj,Cj,Gj,Ij,Yij): 
+def eqSj(Sj,Cj,Gj,Ij,Yij):
     #print("eqSj")
-    zero = Sj - (Cj + Gj + Ij + Yij.sum(axis=1))#sum over the rows 
-    
+    zero = -1 + Sj / (
+        (Cj + Gj + Ij + Yij.sum(axis=1))#sum over the rows
+    )
+
     return zero
 
 
@@ -128,18 +161,18 @@ def eqSj(Sj,Cj,Gj,Ij,Yij):
 
 def eqF(F,Fj):
     #print("eqF")
-    
+
     F=F.item()
-    
-    zero= F-sum(Fj)
-    
+
+    zero= -1 + F / sum(Fj)
+
     return zero
 
 
 def eqID(x,y):
     #print("eqID")
-    zero=x-y
-    
+    zero=-1 + x / y
+
     return zero
 
 
@@ -147,58 +180,74 @@ def eqID(x,y):
 def eqGDP(GDP,pCj,Cj,Gj,Ij,pXj,Xj,pMj,Mj):
     #print("eqGDP")
     GDP=GDP.item()
-    
-    zero= GDP - sum(pCj*(Cj+Gj+Ij)+pXj*Xj-pMj*Mj)
-    
-    return zero
 
+    zero= -1 + GDP / sum(pCj*(Cj+Gj+Ij)+pXj*Xj-pMj*Mj)
+
+    return zero
 
 
 #tp=time_previous
 def eqGDPPI(GDPPI,pCj,pCtp,Cj,Gj,Ij,Ctp,Gtp,Itp):
-    
+
     GDPPI=GDPPI.item()
-    
-    zero=GDPPI - sqrt( ( sum( pCj*(Cj+Gj+Ij) ) / sum( pCtp*(Cj+Gj+Ij) ) ) * ( sum( pCj*(Ctp+Gtp+Itp) ) / sum( pCtp*(Ctp+Gtp+Itp) ) ) )
-    
+
+    zero=-1 + GDPPI / sqrt(
+        ( sum( pCj*(Cj+Gj+Ij) ) / sum( pCtp*(Cj+Gj+Ij) ) ) * ( sum( pCj*(Ctp+Gtp+Itp) ) / sum( pCtp*(Ctp+Gtp+Itp) ) )
+    )
+
     return zero
 
 #GDPPI is the GDPPI time series
 def eqGDPreal(GDPreal, GDP, GDPPI):
     GDP.item()
-    zero=GDPreal - GDP / np.prod(GDPPI)
+    zero=-1 + GDPreal /(
+        GDP / np.prod(GDPPI)
+    )
     return zero
 
 
-
-def eqCalibi(pX, Xj, data):
+#I put the if  otherwise indexing with None gave me an array of array TODO
+def eqCalibi(pX, Xj, data, _index = None):
     #print("eqCalibi")
-    zero = data - pX*Xj
-    
+    if isinstance(_index, np.ndarray):
+        
+        zero = -1 + data[_index] / (pX*Xj)[_index]#QUI
+
+    else:
+
+        zero = -1 + data / (pX*Xj)
+        
+
     return zero
 
-def eqCalibij(pYi, Yij, data):
+
+def eqCalibij(pYi, Yij, data, _index=None):
     #print("eqCalibij")
     pYid = np.diag(pYi)
     
-    zero = data - np.dot(pYid,Yij)
-    
-    zero=zero.flatten()
-    
+    if isinstance(_index, np.ndarray):
+        zero = -1 + data[_index[0],_index[1]] / np.dot(pYid,Yij)[_index[0],_index[1]]#QUI
+
+    else:
+        zero = -1 + data / np.dot(pYid,Yij)#QUI
+        zero=zero.flatten()
+        
     return zero
 
 
 def eqCETquantity(Xj,Yj,alphaXj,pXj,pYj,sigmaj):
-    
-    zero = Xj - np.float_power(alphaXj*pYj/pXj, sigmaj)*Yj
-    
+
+    zero = -1 + Xj / (
+        np.float_power(alphaXj*pYj/pXj, sigmaj)*Yj
+    )
+
     return zero
 
 
 def eqGDPreduced(GDP,pCj,Cj,pMj,Mj):
     #print("eqGDP")
     GDP=GDP.item()
-    
-    zero= GDP - sum(pCj*Cj-pMj*Mj)
-    
+
+    zero= -1 + GDP / sum(pCj*Cj-pMj*Mj)
+
     return zero

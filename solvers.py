@@ -9,7 +9,7 @@ from math import sqrt
 
 def to_dict(vec, dvec):  #takes array, returns dict of arrays (of equal dimensions and keys as dvec)
     lengths = np.array([np.product(np.shape(item)) for item in dvec.values()])
-    N=int(sqrt(max(lengths)))
+    N=int(min(lengths[lengths!=1]))
     keys=dvec.keys()
     #create array of arrays
     vec = np.split(vec,np.cumsum(lengths))[:-1]
@@ -68,6 +68,7 @@ def dict_least_squares(f, dvar, dpar,bounds):
         to_array(dvar), # unwrap the initial dictionary
         bounds=bounds,
         args= list([to_array(dpar)],),
+        verbose=2
     )
     result.dvar= to_dict(result.x, dvar)
     result.d= {**result.dvar, **dpar}

@@ -8,11 +8,9 @@ variables = {
     'R': np.array([986040]),
     'GDP': np.array([1912200]),
     'wB': np.array([-0.005]),
-
     
-    'wGj': np.array([0.2, 0]),
-    'wIj': np.array([0.2, 0]),
-
+    'wGj¬E': np.array([0.2,]),
+    'wIj¬E': np.array([0.2,]),
 
     'alphaKj': np.array([0.5, 0.5]),
     'alphaLj': np.array([0.5, 0.5]),
@@ -26,7 +24,6 @@ variables = {
     'pSj': np.array([100, 50]),
     'pMj': np.array([100, 100]),
     'pCj': np.array([100, 50]),
-    'pDj': np.array([100, 100]),
 
 
     'Sj': np.array([10000, 1000]),
@@ -37,8 +34,8 @@ variables = {
     'KLj': np.array([1000, 1000]),
     'Xj': np.array([1000, 1000]),
     'Yj': np.array([1000, 1000]),
-    'Gj': np.array([1000, 1000]),
-    'Ij': np.array([1000, 1000]),
+    'Gj¬E': np.array([1000,]),
+    'Ij¬E': np.array([1000,]),
     'Dj': np.array([1000, 1000]),
 
 
@@ -52,6 +49,12 @@ variables = {
 
 
 parameters = {
+    
+    'G_E': np.array([0]),
+    'I_E': np.array([0]),
+    
+    'wG_E': np.array([0]),
+    'wI_E': np.array([0]),
 
     'pK': np.array([100]),
     'pL': np.array([100]),
@@ -61,7 +64,7 @@ parameters = {
     'pKLj': np.array([100, 100]),
     'pYj': np.array([100, 100]),
     'pXj': np.array([100, 100]),
-
+    'pDj': np.array([100, 100]),
 
     'sigmaXj': np.array([-2, -2]),
     'sigmaSj': np.array([2, 3.761]),
@@ -72,9 +75,9 @@ parameters = {
     'pCj*Ij': np.array([438623.81, 0]),
     'pL*Lj': np.array([1116558, 24864]),
     'pK*Kj': np.array([736706, 34150]),
-    'pYj*Yj': np.array([3672557,124735]),
     'pSj*Yij': np.array([[1741427, 38409], [77866, 27313]]),
 }
+
 
 
 bounds = {
@@ -104,20 +107,24 @@ bounds = {
     'pYj': (0, np.inf),
     'Mj': (0, np.inf),
     'pMj': (0, np.inf),
-    'Gj': (0, np.inf),
-    'Ij': (0, np.inf),
+    'G_E': (0, np.inf),
+    'I_E': (0, np.inf),
+    'Gj¬E': (0, np.inf),
+    'Ij¬E': (0, np.inf),
     'alphaKj': (0, 1),
     'alphaLj': (0, 1),
     'aKLj': (0, 1),
-    'alphaCj': (0, 1),
-    'alphaXj': (0, np.inf),
-    'alphaDj': (0, np.inf),
-    'betaDj': (0, np.inf),
-    'betaMj': (0, np.inf),
+    'alphaCj': (0, np.inf),
+    'alphaXj': (-np.inf, np.inf),
+    'alphaDj': (-np.inf, np.inf),
+    'betaDj': (-np.inf, np.inf),
+    'betaMj': (-np.inf, np.inf),
     'sigmaXj': (-np.inf, np.inf),
     'sigmaSj': (-np.inf, np.inf),
-    'wGj': (-1, 1),
-    'wIj': (-1, 1),
+    'wG_E': (-1, 1),
+    'wI_E': (-1, 1),
+    'wGj¬E': (-1, 1),
+    'wIj¬E': (-1, 1),
     'pCj*Cj': (0, np.inf),
     'pCj*Gj': (0, np.inf),
     'pCj*Ij': (0, np.inf),
