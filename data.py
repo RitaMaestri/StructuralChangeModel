@@ -1,6 +1,5 @@
 import numpy as np
 import simple_calibration as cal
-import import_csv as imp
 
 #CAUTION: if you use the solver dict_minimize, 
 #the bounds for the variables are (0,1) for variables whose initial guess is <1, (0,inf) for the rest
@@ -8,17 +7,20 @@ import import_csv as imp
 N=cal.N
 
 variables = {
-    'pL':np.array([1]),
-    'pK':np.array([1]),
+    'pL':np.array([cal.pL0]),
+    'pK':np.array([cal.pK0]),
     'B':np.array(cal.B0),
     'R':np.array(cal.R0),
     'bKL':np.array([1]),
-    'GDP':cal.GDPreal,
+    
+    'CPI':np.array([1]),
+    'Rreal':np.array(cal.R0),
     'GDPPI':np.array([1]),
+    'GDP':cal.GDPreal,
 
 
-    'Kj':imp.pKKj,
-    'Lj':imp.pLLj,
+    'Kj':0.9*cal.Kj0,
+    'Lj':cal.Lj0,
     
     'KLj':cal.KLj0,
     'pKLj':cal.pKLj0,
@@ -43,22 +45,29 @@ variables = {
     'Gjn0':cal.Gj0[cal.Gj0!=0],
     'Ijn0':cal.Ij0[cal.Ij0!=0],
     
-    'Yijn0':cal.Yij0[cal.Yij0!=0],
+    'Yijn0':cal.Yij0[cal.Yij0!=0]
     }
 
 
 parameters= {
-    'L':np.array([sum(cal.L)]),
-    'K':np.array([sum(cal.K)]),
+
     'wB':cal.wB,
+    'K':cal.K0*(1+cal.GDPgrowth),
+    'L':cal.L0*(1+cal.GDPgrowth),
     'GDPreal':cal.GDPreal,
 
 
-    'pXj':np.array([100]*N),
+    
+    'pXj':cal.pXj,
+    
+    'bKLj':cal.bKLj,
     'pCtp':cal.pCjtp,
     'Ctp':cal.Ctp,
     'Gtp':cal.Gtp,
     'Itp':cal.Itp,
+    'pXtp':cal.pXtp,
+    'Xtp':cal.Xtp,
+    'Mtp':cal.Mtp,
     'alphaKj':cal.alphaKj,
     'alphaLj':cal.alphaLj,
     'aKLj':cal.aKLj,
@@ -76,21 +85,22 @@ parameters= {
     }
 
 
-
-
-bounds={    
+bounds={
+    'Rreal':(0,np.inf),
+    'CPI':(-np.inf,np.inf),
     'pL':(0,np.inf),
     'pK':(0,np.inf),
-    'L':(0,np.inf),
     'K':(0,np.inf),
+    'L':(0,np.inf),
     'B':(-np.inf,np.inf),
     'wB':(-1,1),
     'GDPPI':(-np.inf,np.inf),
     'GDPreal':(-np.inf,np.inf), 
     'GDP':(-np.inf,np.inf),
-    'bKL':(0,np.inf),
     'R':(0,np.inf),
-
+    'bKL':(-np.inf,np.inf),
+    
+    'bKLj':(0,np.inf),    
     'Cjn0':(0,np.inf),
     'pCj':(0,np.inf),
     'Sj':(0,np.inf),
@@ -113,6 +123,9 @@ bounds={
     'Ctp':(0,np.inf),
     'Gtp':(0,np.inf),
     'Itp':(0,np.inf),
+    'pXtp':(0,np.inf),
+    'Xtp':(0,np.inf),
+    'Mtp':(0,np.inf),
     'alphaKj':(0,1),
     'alphaLj':(0,1),
     'aKLj':(0,1),

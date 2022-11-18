@@ -1,12 +1,13 @@
 import numpy as np
+import pandas as pd
 import sys
+import simple_calibration as cal
 from data import variables, parameters, bounds, N
 from import_csv import non_zero_index_G, non_zero_index_I, non_zero_index_C, non_zero_index_X, non_zero_index_M, non_zero_index_Yij
-
+import import_csv as imp
 sys.path.append('/home/rita/Documents/Stage/Code')
 import model_equations as eq
 from solvers import dict_minimize, dict_least_squares, dict_fsolve, dict_basinhopping, MyBounds
-
 
 for k in (pavars := {**parameters,**variables}).keys():
     if not isinstance(pavars[k], np.ndarray):
@@ -58,7 +59,7 @@ def system(var, par):
     augment_dict2D(d, 'Yij', non_zero_index_Yij, 'Yijn0')
 
     return np.hstack([
-        eq.eqKLj(KLj =d['KLj'], bKL=d['bKL'], Lj=d['Lj'], Kj=d['Kj'], alphaLj=d['alphaLj'], alphaKj=d['alphaKj']),
+        eq.eqKLj(KLj =d['KLj'],bKL=d['bKL'], bKLj=d['bKLj'], Lj=d['Lj'], Kj=d['Kj'], alphaLj=d['alphaLj'], alphaKj=d['alphaKj']),
         
         eq.eqFj(Fj=d['Lj'],pF=d['pL'],KLj=d['KLj'],pKLj= d['pKLj'],alphaFj=d['alphaLj']),
         
@@ -74,7 +75,7 @@ def system(var, par):
         
         eq.eqCESquantity(Xj=d['Dj'], Zj=d['Yj'], alphaXj=d['alphaDj'], alphaYj=d['alphaXj'], pXj=d['pDj'], pYj=d['pXj'], sigmaj=d['sigmaXj']),
         
-        eq.eqCET(Zj=d['Yj'], alphaXj=d['alphaXj'],alphaYj=d['alphaDj'],Xj=d['Xj'],Yj=d['Dj'],sigmaj=d['sigmaXj']),
+        eq.eqCESprice(pZj=d['pYj'],pXj=d['pXj'],pYj=d['pDj'],alphaXj=d['alphaXj'],alphaYj=d['alphaDj'],sigmaj=d['sigmaXj']),
         
         eq.eqCESquantity(Xj=d['Dj'], Zj=d['Sj'], alphaXj=d['betaDj'], alphaYj=d['betaMj'], pXj=d['pDj'], pYj=d['pMj'], sigmaj=d['sigmaSj']),
         
@@ -104,9 +105,13 @@ def system(var, par):
         
         eq.eqGDP(GDP=d['GDP'],pCj=d['pCj'],Cj=d['Cj'],Gj=d['Gj'],Ij=d['Ij'],pXj=d['pXj'],Xj=d['Xj'],pMj=d['pMj'],Mj=d['Mj']),
         
-        eq.eqGDPPI(GDPPI = d['GDPPI'], pCj=d['pCj'], pCtp= d['pCtp'], Cj= d['Cj'], Gj= d['Gj'], Ij= d['Ij'], Ctp= d['Ctp'], Gtp= d['Gtp'], Itp= d['Itp']),
+        eq.eqGDPPI(GDPPI = d['GDPPI'], pCj=d['pCj'], pXj=d['pXj'], pCtp= d['pCtp'], pXtp=d['pXtp'], Cj= d['Cj'], Gj= d['Gj'], Ij= d['Ij'], Xj=d['Xj'], Mj=d['Mj'], Ctp= d['Ctp'], Gtp= d['Gtp'], Itp= d['Itp'], Xtp=d['Xtp'], Mtp=d['Mtp']),
         
         eq.eqGDPreal(GDPreal=d['GDPreal'],GDP=d['GDP'], GDPPI=d['GDPPI']), #expected GDPPI time series
+        
+        eq.eqCPI(CPI = d['CPI'], pCj=d['pCj'], pCtp= d['pCtp'], Cj= d['Cj'], Ctp= d['Ctp']),
+        
+        eq.eqRreal(Rreal=d['Rreal'],R=d['R'], CPI=d['CPI']), #expected GDPPI time series
         
         ])
 
@@ -130,12 +135,9 @@ def bounds_dict(this_bounds,this_variables):
 def flatten_bounds_dict(this_bounds,this_variables):
     return np.vstack(list(bounds_dict(this_bounds,this_variables).values()))
 
-
 bounds_variables = [[row[i] for row in flatten_bounds_dict(bounds,variables)] for i in (0,1)]
 
-sol= dict_least_squares(system, variables, parameters, bounds_variables)
-
-
+sol= dict_least_squares(system, variables, parameters, bounds_variables, verb=2)
 
 # bounds_variables = flatten_bounds_dict(bounds, variables)
 # mybounds=MyBounds(bounds_variables)
@@ -143,13 +145,30 @@ sol= dict_least_squares(system, variables, parameters, bounds_variables)
 
 #solFS= dict_fsolve(system, variables, parameters)
 
-#print("\n \n solution: \n \n",sol.dvar)
-#print("\n \n parameters: \n \n",parameters)
-
 print("\n system of equations calculated at the solution found by least_square (an array of zeros is expected): \n \n", system(sol.dvar, parameters))
-print(sum(abs( system(sol.dvar, parameters))))
-
-
+print(max(abs( system(sol.dvar, parameters))))
 
 d = {**sol.dvar, **parameters}
+
+
+#EXPORT TO CSV
+augment_dict(sol.dvar, 'Gj', non_zero_index_G,'Gjn0')
+augment_dict(sol.dvar, 'Ij', non_zero_index_I, 'Ijn0')
+augment_dict(sol.dvar, 'Cj', non_zero_index_C, 'Cjn0')
+augment_dict(sol.dvar, 'Xj', non_zero_index_X, 'Xjn0')
+augment_dict(sol.dvar, 'Mj', non_zero_index_M, 'Mjn0')
+augment_dict2D(sol.dvar, 'Yij', non_zero_index_Yij, 'Yijn0')
+    
+    
+keysN=[k for k, v in sol.dvar.items() if np.shape(v) == np.shape(sol.dvar["Kj"])]
+keys1=[k for k, v in sol.dvar.items() if np.shape(v) == np.shape(sol.dvar["R"])]
+
+
+sol_N=pd.DataFrame({ key: sol.dvar[key] for key in keysN })
+sol_1=pd.DataFrame({ key: sol.dvar[key] for key in keys1 })
+sol_Yij=pd.DataFrame(sol.dvar["Yij"])
+
+sol_N.to_csv("results/classic_N.csv")
+sol_1.to_csv("results/classic_1.csv")
+sol_Yij.to_csv("results/classic_Yij.csv")    
 

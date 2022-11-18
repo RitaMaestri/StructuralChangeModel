@@ -31,6 +31,9 @@ def shorten(db):
 def clean_data(db):
     return shorten(db)
 
+sectors=employment_table.index.values[:-3]
+sectors_names=list(employment_table["Activity"][:-3].values)
+np.where(sectors=="DZ")[0].item()
 # consumptions
 households=employment_table["Ménages"]
 households=clean_data(households)
@@ -120,9 +123,10 @@ pDjDj=pSjSj-pMjMj
 
 #check goods poorly consumed by final consumers 
 
-quartile = np.percentile(employment_table['Ménages'], 25)
+quartile = np.percentile(households, 20)
 
-employment_table.loc[(employment_table['Ménages'] < quartile) & (employment_table['Ménages']>0)][['Activity','Ménages']]
+employment_table.loc[(employment_table['Ménages'] < quartile)][['Activity','Ménages']]
+
 
 #check for equilibrium
 
@@ -141,20 +145,29 @@ non_zero_index_Yij=np.array(np.where(pSiYij != 0))
 
 N=len(pLLj)
 
-#elasticità
+#trade elasticities
 
-sigmaXj=np.array([1]*N)
+export_elasticities=pd.read_csv("data/Export elasticities.csv")
 
-
-revenue_elasticities=pd.read_csv("data/revenue_elasticities.csv")
-
-epsilonRj=np.array(revenue_elasticities['Revenue elasticity of consumption'])
+sigmaXj=np.array(export_elasticities["elasticity"])
 
 Armington_elasticities=pd.read_csv("data/Armington_elasticities.csv")
 
 sigmaSj=np.array(Armington_elasticities[" elasticity"])
 
+#consumption elasticities
 
+consumption_elasticities=pd.read_csv("data/revenue_elasticities2.csv")
+
+epsilonRj=np.array(consumption_elasticities['Revenue elasticity of consumption'])
+
+epsilonPCj=np.array(consumption_elasticities['Price elasticity of consumption'])
+
+
+energy_intensity=pd.DataFrame(pSiYij[np.where(sectors=="DZ")[0].item()], index=sectors_names)/sum(pSiYij[np.where(sectors=="DZ")[0].item()])
+
+percentile=np.percentile(energy_intensity, 75)
+energy_intensity.loc[energy_intensity[0]>percentile]
 
 # for i in intermediate_cons_table.columns:
 #     for j in intermediate_cons_table.index:

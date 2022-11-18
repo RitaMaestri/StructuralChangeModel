@@ -62,13 +62,13 @@ def dict_minimize(f, dvar, dpar, bounds):
 
 ####################  LEAST_SQUARE  #########################
 
-def dict_least_squares(f, dvar, dpar,bounds):
+def dict_least_squares(f, dvar, dpar,bounds, verb=1):
     result = optimize.least_squares(
         lambda x,y: f(to_dict(x,dvar), to_dict(y,dpar)),# wrap the argument in a dict
         to_array(dvar), # unwrap the initial dictionary
         bounds=bounds,
         args= list([to_array(dpar)],),
-        verbose=2
+        verbose=verb
     )
     result.dvar= to_dict(result.x, dvar)
     result.d= {**result.dvar, **dpar}
@@ -103,7 +103,6 @@ def dict_basinhopping(f, dvar, dpar, mybounds):
     result.dvar= to_dict(result.x, dvar)
     result.d= {**result.dvar, **dpar}
     return result
-
 
 
 
