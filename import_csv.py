@@ -67,10 +67,10 @@ com_margins=shorten(com_margins)
 
 #distribute sales taxes and commercial margins
 total_domestic_production=households+government+investment+export
-pCjCj=pCjCj-(sales_taxes+com_margins)*(pCjCj/total_domestic_production)
-pCjGj=pCjGj-(sales_taxes+com_margins)*(pCjGj/total_domestic_production)
-pCjIj=pCjIj-(sales_taxes+com_margins)*(pCjIj/total_domestic_production)
-pXjXj=pXjXj-(sales_taxes+com_margins)*(pXjXj/total_domestic_production)
+pCjCj=pCjCj-(com_margins)*(pCjCj/total_domestic_production)
+pCjGj=pCjGj-(com_margins)*(pCjGj/total_domestic_production)
+pCjIj=pCjIj-(com_margins)*(pCjIj/total_domestic_production)
+pXjXj=pXjXj-(com_margins)*(pXjXj/total_domestic_production)
 
 
 #production
@@ -84,13 +84,14 @@ pKKj=shorten(pKKj)
 transfer = exploitation_table["Total des transferts"]
 transfer=shorten(transfer)
 
-taxes_production=exploitation_table["Autres impôts sur la production"]+exploitation_table["Autres subv. sur la production"]
-taxes_production=shorten(taxes_production)
+production_taxes=exploitation_table["Autres impôts sur la production"]+exploitation_table["Autres subv. sur la production"]
+production_taxes=shorten(production_taxes)
 
-proportionL=pLLj/(pKKj+pLLj)
+# proportionL=pLLj/(pKKj+pLLj)
 
-pLLj=pLLj+(taxes_production+transfer)*proportionL
-pKKj=pKKj+(taxes_production+transfer)*(1-proportionL)
+
+# pLLj=pLLj+(taxes_production+transfer)*proportionL
+# pKKj=pKKj+(taxes_production+transfer)*(1-proportionL)
 
 
 
@@ -109,7 +110,7 @@ pSiYij.loc["HZ"]= pSiYij.loc["HZ"]+trans_margins
 pSiYij=pSiYij.to_numpy()
 
 #gross domestic product
-pYjYj=pSiYij.sum(axis=0)+pLLj+pKKj
+pYjYj=pSiYij.sum(axis=0)+pLLj+pKKj+production_taxes
 
 #KL good
 pKLjKLj=pKKj+pLLj
@@ -130,7 +131,11 @@ employment_table.loc[(employment_table['Ménages'] < quartile)][['Activity','Mé
 
 #check for equilibrium
 
-cons_cost_diff=pSiYij.sum(axis=0)+pLLj+pKKj-(pSiYij.sum(axis=1)+pCjCj+pCjGj+pCjIj-pMjMj+pXjXj)
+cons_cost_diff= (
+    pSiYij.sum(axis=0)+pLLj+pKKj+production_taxes+sales_taxes-(
+    pSiYij.sum(axis=1)+pCjCj+pCjGj+pCjIj-pMjMj+pXjXj
+    )
+    )
 
 #list(exploitation_table.index[:-1])
 cons_cost_diff=dict(zip(list(exploitation_table.index[:-1]),cons_cost_diff))

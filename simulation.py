@@ -69,23 +69,23 @@ def system(var, par):
         
         eq.eqKL(KLj=d['KLj'],aKLj=d['aKLj'],Yj=d['Yj']),
         
-        eq.eqpYj(pYj=d['pYj'],pSj=d['pSj'],aKLj=d['aKLj'],pKLj=d['pKLj'],aYij=d['aYij']),
+        eq.eqpYj(pYj=d['pYj'],pSj=d['pSj'],aKLj=d['aKLj'],pKLj=d['pKLj'],aYij=d['aYij'], tauYj=d['tauYj']),
         
-        eq.eqCESquantity(Xj=d['Xj'], Zj=d['Yj'], alphaXj=d['alphaXj'], alphaYj=d['alphaDj'], pXj=d['pXj'], pYj=d['pDj'], sigmaj=d['sigmaXj'], _index=non_zero_index_X),#e-5
+        #eq.eqCESquantity(Xj=d['Xj'], Zj=d['Yj'], alphaXj=d['alphaXj'], alphaYj=d['alphaDj'], pXj=d['pXj'], pYj=d['pDj'], sigmaj=d['sigmaXj'], _index=non_zero_index_X),#e-5
         
-        eq.eqCESquantity(Xj=d['Dj'], Zj=d['Yj'], alphaXj=d['alphaDj'], alphaYj=d['alphaXj'], pXj=d['pDj'], pYj=d['pXj'], sigmaj=d['sigmaXj']),
+        #eq.eqCESquantity(Xj=d['Dj'], Zj=d['Yj'], alphaXj=d['alphaDj'], alphaYj=d['alphaXj'], pXj=d['pDj'], pYj=d['pXj'], sigmaj=d['sigmaXj']),
         
-        eq.eqCESprice(pZj=d['pYj'],pXj=d['pXj'],pYj=d['pDj'],alphaXj=d['alphaXj'],alphaYj=d['alphaDj'],sigmaj=d['sigmaXj']),
+        #eq.eqCESprice(pZj=d['pYj'],pXj=d['pXj'],pYj=d['pDj'],alphaXj=d['alphaXj'],alphaYj=d['alphaDj'],sigmaj=d['sigmaXj']),
         
         eq.eqCESquantity(Xj=d['Dj'], Zj=d['Sj'], alphaXj=d['betaDj'], alphaYj=d['betaMj'], pXj=d['pDj'], pYj=d['pMj'], sigmaj=d['sigmaSj']),
         
         eq.eqCESquantity(Xj=d['Mj'], Zj=d['Sj'], alphaXj=d['betaMj'], alphaYj=d['betaDj'], pXj=d['pMj'], pYj=d['pDj'], sigmaj=d['sigmaSj'],_index=non_zero_index_M),
         
-        eq.eqCESprice(pZj=d['pSj'],pXj=d['pMj'],pYj=d['pDj'],alphaXj=d['betaMj'],alphaYj=d['betaDj'],sigmaj=d['sigmaSj']),
+        #eq.eqCESprice(pZj=d['pSj'],pXj=d['pMj'],pYj=d['pDj'],alphaXj=d['betaMj'],alphaYj=d['betaDj'],sigmaj=d['sigmaSj']),
         
         eq.eqB(B=d['B'],pXj=d['pXj'],Xj=d['Xj'],pMj=d['pMj'],Mj=d['Mj']),
         
-        eq.eqwB(X=d['B'],wX=d['wB'],GDP=d['GDP']),
+        #eq.eqwB(X=d['B'],wX=d['wB'],GDP=d['GDP']),
                
         eq.eqCj(Cj=d['Cj'],alphaCj=d['alphaCj'],pCj=d['pCj'],R=d['R'], _index=non_zero_index_C),
         
@@ -93,13 +93,13 @@ def system(var, par):
         
         eq.eqw(pXj=d['pCj'],Xj=d['Ij'],wXj=d['wIj'],GDP=d['GDP'], _index=non_zero_index_I),
         
-        eq.eqSj(Sj=d['Sj'],Cj=d['Cj'], Gj=d['Gj'], Ij=d['Ij'], Yij=d['Yij']),
+        #eq.eqSj(Sj=d['Sj'],Cj=d['Cj'], Gj=d['Gj'], Ij=d['Ij'], Yij=d['Yij']),
         
         eq.eqF(F=d['L'],Fj=d['Lj']),
         
         eq.eqF(F=d['K'],Fj=d['Kj']),
         
-        eq.eqID(x=d['pCj'],y=d['pSj']),
+        #eq.eqID(x=d['pCj'],y=d['pSj']),
         
         eq.eqID(x=d['pXj'],y=d['pMj']),
         
@@ -113,6 +113,14 @@ def system(var, par):
         
         eq.eqRreal(Rreal=d['Rreal'],R=d['R'], CPI=d['CPI']), #expected GDPPI time series
         
+        eq.eqsD(sD=d['sD'], Ij=d['Ij'], pCj=d['pCj'], Mj=d['Mj'], Xj=d['Xj'], pXj=d['pXj'], GDP=d['GDP']),
+        
+        #eq.eqT(T=d['T'], tauYj=d['tauYj'], pYj=d['pYj'], Yj=d['Yj'], tauSj=d['tauSj'], pCj=d['pCj'], Yij=d['Yij'], Cj=d['Cj'], Gj=d['Gj'], tauL=d['tauL'], pL=d['pL'], L=d['L']),
+        
+        eq.eqPriceTax(pGross=d['pCj'], pNet=d['pSj'], tau=d['tauSj']),
+
+        eq.eqPriceTax(pGross=d['pL'], pNet=d['w'], tau=d['tauL']),
+
         ])
 
 len_var=len(np.hstack([x.flatten() for x in list(variables.values())]))

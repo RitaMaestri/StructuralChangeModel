@@ -12,14 +12,16 @@ variables = {
     'B':np.array(cal.B0),
     'R':np.array(cal.R0),
     'bKL':np.array([1]),
-    
     'CPI':np.array([1]),
     'Rreal':np.array(cal.R0),
     'GDPPI':np.array([1]),
     'GDP':cal.GDPreal,
-
-
-    'Kj':0.9*cal.Kj0,
+    'T':cal.T0,
+    'sD':cal.sD0,
+    
+    'w':np.array([cal.w]),
+    
+    'Kj':cal.Kj0,
     'Lj':cal.Lj0,
     
     'KLj':cal.KLj0,
@@ -28,24 +30,24 @@ variables = {
     'Yj':cal.Yj0,
     'pYj':cal.pYj0, 
     
-    'Cjn0':cal.Cj0[cal.Cj0!=0],
-    'pCj':cal.pCj0, 
+    'Cjn0': cal.Cj0[cal.Cj0!=0],
+    'pCj': cal.pCj0, 
     
-    'Mjn0':cal.Mj0[cal.Mj0!=0],
-    'pMj':cal.pMj0,
+    'Mjn0': cal.Mj0[cal.Mj0!=0],
+    'pMj': cal.pMj0,
     
-    'Xjn0':cal.Xj0[cal.Xj0!=0],
+    'Xjn0': cal.Xj0[cal.Xj0!=0],
     
-    'Dj':cal.Dj0, 
-    'pDj':cal.pDj0,
+    'Dj': cal.Dj0, 
+    'pDj': cal.pDj0,
 
-    'Sj':cal.Sj0,
-    'pSj':cal.pCj0,
+    'Sj': cal.Sj0,
+    'pSj': cal.pSj0,
 
-    'Gjn0':cal.Gj0[cal.Gj0!=0],
-    'Ijn0':cal.Ij0[cal.Ij0!=0],
+    'Gjn0': cal.Gj0[cal.Gj0!=0],
+    'Ijn0': cal.Ij0[cal.Ij0!=0],
     
-    'Yijn0':cal.Yij0[cal.Yij0!=0]
+    'Yijn0': cal.Yij0[cal.Yij0!=0]
     }
 
 
@@ -55,11 +57,13 @@ parameters= {
     'K':cal.K0*(1+cal.GDPgrowth),
     'L':cal.L0*(1+cal.GDPgrowth),
     'GDPreal':cal.GDPreal,
+    'tauL':np.array([cal.tauL0]),
 
+    'tauSj':cal.tauSj0,
+    'tauYj':cal.tauYj0,
 
-    
     'pXj':cal.pXj,
-    
+
     'bKLj':cal.bKLj,
     'pCtp':cal.pCjtp,
     'Ctp':cal.Ctp,
@@ -90,6 +94,7 @@ bounds={
     'CPI':(-np.inf,np.inf),
     'pL':(0,np.inf),
     'pK':(0,np.inf),
+    'w':(0,np.inf),
     'K':(0,np.inf),
     'L':(0,np.inf),
     'B':(-np.inf,np.inf),
@@ -99,6 +104,10 @@ bounds={
     'GDP':(-np.inf,np.inf),
     'R':(0,np.inf),
     'bKL':(-np.inf,np.inf),
+    'tauL':(0,1),
+    'tauSj':(-1,1),
+    'tauYj':(-1,1),
+    'T':(-np.inf,np.inf),
     
     'bKLj':(0,np.inf),    
     'Cjn0':(0,np.inf),
@@ -128,7 +137,7 @@ bounds={
     'Mtp':(0,np.inf),
     'alphaKj':(0,1),
     'alphaLj':(0,1),
-    'aKLj':(0,1),
+    'aKLj':(0,np.inf),
     'alphaCj':(0,1),
     'alphaXj':(0,np.inf),
     'alphaDj':(0,np.inf),
@@ -138,6 +147,7 @@ bounds={
     'sigmaSj':(-np.inf,np.inf),
     'wGj':(-1,1),
     'wIj':(-1,1),
+    'sD':(0,1),
     
     'aYij':(0,np.inf),
     'Yijn0':(0,np.inf),

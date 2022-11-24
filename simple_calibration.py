@@ -11,42 +11,50 @@ def division_by_zero(num,den):
     result[den!=0]=num[den!=0]/den[den!=0]
     return result
 
-
 pYj0=np.array([100]*N)
-pSij0=np.array([100]*N)
+pSj0=np.array([100]*N)
 pKLj0=np.array([100]*N)
 pXj0=np.array([100]*N)
 pMj0=np.array([100]*N)
 pDj0=np.array([100]*N)
-pCj0=np.array([100]*N)
 pXj=np.array([100]*N)
-pL0=100
 pK0=100
+w=100
     
+tauYj0=imp.production_taxes/(imp.pYjYj-imp.production_taxes)
+tauSj0 = imp.sales_taxes / (imp.pSiYij.sum(axis=1)+imp.pCjCj+imp.pCjGj - imp.sales_taxes)
+tauL0 = 0
+
+pCj0=(1+tauSj0)*pSj0
+pL0=(1+tauL0)*w
+
 
 Cj0=imp.pCjCj/pCj0
 Gj0=imp.pCjGj/pCj0
 Ij0=imp.pCjIj/pCj0
-Yij0=imp.pSiYij/pSij0[:,None]
-Yj0=imp.pYjYj/pYj0
+Yij0=imp.pSiYij/pSj0[:,None]
 KLj0=imp.pKLjKLj/pKLj0
 Xj0=imp.pXjXj/pXj0
 Mj0=imp.pMjMj/pMj0
 Dj0=imp.pDjDj/pDj0
 Sj0=(imp.pCjCj+imp.pCjGj+imp.pCjIj+imp.pSiYij.sum(axis=1))/pCj0
-Lj0=imp.pLLj/pL0
-Kj0=imp.pKKj/pK0
+
+Lj0= imp.pLLj / pL0
+Kj0= imp.pKKj / pK0
+Yj0=(imp.pKLjKLj+imp.pSiYij.sum(axis=0))*(1+tauYj0)/pYj0
+
+
+T0= np.array([sum(imp.production_taxes+imp.sales_taxes)])
+
 L0=np.array([sum(Lj0)])
 K0=np.array([sum(Kj0)])
+
 
 B0=np.array([sum(imp.pXjXj)-sum(imp.pMjMj)])
 
 R0= np.array([sum(imp.pCjCj)])
 
 GDP0= np.array([sum(imp.pCjCj+imp.pCjGj+imp.pCjIj+imp.pXjXj-imp.pMjMj)])
-
-
-
 
 
 # parameter definitions
@@ -64,7 +72,7 @@ alphaLj = imp.pLLj/imp.pKLjKLj
 
 alphaKj = imp.pKKj/imp.pKLjKLj
 
-bKLj=KLj0/(np.float_power(Lj0, alphaLj)* np.float_power(Kj0, alphaKj))
+bKLj=KLj0/(np.float_power(Lj0,alphaLj) * np.float_power(Kj0,alphaKj))
 
 aYij= Yij0 / Yj0[None,:]
 
@@ -85,10 +93,6 @@ wB = B0/GDP0
 wGj = imp.pCjGj/GDP0
 
 wIj = imp.pCjIj/GDP0
-
-
-
-
 
 GDPreal=GDP0*(1+GDPgrowth)
 
@@ -112,10 +116,7 @@ betaRj= (imp.epsilonPCj+1)/(alphaCj-1)
 
 epsilonRj=imp.epsilonRj
 
-bKL0=(imp.pKKj+imp.pLLj)/(pKLj0*np.float_power(Lj0,alphaLj)*np.float_power(Kj0,alphaKj))
-
-
-
+sD0=sum(imp.pCjIj+imp.pXjXj-imp.pMjMj)/GDP0
 
 
 

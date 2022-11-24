@@ -9,7 +9,7 @@ def eqKLj(KLj,bKL, bKLj, Lj, Kj, alphaLj, alphaKj):
     #print("eqKLj")
 
     zero = -1 + KLj / (
-        bKL*bKLj*np.float_power(Lj,alphaLj) * np.float_power(Kj,alphaKj)
+        bKL *bKLj*np.float_power(Lj,alphaLj) * np.float_power(Kj,alphaKj)
     )
 
     return zero
@@ -49,12 +49,12 @@ def eqKL(KLj,aKLj,Yj):
     return zero
 
 
-def eqpYj(pYj,pSj,aKLj,pKLj,aYij):
+def eqpYj(pYj,pSj,aKLj,pKLj,aYij, tauYj):
 
     pSjd=np.diag(pSj)
 
     zero= -1 + pYj / (
-        ( aKLj * pKLj + np.dot(pSjd,aYij).sum(axis=0) ) #AXIS=1 sum over the rows CHECKED
+        ( aKLj * pKLj + np.dot(pSjd,aYij).sum(axis=0) )*(1+tauYj) #AXIS=1 sum over the rows CHECKED
     )
 
     return zero
@@ -216,7 +216,7 @@ def eqCPI(CPI,pCj,pCtp,Cj,Ctp):
 
 #GDPPI is the GDPPI time series
 def eqGDPreal(GDPreal, GDP, GDPPI):
-    GDP.item()
+    GDP=GDP.item()
     zero=-1 + GDPreal /(
         GDP / np.prod(GDPPI)
     )
@@ -235,13 +235,9 @@ def eqRreal(Rreal, R, CPI):
 def eqCalibi(pX, Xj, data, _index = None):
     #print("eqCalibi")
     if isinstance(_index, np.ndarray):
-        
-        zero = -1 + data[_index] / (pX*Xj)[_index]#QUI
-
+        zero = -1 + data[_index] / (pX*Xj)[_index] #QUI
     else:
-
         zero = -1 + data / (pX*Xj)
-        
 
     return zero
 
@@ -267,6 +263,28 @@ def eqCETquantity(Xj,Yj,alphaXj,pXj,pYj,sigmaj):
     )
 
     return zero
+
+def eqsD(sD,Ij,pCj, Mj, Xj, pXj, GDP):
+    zero = -1 + sD/(
+        sum(Ij*pCj+(Xj-Mj)*pXj)/GDP
+        )
+    return zero
+
+def eqT(T,tauYj, pYj, Yj, tauSj, pCj, Yij, Cj, Gj, tauL, pL, L):
+    zero = - 1 + T / (
+        sum( tauYj*pYj*Yj + tauSj*pCj*(Yij.sum(axis=1)+Cj+Gj) ) + tauL*pL*L
+        )
+    return zero
+
+def eqPriceTax(pGross,pNet, tau):
+    zero = - 1 + pGross / (
+        pNet*(1+tau)
+        )
+    return zero
+
+
+
+
 
 # def eqCPI(GDPPI,pCj,pCtp,Cj,Gj,Ij,Ctp,Gtp,Itp):
 
