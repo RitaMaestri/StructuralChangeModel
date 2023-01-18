@@ -87,36 +87,36 @@ transfer=shorten(transfer)
 production_taxes=exploitation_table["Autres impôts sur la production"]+exploitation_table["Autres subv. sur la production"]
 production_taxes=shorten(production_taxes)
 
-# proportionL=pLLj/(pKKj+pLLj)
+proportionL=pLLj/(pKKj+pLLj)
 
 
-# pLLj=pLLj+(taxes_production+transfer)*proportionL
-# pKKj=pKKj+(taxes_production+transfer)*(1-proportionL)
+pLLj=pLLj+(transfer)*proportionL
+pKKj=pKKj+(transfer)*(1-proportionL)
 
 
 
 #intermediate consumption
-pSiYij=intermediate_cons_table
-pSiYij=pSiYij.drop(["TOTAL" ],axis=1)
-pSiYij=pSiYij.drop(["PCHTR ", "PCAFAB","TOTAL "],axis=0)
-pSiYij.astype(float)
+pCiYij=intermediate_cons_table
+pCiYij=pCiYij.drop(["TOTAL" ],axis=1)
+pCiYij=pCiYij.drop(["PCHTR ", "PCAFAB","TOTAL "],axis=0)
+pCiYij.astype(float)
 
 trans_margins= resources_table["Marges de transport"]
 trans_margins=shorten(trans_margins)
 
-#pSiYij.loc["GZ"]= pSiYij.loc["GZ"]+com_margins
-pSiYij.loc["HZ"]= pSiYij.loc["HZ"]+trans_margins
+#pCiYij.loc["GZ"]= pCiYij.loc["GZ"]+com_margins
+pCiYij.loc["HZ"]= pCiYij.loc["HZ"]+trans_margins
 
-pSiYij=pSiYij.to_numpy()
+pCiYij=pCiYij.to_numpy()
 
 #gross domestic product
-pYjYj=pSiYij.sum(axis=0)+pLLj+pKKj+production_taxes
+pYjYj=pCiYij.sum(axis=0)+pLLj+pKKj+production_taxes
 
 #KL good
 pKLjKLj=pKKj+pLLj
 
 #Armington good
-pSjSj=pCjCj+pCjGj+pCjIj+pSiYij.sum(axis=1)
+pSjSj=pCjCj+pCjGj+pCjIj+pCiYij.sum(axis=1)-sales_taxes
 
 #domestic good
 pDjDj=pSjSj-pMjMj
@@ -132,20 +132,39 @@ employment_table.loc[(employment_table['Ménages'] < quartile)][['Activity','Mé
 #check for equilibrium
 
 cons_cost_diff= (
-    pSiYij.sum(axis=0)+pLLj+pKKj+production_taxes+sales_taxes-(
-    pSiYij.sum(axis=1)+pCjCj+pCjGj+pCjIj-pMjMj+pXjXj
+    pCiYij.sum(axis=0)+pLLj+pKKj+production_taxes+sales_taxes-(
+    pCiYij.sum(axis=1)+pCjCj+pCjGj+pCjIj-pMjMj+pXjXj
     )
     )
 
 #list(exploitation_table.index[:-1])
-cons_cost_diff=dict(zip(list(exploitation_table.index[:-1]),cons_cost_diff))
+#cons_cost_diff=dict(zip(list(exploitation_table.index[:-1]),cons_cost_diff))
+
+total_domestic_production=pCjCj+pCjGj+pCjIj
+pCjCj=pCjCj+(cons_cost_diff)*(pCjCj/total_domestic_production)
+pCjGj=pCjGj+(cons_cost_diff)*(pCjGj/total_domestic_production)
+pCjIj=pCjIj+(cons_cost_diff)*(pCjIj/total_domestic_production)
+
+diff_final= (
+    pCiYij.sum(axis=0)+pLLj+pKKj+production_taxes+sales_taxes-(
+    pCiYij.sum(axis=1)+pCjCj+pCjGj+pCjIj-pMjMj+pXjXj
+    )
+    )
+
+
+pSjSj=pCjCj+pCjGj+pCjIj+pCiYij.sum(axis=1)-sales_taxes
+
+
+pDjDj=pSjSj-pMjMj
+
+
 
 non_zero_index_G=np.array(np.where(pCjGj != 0)).flatten()
 non_zero_index_I=np.array(np.where(pCjIj != 0)).flatten()
 non_zero_index_X=np.array(np.where(pXjXj != 0)).flatten()
 non_zero_index_M=np.array(np.where(pMjMj != 0)).flatten()
 non_zero_index_C=np.array(np.where(pCjCj != 0)).flatten()
-non_zero_index_Yij=np.array(np.where(pSiYij != 0))
+non_zero_index_Yij=np.array(np.where(pCiYij != 0))
 
 
 N=len(pLLj)
@@ -169,7 +188,7 @@ epsilonRj=np.array(consumption_elasticities['Revenue elasticity of consumption']
 epsilonPCj=np.array(consumption_elasticities['Price elasticity of consumption'])
 
 
-energy_intensity=pd.DataFrame(pSiYij[np.where(sectors=="DZ")[0].item()], index=sectors_names)/sum(pSiYij[np.where(sectors=="DZ")[0].item()])
+energy_intensity=pd.DataFrame(pCiYij[np.where(sectors=="DZ")[0].item()], index=sectors_names)/sum(pCiYij[np.where(sectors=="DZ")[0].item()])
 
 percentile=np.percentile(energy_intensity, 75)
 energy_intensity.loc[energy_intensity[0]>percentile]
@@ -179,9 +198,9 @@ energy_intensity.loc[energy_intensity[0]>percentile]
 #         if intermediate_cons_table[i][j]<0:
 #             print(i,j)
             
-# for i in range(len(pSiYij)):
-#     for j in range(len(pSiYij[0])):
-#         if pSiYij[i][j]<0:
+# for i in range(len(pCiYij)):
+#     for j in range(len(pCiYij[0])):
+#         if pCiYij[i][j]<0:
 #             print(i,j)            
 
 

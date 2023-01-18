@@ -49,12 +49,12 @@ def eqKL(KLj,aKLj,Yj):
     return zero
 
 
-def eqpYj(pYj,pSj,aKLj,pKLj,aYij, tauYj):
+def eqpYj(pYj,pCj,aKLj,pKLj,aYij, tauYj):
 
-    pSjd=np.diag(pSj)
+    pCjd=np.diag(pCj)
 
     zero= -1 + pYj / (
-        ( aKLj * pKLj + np.dot(pSjd,aYij).sum(axis=0) )*(1+tauYj) #AXIS=1 sum over the rows CHECKED
+        ( aKLj * pKLj + np.dot(pCjd,aYij).sum(axis=0) )*(1+tauYj) #AXIS=1 sum over the rows CHECKED
     )
 
     return zero
@@ -81,8 +81,7 @@ def eqCESquantity(Xj, Zj, alphaXj, alphaYj, pXj, pYj, sigmaj, _index=None):
         pXj=pXj[_index]
         pYj=pYj[_index]
         sigmaj=sigmaj[_index]
-        
-    
+
     #is it correct??? TODO
     partj = np.float_power(alphaXj,sigmaj, out=np.zeros(len(alphaXj)),where=(alphaXj!=0)) * np.float_power(pXj,1-sigmaj) + np.float_power(alphaYj,sigmaj, out=np.zeros(len(alphaYj)),where=(alphaYj!=0))* np.float_power(pYj,1-sigmaj)
     
@@ -110,19 +109,19 @@ def eqB(B,pXj,Xj,pMj,Mj):
     return zero
 
 
-def eqwB(X,wX,GDP):
+def eqw(X,wX,GDP):
     
     zero = -1 + X / (wX*GDP)
     
     return(zero)
 
 ##check for the case where the index is an empty array! TODO
-def eqCj(Cj,alphaCj,pCj,R,_index=None):
+def eqCobbDouglasj(Qj,alphaQj,pCj,Q,_index=None):
     
     if isinstance(_index, np.ndarray):
-        zero= -1 + Cj[_index] / ( alphaCj[_index] * (R/ pCj[_index]) )
+        zero= -1 + Qj[_index] / ( alphaQj[_index] * (Q/ pCj[_index]) )
     else:
-        zero= -1 + Cj / ( alphaCj * (R/ pCj) )
+        zero= -1 + Qj / ( alphaQj * (Q/ pCj) )
     
     return zero
 
@@ -131,7 +130,7 @@ def eqalphaCj(alphaCj,R,pCj,alphaCDESj,betaRj, _index=None):
         zero= -1 + alphaCj[_index] / (alphaCDESj * np.float_power( R/pCj , betaRj ) / sum(alphaCDESj * np.float_power( R/pCj , betaRj )))[_index]
     else:
         zero= -1 + alphaCj / (alphaCDESj * np.float_power( R/pCj , betaRj ) / sum(alphaCDESj * np.float_power( R/pCj , betaRj )))
-    
+
     return zero
 
 
@@ -139,21 +138,32 @@ def eqR(R,Cj,pCj):
 
     zero = -1 + R / sum(Cj*pCj)
 
-    return zero
-
-
-def eqw(pXj,Xj,wXj,GDP, _index = None):
-    
-    if isinstance(_index, np.ndarray):
-        deno = (pXj * Xj)[_index]
-        nume = (wXj * GDP)[_index]
-    else:
-        deno = (pXj * Xj)
-        nume = (wXj * GDP)
-    
-    zero = -1 + nume / deno
+    return zero / sum(Cj*pCj)
 
     return zero
+
+#eq omegaG/I: fixed GDP fraction
+
+# def eqw(pXj,Xj,wXj,GDP, _index = None):
+    
+#     if isinstance(_index, np.ndarray):
+#         deno = (pXj * Xj)[_index]
+#         nume = (wXj * GDP)[_index]
+#     else:
+#         deno = (pXj * Xj)
+#         nume = (wXj * GDP)
+    
+#     zero = -1 + nume / deno
+
+#     return zero
+
+
+def eqTotalConsumptions(pCj, Qj, Q):
+    
+    zero= - 1 + sum(pCj*Qj)/ Q
+    
+    return zero
+
 
 
 def eqSj(Sj,Cj,Gj,Ij,Yij):
@@ -282,6 +292,11 @@ def eqPriceTax(pGross,pNet, tau):
         )
     return zero
 
+def eqI(I,sL,w,L,sK,K,pK,sG,T,G,B):
+    zero = - 1 + I / ( sL*w*L + sK*K*pK + sG*(T-G) - B )
+    return zero
+
+#def GPI(GDPPI,pCj,pCtp,pXj,pXtp,Cj,Gj,Ij,Xj,Mj,Yij,Ctp,Gtp,Itp,Xtp,Mtp,Yijtp,idxC=len(Cj),idxG,idxI,idxX)
 
 
 
