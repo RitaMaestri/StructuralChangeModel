@@ -26,6 +26,7 @@ class variablesSystem:
     def assignClosure(self, commonDict):
         
         sKLneoclassic = (cal.I0+cal.B0)/(cal.w*cal.L0+cal.pK0*cal.pK0*cal.K0)
+        sLkaldorian = (cal.I0+cal.B0)/(cal.w*cal.L0)
         
         if self.closure == "johansen":
             return {**commonDict, 
@@ -38,6 +39,16 @@ class variablesSystem:
                             'sL':Variable("exo", sKLneoclassic),
                             'sG':Variable("exo", np.array([0]) )}
                          }
+        elif self.closure == "kaldorian":
+            return {**commonDict, 
+                         **{'l':Variable("endo", cal.l0),
+                            'alphalj':Variable("exo", cal.alphalj),
+                            'sK':Variable("exo", np.array([0])),
+                            'sL':Variable("exo", sLkaldorian),
+                            'sG':Variable("exo", np.array([0]) )},
+                            'wI':Variable("exo",cal.wI)
+                         }
+        
         else: 
             print("this closure doesn't exist")
             sys.exit()
@@ -146,6 +157,7 @@ bounds={
     'R':(0,np.inf),
     'I':(0,np.inf),
     'G':(0,np.inf),
+    'l':(0,np.inf),
     'bKL':(-np.inf,np.inf),
     'tauL':(0,1),
     'tauSj':(-1,1),
@@ -186,6 +198,7 @@ bounds={
     'alphaDj':(0,np.inf),
     'alphaGj':(0,np.inf),
     'alphaIj':(0,np.inf),    
+    'alphalj':(0,1),  
     'betaDj':(0,np.inf),
     'betaMj':(0,np.inf),
     'sigmaXj':(-np.inf,np.inf),

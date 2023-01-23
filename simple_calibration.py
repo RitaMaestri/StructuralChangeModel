@@ -47,8 +47,8 @@ Yj0=(imp.pKLjKLj+imp.pCiYij.sum(axis=0))*(1+tauYj0)/pYj0
 T0= np.array([sum(imp.production_taxes+imp.sales_taxes)])
 
 L0=np.array([sum(Lj0)])
-K0=np.array([sum(Kj0)])
 
+K0=np.array([sum(Kj0)])
 
 B0=np.array([sum(imp.pXjXj)-sum(imp.pMjMj)])
 
@@ -57,6 +57,8 @@ R0= np.array([sum(imp.pCjCj)])
 I0= np.array([sum(imp.pCjIj)])
 
 G0= np.array([sum(imp.pCjGj)])
+
+l0=np.array([sum(Lj0/KLj0)])
 
 GDP0= np.array([sum(imp.pCjCj+imp.pCjGj+imp.pCjIj+imp.pXjXj-imp.pMjMj)])
 
@@ -94,6 +96,8 @@ alphaCj=imp.pCjCj/R0
 alphaGj=imp.pCjGj/G0
 
 alphaIj=imp.pCjIj/I0
+
+alphalj=Lj0/(KLj0*l0)
 
 wB = B0/GDP0
 

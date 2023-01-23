@@ -26,6 +26,11 @@ def eqFj(Fj,pF,KLj,pKLj,alphaFj):
     return zero
 
 
+def eqlj(l, alphalj, KLj, Lj):
+    zero = - 1 + KLj * alphalj * l /Lj
+    return zero
+
+
 def eqYij(Yij,aYij,Yj, _index=None):
     
     Yjd=np.diag(Yj)

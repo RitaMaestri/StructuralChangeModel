@@ -1,6 +1,6 @@
-####### define closure : "johansen" , "neoclassic" ########
+####### define closure : "johansen" , "neoclassic", "kaldorian" ########
 
-closure="neoclassic"
+closure="johansen"
 
 import numpy as np
 import pandas as pd
@@ -65,9 +65,7 @@ def system(var, par):
 
     common_equations= np.hstack([
         eq.eqKLj(KLj =d['KLj'],bKL=d['bKL'], bKLj=d['bKLj'], Lj=d['Lj'], Kj=d['Kj'], alphaLj=d['alphaLj'], alphaKj=d['alphaKj']),
-        
-        eq.eqFj(Fj=d['Lj'],pF=d['pL'],KLj=d['KLj'],pKLj= d['pKLj'],alphaFj=d['alphaLj']),
-        
+                
         eq.eqFj(Fj=d['Kj'],pF=d['pK'],KLj=d['KLj'],pKLj=d['pKLj'],alphaFj=d['alphaKj']),        
         
         eq.eqYij(Yij=d['Yij'],aYij=d['aYij'],Yj=d['Yj'], _index=non_zero_index_Yij),
@@ -135,7 +133,8 @@ def system(var, par):
                                         eq.eqsD(sD=d['sD'], Ij=d['Ij'], pCj=d['pCj'], Mj=d['Mj'], Xj=d['Xj'], pXj=d['pXj'], GDP=d['GDP']),
                                         
                                         eq.eqw(X=d['I'],wX=d['wI'],GDP=d['GDP']),
-                        
+                                        
+                                        eq.eqFj(Fj=d['Lj'],pF=d['pL'],KLj=d['KLj'],pKLj= d['pKLj'],alphaFj=d['alphaLj']),
                          ])
                         ])
     
@@ -143,7 +142,20 @@ def system(var, par):
     elif closure=="neoclassic":
         return np.hstack([common_equations,        
                           np.hstack([
-                                      eq.eqI(I=d['I'], sL=d['sL'], w=d['w'], L=d['L'], sK=d['sK'], K=d['K'], pK=d['pK'], sG=d['sG'], T=d['T'], G=d['G'], B=d['B'])
+                                      eq.eqI(I=d['I'], sL=d['sL'], w=d['w'], L=d['L'], sK=d['sK'], K=d['K'], pK=d['pK'], sG=d['sG'], T=d['T'], G=d['G'], B=d['B']),
+                                      
+                                      eq.eqFj(Fj=d['Lj'],pF=d['pL'],KLj=d['KLj'],pKLj= d['pKLj'],alphaFj=d['alphaLj']),
+                          ])
+                         ])
+    
+    elif closure=="kaldorian":
+        return np.hstack([common_equations,        
+                          np.hstack([
+                                      eq.eqlj(l=d['l'], alphalj=d['alphalj'], KLj=d['KLj'], Lj=d['Lj']),
+                                      
+                                      eq.eqI(I=d['I'], sL=d['sL'], w=d['w'], L=d['L'], sK=d['sK'], K=d['K'], pK=d['pK'], sG=d['sG'], T=d['T'], G=d['G'], B=d['B']),
+                                      
+                                      eq.eqw(X=d['I'],wX=d['wI'],GDP=d['GDP']),
                           ])
                          ])
     
