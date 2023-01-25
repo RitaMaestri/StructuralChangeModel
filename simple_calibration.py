@@ -4,7 +4,7 @@ from import_csv import N
 from solvers import dict_least_squares
 import pandas as pd
 
-GDPgrowth=0.1
+GDPgrowth=0.0
 
 def division_by_zero(num,den):
     result=np.zeros(N)
@@ -60,8 +60,15 @@ G0= np.array([sum(imp.pCjGj)])
 
 l0=np.array([sum(Lj0/KLj0)])
 
-GDP0= np.array([sum(imp.pCjCj+imp.pCjGj+imp.pCjIj+imp.pXjXj-imp.pMjMj)])
+uL0 = np.array([0.105])
 
+sigmaw= np.array([0])
+
+uK0 = np.array([0.105])
+
+sigmapK= np.array([-0.1])
+
+GDP0= np.array([sum(imp.pCjCj+imp.pCjGj+imp.pCjIj+imp.pXjXj-imp.pMjMj)])
 
 # parameter definitions
 
@@ -99,13 +106,19 @@ alphaIj=imp.pCjIj/I0
 
 alphalj=Lj0/(KLj0*l0)
 
+alphaw = w/(uL0**sigmaw)
+
+alphapK = pK0/(uK0**sigmapK)
+
+alphaIK = I0/K0
+
 wB = B0/GDP0
 
 wG = G0/GDP0
 
 wI = I0/GDP0
 
-GDPreal=GDP0*(1+GDPgrowth)
+GDPreal=GDP0
 
 pCjtp=pCj0
 
@@ -129,7 +142,6 @@ epsilonRj=imp.epsilonRj
 
 sD0=sum(imp.pCjIj+imp.pXjXj-imp.pMjMj)/GDP0
 
-sKL0=sum(imp.pCjIj+imp.pXjXj-imp.pMjMj)/(pL0*L0+pK0*K0)
 
 
 

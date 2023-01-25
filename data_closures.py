@@ -25,35 +25,125 @@ class Variable:
 class variablesSystem:
     def assignClosure(self, commonDict):
         
-        sKLneoclassic = (cal.I0+cal.B0)/(cal.w*cal.L0+cal.pK0*cal.pK0*cal.K0)
-        sLkaldorian = (cal.I0+cal.B0)/(cal.w*cal.L0)
+        sKLneoclassic = (cal.I0+cal.B0)/(cal.w * sum(cal.Lj0) + cal.pK0 * sum(cal.Kj0))
         
+        sLkaldorian = (cal.I0+cal.B0)/(cal.w*sum(cal.Lj0))
+        
+        L0u=sum(cal.Lj0)/(1-cal.uL0)
+        
+        K0u=sum(cal.Kj0)/(1-cal.uK0)
+
         if self.closure == "johansen":
             return {**commonDict, 
-                         **{'sD':Variable("endo", cal.sD0),
-                            'wI':Variable("exo",cal.wI)}
+                         **{'K':Variable("exo", cal.K0),
+                            'sD':Variable("endo", cal.sD0),
+                            'wI':Variable("exo",cal.wI),
+                            'L':Variable("exo", cal.L0)}
                          }
         elif self.closure == "neoclassic":
             return {**commonDict, 
-                         **{'sK':Variable("exo", sKLneoclassic),
+                         **{'K':Variable("exo", cal.K0),
+                             'sK':Variable("exo", sKLneoclassic),
                             'sL':Variable("exo", sKLneoclassic),
-                            'sG':Variable("exo", np.array([0]) )}
+                            'sG':Variable("exo", np.array([0])),
+                            'L':Variable("exo", cal.L0)}
                          }
+        
+        
         elif self.closure == "kaldorian":
             return {**commonDict, 
-                         **{'l':Variable("endo", cal.l0),
+                         **{'K':Variable("exo", cal.K0),
+                             'l':Variable("endo", cal.l0),
                             'alphalj':Variable("exo", cal.alphalj),
                             'sK':Variable("exo", np.array([0])),
                             'sL':Variable("exo", sLkaldorian),
-                            'sG':Variable("exo", np.array([0]) )},
-                            'wI':Variable("exo",cal.wI)
+                            'sG':Variable("exo", np.array([0])),
+                            'wI':Variable("exo",cal.wI),
+                            'L':Variable("exo", cal.L0)
+                            }
                          }
         
+        
+        elif self.closure == "keynes-marshall":
+            return {**commonDict, 
+                         **{'K':Variable("exo", cal.K0),
+                            'sK':Variable("exo", sKLneoclassic),
+                            'sL':Variable("exo", sKLneoclassic),
+                            'sG':Variable("exo", np.array([0])),
+                            'wI':Variable("exo",cal.wI),
+                            }
+                         }
+        
+        
+        elif self.closure == "keynes-kaldor":
+            return {**commonDict, 
+                         **{'K':Variable("exo", cal.K0),
+                             'l':Variable("endo", cal.l0),
+                            'alphalj':Variable("exo", cal.alphalj),
+                            'sK':Variable("exo", np.array([0])),
+                            'sL':Variable("exo", sLkaldorian),
+                            'sG':Variable("exo", np.array([0])),
+                            'wI':Variable("exo",cal.wI),
+                            
+                            'w_real':Variable("endo",np.array([cal.w])),
+                            'alphaw':Variable("exo", cal.alphaw),
+                            'sigmaw':Variable("exo", cal.sigmaw),
+                            'uL':Variable("endo",cal.u0),
+                            'L':Variable("exo", L0u)
+                            
+                            }
+                         }
+        
+        
+        elif self.closure == "keynes":
+            return {**commonDict, 
+                         **{ 'K':Variable("exo", cal.K0),
+                            
+                             'l':Variable("endo", cal.l0),
+                            'alphalj':Variable("exo", cal.alphalj),
+                            
+                            'sK':Variable("exo", sKLneoclassic),
+                            'sL':Variable("exo", sKLneoclassic),
+                            'sG':Variable("exo", np.array([0])),
+                            
+                            'wI':Variable("exo",cal.wI),
+                            
+                            'w_real':Variable("endo",np.array([cal.w])),
+                            'alphaw':Variable("exo", cal.alphaw),
+                            'sigmaw':Variable("exo", cal.sigmaw),
+                            'uL':Variable("endo",cal.uL0),
+                            'L':Variable("exo", L0u)
+                            }
+                         }
+        
+        elif self.closure == "neokeynesian1":
+            return {**commonDict, 
+                         **{'sK':Variable("exo", sKLneoclassic),
+                            'sL':Variable("exo", sKLneoclassic),
+                            'sG':Variable("exo", np.array([0])),                            
+                            
+                            'w_real':Variable("endo",np.array([cal.w])),
+                            'alphaw':Variable("exo", cal.alphaw),
+                            'sigmaw':Variable("exo", cal.sigmaw),
+                            'uL':Variable("endo",cal.uL0),
+                            'L':Variable("exo", L0u),
+                            
+                            'pK_real':Variable("endo",np.array([cal.pK0])),
+                            'alphapK':Variable("exo", cal.alphapK),
+                            'sigmapK':Variable("exo", cal.sigmapK),
+                            'uK':Variable("endo",cal.uK0),
+                            'K':Variable("exo", K0u),
+                            
+                            'alphaIK':Variable("exo", cal.alphaIK)
+                            }
+                    }
+
+
         else: 
             print("this closure doesn't exist")
             sys.exit()
-            
-            
+
+
             
     def toEndoexoDict(self, status):
         return { k : v.value for k,v in self.variables_dict.items() if v.status == status }
@@ -96,8 +186,6 @@ class variablesSystem:
             
             'wG':Variable("exo", cal.wG),
             'wB':Variable("exo", cal.wB),
-            'K':Variable("exo", cal.K0),
-            'L':Variable("exo", cal.L0),
             'GDPreal':Variable("exo",cal.GDPreal ),
             'tauL':Variable("exo", np.array([cal.tauL0])),
             'tauSj':Variable("exo", cal.tauSj0),
@@ -163,6 +251,13 @@ bounds={
     'tauSj':(-1,1),
     'tauYj':(-1,1),
     'T':(-np.inf,np.inf),
+    'w_real':(0,np.inf),
+    'uL':(0,1),
+    'sigmaw':(-np.inf,np.inf),
+    'pK_real':(0,np.inf),
+    'alphapK':(0,np.inf),
+    'sigmapK':(-np.inf,np.inf),
+    'uK':(0,1),
     
     'bKLj':(0,np.inf),    
     'Cj':(0,np.inf),
@@ -199,6 +294,8 @@ bounds={
     'alphaGj':(0,np.inf),
     'alphaIj':(0,np.inf),    
     'alphalj':(0,1),  
+    'alphaw':(0,np.inf),  
+    'alphaIK':(0,np.inf),  
     'betaDj':(0,np.inf),
     'betaMj':(0,np.inf),
     'sigmaXj':(-np.inf,np.inf),

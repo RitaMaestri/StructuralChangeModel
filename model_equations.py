@@ -265,7 +265,7 @@ def eqCalibij(pYi, Yij, data, _index=None):
         zero = -1 + data[_index[0],_index[1]] / np.dot(pYid,Yij)[_index[0],_index[1]]#QUI
 
     else:
-        zero = -1 + data / np.dot(pYid,Yij)#QUI
+        zero = -1 + data / np.dot(pYid,Yij) #QUI
         zero=zero.flatten()
         
     return zero
@@ -285,26 +285,60 @@ def eqsD(sD,Ij,pCj, Mj, Xj, pXj, GDP):
         )
     return zero
 
-def eqT(T,tauYj, pYj, Yj, tauSj, pCj, Yij, Cj, Gj, tauL, pL, L):
+def eqT(T,tauYj, pYj, Yj, tauSj, pSj, Sj, tauL, w, Lj):
+
     zero = - 1 + T / (
-        sum( tauYj*pYj*Yj + tauSj*pCj*(Yij.sum(axis=1)+Cj+Gj) ) + tauL*pL*L
+        
+        sum(   tauSj*pSj*Sj + (tauYj/(tauYj+1))*pYj*Yj + tauL*w*Lj  )
+        
         )
     return zero
 
 def eqPriceTax(pGross,pNet, tau):
+    
     zero = - 1 + pGross / (
         pNet*(1+tau)
         )
     return zero
 
-def eqI(I,sL,w,L,sK,K,pK,sG,T,G,B):
-    zero = - 1 + I / ( sL*w*L + sK*K*pK + sG*(T-G) - B )
+def eqI(I,sL,w,Lj,sK,Kj,pK,sG,T,G,B):
+
+    zero = - 1 + I / ( sL*w*sum(Lj) + sK*sum(Kj)*pK + sG*(T-G) - B )
     return zero
 
-#def GPI(GDPPI,pCj,pCtp,pXj,pXtp,Cj,Gj,Ij,Xj,Mj,Yij,Ctp,Gtp,Itp,Xtp,Mtp,Yijtp,idxC=len(Cj),idxG,idxI,idxX)
+def eqIneok(I,K,alphaIK):
+    
+    zero = -1 + I/(alphaIK*K)
+    
+    return zero
+    
+
+def equ(u,L,Lj):
+    zero = - 1 + u / (( L - sum(Lj) ) / L) 
+    return zero
+
+def eqw_real(w_real,CPI,w):
+    zero=-1 + w_real /(
+        w / np.prod(CPI)
+    )
+    return zero
+
+def eqw_curve(w_real, alphaw, u, sigmaw):
+    zero = 1 - w_real / ( alphaw *(u**sigmaw) )
+    
+    return zero
 
 
 
+
+
+
+
+
+
+
+
+# def GPI(GDPPI,pCj,pCtp,pXj,pXtp,Cj,Gj,Ij,Xj,Mj,Yij,Ctp,Gtp,Itp,Xtp,Mtp,Yijtp,idxC=len(Cj),idxG,idxI,idxX)
 
 # def eqCPI(GDPPI,pCj,pCtp,Cj,Gj,Ij,Ctp,Gtp,Itp):
 

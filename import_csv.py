@@ -165,7 +165,7 @@ non_zero_index_X=np.array(np.where(pXjXj != 0)).flatten()
 non_zero_index_M=np.array(np.where(pMjMj != 0)).flatten()
 non_zero_index_C=np.array(np.where(pCjCj != 0)).flatten()
 non_zero_index_Yij=np.array(np.where(pCiYij != 0))
-
+len(pCiYij[pCiYij != 0])
 
 N=len(pLLj)
 
