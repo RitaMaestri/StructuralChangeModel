@@ -38,7 +38,9 @@ class variablesSystem:
                          **{'K':Variable("exo", cal.K0),
                             'sD':Variable("endo", cal.sD0),
                             'wI':Variable("exo",cal.wI),
-                            'L':Variable("exo", cal.L0)}
+                            'wB':Variable("exo", cal.wB),
+                            'L':Variable("exo", cal.L0)
+                            }
                          }
         elif self.closure == "neoclassic":
             return {**commonDict, 
@@ -46,6 +48,7 @@ class variablesSystem:
                              'sK':Variable("exo", sKLneoclassic),
                             'sL':Variable("exo", sKLneoclassic),
                             'sG':Variable("exo", np.array([0])),
+                            'wB':Variable("exo", cal.wB),
                             'L':Variable("exo", cal.L0)}
                          }
         
@@ -59,6 +62,7 @@ class variablesSystem:
                             'sL':Variable("exo", sLkaldorian),
                             'sG':Variable("exo", np.array([0])),
                             'wI':Variable("exo",cal.wI),
+                            'wB':Variable("exo", cal.wB),
                             'L':Variable("exo", cal.L0)
                             }
                          }
@@ -70,6 +74,7 @@ class variablesSystem:
                             'sK':Variable("exo", sKLneoclassic),
                             'sL':Variable("exo", sKLneoclassic),
                             'sG':Variable("exo", np.array([0])),
+                            'wB':Variable("exo", cal.wB),
                             'wI':Variable("exo",cal.wI),
                             }
                          }
@@ -89,6 +94,7 @@ class variablesSystem:
                             'alphaw':Variable("exo", cal.alphaw),
                             'sigmaw':Variable("exo", cal.sigmaw),
                             'uL':Variable("endo",cal.u0),
+                            'wB':Variable("exo", cal.wB),
                             'L':Variable("exo", L0u)
                             
                             }
@@ -112,11 +118,37 @@ class variablesSystem:
                             'alphaw':Variable("exo", cal.alphaw),
                             'sigmaw':Variable("exo", cal.sigmaw),
                             'uL':Variable("endo",cal.uL0),
+                            'wB':Variable("exo", cal.wB),
                             'L':Variable("exo", L0u)
                             }
                          }
         
+        
         elif self.closure == "neokeynesian1":
+            return {**commonDict, 
+                         **{'sK':Variable("exo", sKLneoclassic),
+                            'sL':Variable("exo", sKLneoclassic),
+                            'sG':Variable("exo", np.array([0])),                            
+                            
+                            'w_real':Variable("endo",np.array([cal.w])),
+                            'alphaw':Variable("exo", cal.alphaw),
+                            'sigmaw':Variable("exo", cal.sigmaw),
+                            'uL':Variable("endo",cal.uL0),
+                            'L':Variable("exo", L0u),
+                            
+                            'pK_real':Variable("endo",np.array([cal.pK0])),
+                            'alphapK':Variable("exo", cal.alphapK),
+                            'sigmapK':Variable("exo", cal.sigmapK),
+                            'uK':Variable("endo",cal.uK0),
+                            'K':Variable("exo", K0u),
+                            
+                            'wB':Variable("exo", cal.wB),
+                            
+                            }
+                    }
+
+        
+        elif self.closure == "neokeynesian2":
             return {**commonDict, 
                          **{'sK':Variable("exo", sKLneoclassic),
                             'sL':Variable("exo", sKLneoclassic),
@@ -185,7 +217,6 @@ class variablesSystem:
             
             
             'wG':Variable("exo", cal.wG),
-            'wB':Variable("exo", cal.wB),
             'GDPreal':Variable("exo",cal.GDPreal ),
             'tauL':Variable("exo", np.array([cal.tauL0])),
             'tauSj':Variable("exo", cal.tauSj0),

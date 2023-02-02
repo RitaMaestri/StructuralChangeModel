@@ -1,5 +1,5 @@
 ####### define closure : "johansen" , "neoclassic", "kaldorian", "keynes-marshall", "keynes", "keynes-kaldor","neokeynesian1", "neokeynesian2"   ########
-closure="keynes"
+closure="neokeynesian2"
 
 import numpy as np
 import pandas as pd
@@ -119,8 +119,9 @@ def system(var, par):
         
         eq.eqPriceTax(pGross=d['pCj'], pNet=d['pSj'], tau=d['tauSj']),
         
-        eq.eqPriceTax(pGross=d['pL'], pNet=d['w'], tau=d['tauL'])
+        eq.eqPriceTax(pGross=d['pL'], pNet=d['w'], tau=d['tauL']),
         
+        eq.eqpI(pI=d['pI'],pCj=d['pCj'],Ij=d['Ij'])
         ])
     
 
@@ -255,30 +256,7 @@ def system(var, par):
                           
                           ])
                          ])    
-    
-    
-    elif closure=="neokeynesian1":
-        return np.hstack([common_equations,        
-                          np.hstack([
-                                      eq.eqI(I=d['I'], sL=d['sL'], w=d['w'], Lj=d['Lj'], sK=d['sK'], Kj=d['Kj'], pK=d['pK'], sG=d['sG'], T=d['T'], G=d['G'], B=d['B']),
-                                      
-                                      eq.eqFj(Fj=d['Lj'],pF=d['pL'],KLj=d['KLj'],pKLj= d['pKLj'],alphaFj=d['alphaLj']),
-                                      
-                                      eq.equ(u=d['uL'], L=d['L'], Lj=d['Lj']),
-                                      
-                                      eq.eqw_real(w_real=d['w_real'], CPI=d['CPI'], w=d['w']),
-                                      
-                                      eq.eqw_curve(w_real=d['w_real'], alphaw=d['alphaw'], u=d['uL'], sigmaw=d['sigmaw'] ),
-                                      
-                                      eq.equ(u=d['uK'], L=d['K'], Lj=d['Kj']),
-                                      
-                                      eq.eqw_real(w_real=d['pK_real'], CPI=d['CPI'], w=d['pK']),
-                                      
-                                      eq.eqw_curve(w_real=d['pK_real'], alphaw=d['alphapK'], u=d['uK'], sigmaw=d['sigmapK'] ),
-
-                                                                            
-                          ])
-                         ])   
+     
     
     elif closure=="neokeynesian2":
         return np.hstack([common_equations,        
