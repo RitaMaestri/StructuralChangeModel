@@ -1,5 +1,5 @@
 ####### define closure : "johansen" , "neoclassic", "kaldorian", "keynes-marshall", "keynes", "keynes-kaldor","neokeynesian1", "neokeynesian2"   ########
-closure="neokeynesian2"
+closure="keynes"
 
 import numpy as np
 import pandas as pd
@@ -97,11 +97,11 @@ def system(var, par):
         
         eq.eqCobbDouglasj(Qj=d['Cj'],alphaQj=d['alphaCj'],pCj=d['pCj'],Q=d['R'], _index=non_zero_index_C),
         
-        eq.eqCobbDouglasj(Qj=d['Gj'],alphaQj=d['alphaGj'],pCj=d['pCj'],Q=d['G'], _index=non_zero_index_G),
+        eq.eqCobbDouglasj(Qj=d['Gj'],alphaQj=d['alphaGj'],pCj=d['pCj'],Q=d['Rg'], _index=non_zero_index_G),
         
-        eq.eqCobbDouglasj(Qj=d['Ij'],alphaQj=d['alphaIj'],pCj=d['pCj'],Q=d['I'], _index=non_zero_index_I),
+        eq.eqIj(Ij=d['Ij'],alphaIj=d['alphaIj'],I=d['I'],_index=non_zero_index_I),
         
-        eq.eqw(X=d['G'],wX=d['wG'],GDP=d['GDP']),
+        eq.eqMult(result=d['Rg'],mult1=d['wG'],mult2=d['GDP']),
         
         eq.eqSj(Sj=d['Sj'],Cj=d['Cj'], Gj=d['Gj'], Ij=d['Ij'], Yij=d['Yij']),
     
@@ -121,7 +121,9 @@ def system(var, par):
         
         eq.eqPriceTax(pGross=d['pL'], pNet=d['w'], tau=d['tauL']),
         
-        eq.eqpI(pI=d['pI'],pCj=d['pCj'],Ij=d['Ij'])
+        eq.eqpI(pI=d['pI'],pCj=d['pCj'],alphaIj=d['alphaIj']),
+        
+        eq.eqMult(result=d['Ri'],mult1=d['pI'],mult2=d['I']),
         ])
     
 
@@ -130,7 +132,7 @@ def system(var, par):
                           np.hstack([
                                         eq.eqsD(sD=d['sD'], Ij=d['Ij'], pCj=d['pCj'], Mj=d['Mj'], Xj=d['Xj'], pXj=d['pXj'], GDP=d['GDP']),
                                         
-                                        eq.eqw(X=d['I'],wX=d['wI'],GDP=d['GDP']),
+                                        eq.eqMult(result=d['Ri'],mult1=d['wI'],mult2=d['GDP']),
                                         
                                         eq.eqFj(Fj=d['Lj'],pF=d['pL'],KLj=d['KLj'],pKLj= d['pKLj'],alphaFj=d['alphaLj']),
                                         
@@ -138,16 +140,14 @@ def system(var, par):
                                         
                                         eq.eqF(F=d['K'],Fj=d['Kj']),
                                         
-                                        eq.eqw(X=d['B'],wX=d['wB'],GDP=d['GDP']),
-
-                                        
-                                        ])
+                                        eq.eqMult(result=d['B'],mult1=d['wB'],mult2=d['GDP']),
+                                    ])
                         ])
 
     elif closure=="neoclassic":
         return np.hstack([common_equations,        
                           np.hstack([
-                                      eq.eqI(I=d['I'], sL=d['sL'], w=d['w'], Lj=d['Lj'], sK=d['sK'], K=d['K'], pK=d['pK'], sG=d['sG'], T=d['T'], G=d['G'], B=d['B']),
+                                      eq.eqRi(Ri=d['Ri'], sL=d['sL'], w=d['w'], Lj=d['Lj'], sK=d['sK'], K=d['K'], pK=d['pK'], sG=d['sG'], T=d['T'], Rg=d['Rg'], B=d['B']),
                                       
                                       eq.eqFj(Fj=d['Lj'],pF=d['pL'],KLj=d['KLj'],pKLj= d['pKLj'],alphaFj=d['alphaLj']),
                                       
@@ -155,7 +155,7 @@ def system(var, par):
                                       
                                       eq.eqF(F=d['K'],Fj=d['Kj']),
                                       
-                                      eq.eqw(X=d['B'],wX=d['wB'],GDP=d['GDP']),
+                                      eq.eqMult(result=d['B'],mult1=d['wB'],GDP=d['GDP']),
 
                                                                             
                           ])
@@ -166,30 +166,30 @@ def system(var, par):
                           np.hstack([
                                       eq.eqlj(l=d['l'], alphalj=d['alphalj'], KLj=d['KLj'], Lj=d['Lj']),
                                       
-                                      eq.eqI(I=d['I'], sL=d['sL'], w=d['w'], Lj=d['Lj'], sK=d['sK'], Kj=d['Kj'], pK=d['pK'], sG=d['sG'], T=d['T'], G=d['G'], B=d['B']),
+                                      eq.eqRi(Ri=d['Ri'], sL=d['sL'], w=d['w'], Lj=d['Lj'], sK=d['sK'], Kj=d['Kj'], pK=d['pK'], sG=d['sG'], T=d['T'], Rg=d['Rg'], B=d['B']),
                                       
-                                      eq.eqw(X=d['I'],wX=d['wI'],GDP=d['GDP']),
+                                      eq.eqMult(result=d['Ri'],mult1=d['wI'],mult2=d['GDP']),
                                       
                                       eq.eqF(F=d['L'],Fj=d['Lj']),
                                       
                                       eq.eqF(F=d['K'],Fj=d['Kj']),
                                       
-                                      eq.eqw(X=d['B'],wX=d['wB'],GDP=d['GDP']),
+                                      eq.eqMult(result=d['B'],mult1=d['wB'],mult2=d['GDP']),
 
                                     ])
                          ])
     elif closure=="keynes-marshall":
         return np.hstack([common_equations,        
                           np.hstack([
-                                      eq.eqI(I=d['I'], sL=d['sL'], w=d['w'], Lj=d['Lj'], sK=d['sK'], Kj=d['Kj'], pK=d['pK'], sG=d['sG'], T=d['T'], G=d['G'], B=d['B']),
+                                      eq.eqRi(Ri=d['Ri'], sL=d['sL'], w=d['w'], Lj=d['Lj'], sK=d['sK'], Kj=d['Kj'], pK=d['pK'], sG=d['sG'], T=d['T'], Rg=d['Rg'], B=d['B']),
                                       
                                       eq.eqFj(Fj=d['Lj'],pF=d['pL'],KLj=d['KLj'],pKLj= d['pKLj'],alphaFj=d['alphaLj']),
                                       
-                                      eq.eqw(X=d['I'],wX=d['wI'],GDP=d['GDP']),
+                                      eq.eqMult(result=d['Ri'],mult1=d['wI'],mult2=d['GDP']),
                                       
                                       eq.eqF(F=d['K'],Fj=d['Kj']),
                                       
-                                      eq.eqw(X=d['B'],wX=d['wB'],GDP=d['GDP']),
+                                      eq.eqMult(result=d['B'],mult1=d['wB'],mult2=d['GDP']),
 
                                      ])
                          ])
@@ -199,10 +199,9 @@ def system(var, par):
                           np.hstack([
                                       eq.eqlj(l=d['l'], alphalj=d['alphalj'], KLj=d['KLj'], Lj=d['Lj']),
                                       
-                                      eq.eqI(I=d['I'], sL=d['sL'], w=d['w'], Lj=d['Lj'], sK=d['sK'], Kj=d['Kj'], pK=d['pK'], sG=d['sG'], T=d['T'], G=d['G'], B=d['B']),
+                                      eq.eqRi(Ri=d['Ri'], sL=d['sL'], w=d['w'], Lj=d['Lj'], sK=d['sK'], Kj=d['Kj'], pK=d['pK'], sG=d['sG'], T=d['T'], Rg=d['Rg'], B=d['B']),
                                       
-                                      eq.eqw(X=d['I'],wX=d['wI'],GDP=d['GDP']),
-                                      
+                                      eq.eqMult(result=d['Ri'],mult1=d['wI'],mult2=d['GDP']),
                                       
                                       eq.equ(u=d['uL'], L=d['L'], Lj=d['Lj']),
                                       
@@ -212,7 +211,7 @@ def system(var, par):
                                       
                                       eq.eqF(F=d['K'],Fj=d['Kj']),
                                       
-                                      eq.eqw(X=d['B'],wX=d['wB'],GDP=d['GDP']),
+                                      eq.eqMult(result=d['B'],mult1=d['wB'],mult2=d['GDP']),
 
                                       ])
                          ])
@@ -220,15 +219,15 @@ def system(var, par):
     elif closure=="keynes-marshall":
         return np.hstack([common_equations,
                           np.hstack([
-                                      eq.eqI(I=d['I'], sL=d['sL'], w=d['w'], Lj=d['Lj'], sK=d['sK'], Kj=d['Kj'], pK=d['pK'], sG=d['sG'], T=d['T'], G=d['G'], B=d['B']),
+                                      eq.eqRi(Ri=d['Ri'], sL=d['sL'], w=d['w'], Lj=d['Lj'], sK=d['sK'], Kj=d['Kj'], pK=d['pK'], sG=d['sG'], T=d['T'], Rg=d['Rg'], B=d['B']),
                                       
                                       eq.eqFj(Fj=d['Lj'],pF=d['pL'],KLj=d['KLj'],pKLj= d['pKLj'],alphaFj=d['alphaLj']),
                                       
-                                      eq.eqw(X=d['I'],wX=d['wI'],GDP=d['GDP']),
+                                      eq.eqMult(result=d['I'],mult1=d['wI'],mult2=d['GDP']),
                                       
                                       eq.eqF(F=d['K'],Fj=d['Kj']),
                                       
-                                      eq.eqw(X=d['B'],wX=d['wB'],GDP=d['GDP']),
+                                      eq.eqMult(result=d['B'],mult1=d['wB'],mult2=d['GDP']),
 
                                      ])
                          ])
@@ -236,7 +235,7 @@ def system(var, par):
     elif closure=="neokeynesian1":
         return np.hstack([common_equations,        
                           np.hstack([
-                                      eq.eqI(I=d['I'], sL=d['sL'], w=d['w'], Lj=d['Lj'], sK=d['sK'], Kj=d['Kj'], pK=d['pK'], sG=d['sG'], T=d['T'], G=d['G'], B=d['B']),
+                                      eq.eqRi(Ri=d['Ri'], sL=d['sL'], w=d['w'], Lj=d['Lj'], sK=d['sK'], Kj=d['Kj'], pK=d['pK'], sG=d['sG'], T=d['T'], Rg=d['Rg'], B=d['B']),
                                       
                                       eq.eqFj(Fj=d['Lj'],pF=d['pL'],KLj=d['KLj'],pKLj= d['pKLj'],alphaFj=d['alphaLj']),
                                       
@@ -252,7 +251,7 @@ def system(var, par):
                                       
                                       eq.eqw_curve(w_real=d['pK_real'], alphaw=d['alphapK'], u=d['uK'], sigmaw=d['sigmapK'] ),
 
-                                      eq.eqw(X=d['B'],wX=d['wB'],GDP=d['GDP']),
+                                      eq.eqMult(result=d['B'],mult1=d['wB'],mult2=d['GDP']),
                           
                           ])
                          ])    
@@ -261,7 +260,7 @@ def system(var, par):
     elif closure=="neokeynesian2":
         return np.hstack([common_equations,        
                           np.hstack([
-                                      eq.eqI(I=d['I'], sL=d['sL'], w=d['w'], Lj=d['Lj'], sK=d['sK'], Kj=d['Kj'], pK=d['pK'], sG=d['sG'], T=d['T'], G=d['G'], B=d['B']),
+                                      eq.eqRi(Ri=d['Ri'], sL=d['sL'], w=d['w'], Lj=d['Lj'], sK=d['sK'], Kj=d['Kj'], pK=d['pK'], sG=d['sG'], T=d['T'], Rg=d['Rg'], B=d['B']),
                                       
                                       eq.eqFj(Fj=d['Lj'],pF=d['pL'],KLj=d['KLj'],pKLj= d['pKLj'],alphaFj=d['alphaLj']),
                                       
@@ -320,7 +319,7 @@ if max(system(variables, parameters))>1e-07:
 
 parameters["GDPreal"]= parameters["GDPreal"]*(1+GDPgrowth)
 
-#parameters["L"]= parameters["L"]*(1+Lgrowth)
+parameters["L"]= parameters["L"]*(1+Lgrowth)
 
 
 #####  disrupt the initial condition #####

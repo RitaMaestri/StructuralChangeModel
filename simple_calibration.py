@@ -21,18 +21,18 @@ pXj=np.array([100]*N)
 pK0=100
 w=100
 
-tauYj0=imp.production_taxes/(imp.pYjYj-imp.production_taxes)
+tauYj0 = imp.production_taxes/(imp.pYjYj-imp.production_taxes)
 tauSj0 = imp.sales_taxes / (imp.pCiYij.sum(axis=1)+imp.pCjCj+imp.pCjGj+imp.pCjIj - imp.sales_taxes)
 tauL0 = 0
 
-pCj0=(1+tauSj0)*pSj0
-pL0=(1+tauL0)*w
+pCj0 = (1+tauSj0)*pSj0
+pL0 = (1+tauL0)*w
 
+Ij0 = imp.pCjIj/pCj0
+Cj0 = imp.pCjCj/pCj0
+Gj0 = imp.pCjGj/pCj0
+Yij0 = imp.pCiYij/pCj0[:,None]
 
-Cj0=imp.pCjCj/pCj0
-Gj0=imp.pCjGj/pCj0
-Ij0=imp.pCjIj/pCj0
-Yij0=imp.pCiYij/pCj0[:,None]
 
 KLj0=imp.pKLjKLj/pKLj0
 Xj0=imp.pXjXj/pXj0
@@ -54,9 +54,9 @@ B0=np.array([sum(imp.pXjXj)-sum(imp.pMjMj)])
 
 R0= np.array([sum(imp.pCjCj)])
 
-I0= np.array([sum(imp.pCjIj)])
+Ri0= np.array([sum(imp.pCjIj)])
 
-G0= np.array([sum(imp.pCjGj)])
+Rg0= np.array([sum(imp.pCjGj)])
 
 l0=np.array([sum(Lj0/KLj0)])
 
@@ -100,9 +100,7 @@ betaDj=np.float_power(division_by_zero(Sj0,Dj0),etaSj)*imp.pDjDj/imp.pSjSj
 
 alphaCj=imp.pCjCj/R0
 
-alphaGj=imp.pCjGj/G0
-
-alphaIj=imp.pCjIj/I0
+alphaGj=imp.pCjGj/Rg0
 
 alphalj=Lj0/(KLj0*l0)
 
@@ -110,13 +108,13 @@ alphaw = w/(uL0**sigmaw)
 
 alphapK = pK0/(uK0**sigmapK)
 
-alphaIK = I0/K0
+alphaIK = Ri0/K0
 
 wB = B0/GDP0
 
-wG = G0/GDP0
+wG = Rg0/GDP0
 
-wI = I0/GDP0
+wI = Ri0/GDP0
 
 GDPreal=GDP0
 
@@ -143,6 +141,46 @@ epsilonRj=imp.epsilonRj
 sD0=sum(imp.pCjIj+imp.pXjXj-imp.pMjMj)/GDP0
 
 
+#calibrate alphaIj, I and pI
+
+
+
+
+def eqpI(pI,pCj,alphaIj):
+    zero= -1+ pI / sum(pCj*alphaIj)
+    return zero
+
+def eqIj(Ij,alphaIj,I):
+    zero= -1+Ij/(alphaIj*I)
+    return zero
+
+def eqRi(Ri,pI,I):
+    zero= - 1 + Ri / (pI*I)
+    return zero
+
+def systemI(var, par):
+    d = {**var, **par}
+    return np.hstack([eqpI(pI=d['pI'],pCj=d['pCj'],alphaIj=d['alphaIj']),
+                      eqIj(Ij=d['Ij'], alphaIj=d['alphaIj'],I=d['I']),
+                      eqRi(Ri=d['Ri'],pI=d['pI'],I=d['I'])]
+                      )
+
+this_len=len(imp.pCjIj[imp.pCjIj!=0])
+
+variables={ 'I':Ri0/sum(np.array([0.1]*N)*pCj0), 'alphaIj':pCj0[imp.pCjIj!=0]/Ri0,'pI':np.array([sum(np.array([0.1]*N)*pCj0)])}
+
+parameters={'pCj':pCj0[imp.pCjIj!=0],'Ij':(imp.pCjIj/pCj0)[imp.pCjIj!=0], 'Ri':Ri0}
+
+bounds=np.array([ ([0]*(this_len+2)),([np.inf]*(2+this_len)) ])
+
+solI = dict_least_squares(systemI, variables , parameters, bounds, check=False)
+
+I0=solI.dvar['I']
+
+pI0=solI.dvar['pI']
+
+alphaIj=np.zeros(N)
+alphaIj[imp.pCjIj!=0]=solI.dvar['alphaIj']
 
 
 #CALIBRATE betaRj WITH REVENUE ELASTICITY OF CONSUMPTION (INSTEAD OF PRICE ELASTICITY) 
@@ -208,30 +246,33 @@ sD0=sum(imp.pCjIj+imp.pXjXj-imp.pMjMj)/GDP0
 
 ######### calibrate alphaCDES (to rewrite!) ##################
 
-def eqalphaCDES(alphaCj,alphaCDESj,R,pCj,betaRj):
+# def eqalphaCDES(alphaCj,alphaCDESj,R,pCj,betaRj):
     
-    zero= 1- alphaCj/( alphaCDESj*np.float_power(R/pCj, betaRj)/sum(alphaCDESj*np.float_power(R/pCj,betaRj)) )
-    return zero
+#     zero= 1- alphaCj/( alphaCDESj*np.float_power(R/pCj, betaRj)/sum(alphaCDESj*np.float_power(R/pCj,betaRj)) )
+#     return zero
 
-def system(var, par):
+# def system(var, par):
     
-    d = {**var, **par}
+#     d = {**var, **par}
 
-    return np.hstack([eqalphaCDES(alphaCj=d['alphaCj'],alphaCDESj=d['alphaCDESj'],R=d['R'],pCj=d['pCj'],betaRj=d['betaRj']),
-                      1-sum(d['alphaCDESj'])
-                      ])
+#     return np.hstack([eqalphaCDES(alphaCj=d['alphaCj'],alphaCDESj=d['alphaCDESj'],R=d['R'],pCj=d['pCj'],betaRj=d['betaRj']),
+#                       1-sum(d['alphaCDESj'])
+#                       ])
 
 
-variables={'alphaCDESj':alphaCj[alphaCj!=0]}
+# variables={'alphaCDESj':alphaCj[alphaCj!=0]}
 
-parameters={'alphaCj':alphaCj[alphaCj!=0],'R':R0,'pCj':pCj0[alphaCj!=0],'betaRj':betaRj[alphaCj!=0]}
+# parameters={'alphaCj':alphaCj[alphaCj!=0],'R':R0,'pCj':pCj0[alphaCj!=0],'betaRj':betaRj[alphaCj!=0]}
 
-bounds=np.array([([0]*len(alphaCj[alphaCj!=0])),([1]*len(alphaCj[alphaCj!=0]))])
+# bounds=np.array([ ( [0]*len(alphaCj[alphaCj!=0]) ) , ( [1]*len(alphaCj[alphaCj!=0]) ) ])
 
-solalpha=dict_least_squares(system, variables , parameters, bounds, check=False)
+# solalpha=dict_least_squares(system, variables , parameters, bounds, check=False)
 
-alphaCDESj=np.zeros(N)
 
-alphaCDESj[alphaCj!=0]=solalpha.x
 
-sum(alphaCDESj)
+
+# alphaCDESj=np.zeros(N)
+
+# alphaCDESj[alphaCj!=0]=solalpha.x
+
+# sum(alphaCDESj)

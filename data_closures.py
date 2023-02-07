@@ -25,9 +25,9 @@ class Variable:
 class variablesSystem:
     def assignClosure(self, commonDict):
         
-        sKLneoclassic = (cal.I0+cal.B0)/(cal.w * sum(cal.Lj0) + cal.pK0 * sum(cal.Kj0))
+        sKLneoclassic = (cal.Ri0+cal.B0)/(cal.w * sum(cal.Lj0) + cal.pK0 * sum(cal.Kj0))
         
-        sLkaldorian = (cal.I0+cal.B0)/(cal.w*sum(cal.Lj0))
+        sLkaldorian = (cal.Ri0+cal.B0)/(cal.w*sum(cal.Lj0))
         
         L0u=sum(cal.Lj0)/(1-cal.uL0)
         
@@ -166,7 +166,8 @@ class variablesSystem:
                             'uK':Variable("endo",cal.uK0),
                             'K':Variable("exo", K0u),
                             
-                            'alphaIK':Variable("exo", cal.alphaIK)
+                            'alphaIK':Variable("exo", cal.alphaIK),
+                            
                             }
                     }
 
@@ -185,10 +186,11 @@ class variablesSystem:
         commonDict={
             'pL': Variable("endo", np.array([cal.pL0])),
             'pK':Variable("endo", np.array([cal.pK0])),
+            'pI':Variable("endo", np.array(cal.pI0)),
             'B':Variable("endo", np.array(cal.B0)),
             'R':Variable("endo", np.array(cal.R0)),
-            'I':Variable("endo", np.array(cal.I0)),
-            'G':Variable("endo", np.array(cal.G0)),
+            'Ri':Variable("endo", np.array(cal.Ri0)),
+            'Rg':Variable("endo", np.array(cal.Rg0)),
             'bKL':Variable("endo", np.array([1])),
             'CPI':Variable("endo", np.array([1])),
             'Rreal':Variable("endo", np.array(cal.R0)),
@@ -214,6 +216,7 @@ class variablesSystem:
             'Gj': Variable("endo",cal.Gj0),
             'Ij': Variable("endo", cal.Ij0),
             'Yij': Variable("endo", cal.Yij0),
+            'I':Variable("endo", cal.I0),
             
             
             'wG':Variable("exo", cal.wG),
@@ -265,6 +268,7 @@ bounds={
     'CPI':(-np.inf,np.inf),
     'pL':(0,np.inf),
     'pK':(0,np.inf),
+    'pI':(0,np.inf),
     'w':(0,np.inf),
     'K':(0,np.inf),
     'L':(0,np.inf),
@@ -275,7 +279,8 @@ bounds={
     'GDP':(-np.inf,np.inf),
     'R':(0,np.inf),
     'I':(0,np.inf),
-    'G':(0,np.inf),
+    'Ri':(0,np.inf),
+    'Rg':(0,np.inf),
     'l':(0,np.inf),
     'bKL':(-np.inf,np.inf),
     'tauL':(0,1),

@@ -18,8 +18,8 @@ def non_zero_index(dvar):
     return np.where(array_var != 0)[0]
 
 def to_dict(vec, dvec, is_variable):  #takes array WITHOUT ZEROS, returns dict of arrays (of equal dimensions and keys as dvec)
-    lengths = np.array([np.product(np.shape(item)) for item in dvec.values()])
-   #N=int(min(lengths[lengths!=1]))
+    lengths = np.array([np.prod(np.shape(item)) for item in dvec.values()])
+    #N=int(min(lengths[lengths!=1]))
     keys=dvec.keys()
     #add zeros to vector
     if(is_variable):

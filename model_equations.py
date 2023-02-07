@@ -114,11 +114,13 @@ def eqB(B,pXj,Xj,pMj,Mj):
     return zero
 
 
-def eqw(X,wX,GDP):
+def eqMult(result, mult1, mult2):
     
-    zero = -1 + X / (wX*GDP)
+    zero = -1 + result / (mult1*mult2)
     
     return(zero)
+
+
 
 ##check for the case where the index is an empty array! TODO
 def eqCobbDouglasj(Qj,alphaQj,pCj,Q,_index=None):
@@ -129,6 +131,8 @@ def eqCobbDouglasj(Qj,alphaQj,pCj,Q,_index=None):
         zero= -1 + Qj / ( alphaQj * (Q/ pCj) )
     
     return zero
+
+
 
 def eqalphaCj(alphaCj,R,pCj,alphaCDESj,betaRj, _index=None):
     if isinstance(_index, np.ndarray):
@@ -301,9 +305,9 @@ def eqPriceTax(pGross,pNet, tau):
         )
     return zero
 
-def eqI(I,sL,w,Lj,sK,Kj,pK,sG,T,G,B):
+def eqRi(Ri,sL,w,Lj,sK,Kj,pK,sG,T,Rg,B):
 
-    zero = - 1 + I / ( sL*w*sum(Lj) + sK*sum(Kj)*pK + sG*(T-G) - B )
+    zero = - 1 + Ri / ( sL*w*sum(Lj) + sK*sum(Kj)*pK + sG*(T-Rg) - B )
     return zero
 
 def eqIneok(I,K,alphaIK):
@@ -328,9 +332,25 @@ def eqw_curve(w_real, alphaw, u, sigmaw):
     
     return zero
 
+def eqIj(Ij,alphaIj,I,_index=None):
+    
+    if isinstance(_index, np.ndarray):
+        zero= -1 + Ij[_index] / ( alphaIj[_index] * I)
+    else:
+        zero= -1 + Ij / ( alphaIj * I )
+    
+    return zero
 
 
 
+def eqpI(pI,pCj,alphaIj):
+    zero = 1 - pI / ( sum(pCj*alphaIj) )
+    return zero
+    
+def eqinventory(Knext,K,delta, I):
+    zero = 1 - pI / ( sum(pCj*Ij)/sum(Ij) )
+    return zero
+    
 
 
 
