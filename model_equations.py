@@ -17,7 +17,7 @@ def eqKLj(KLj,bKL, bKLj, Lj, Kj, alphaLj, alphaKj):
 # same equation for Lj and Kj (Factors)
 
 def eqFj(Fj,pF,KLj,pKLj,alphaFj):
-    pF=pF.item()
+
 
     zero= -1 + Fj / (
         (np.prod(np.vstack([pKLj,KLj,alphaFj]), axis=0))/pF
@@ -189,8 +189,7 @@ def eqSj(Sj,Cj,Gj,Ij,Yij):
 def eqF(F,Fj):
     #print("eqF")
 
-    F=F.item()
-
+  
     zero= -1 + F / sum(Fj)
 
     return zero
@@ -205,7 +204,7 @@ def eqID(x,y):
 
 def eqGDP(GDP,pCj,Cj,Gj,Ij,pXj,Xj,pMj,Mj):
     #print("eqGDP")
-    GDP=GDP.item()
+
 
     zero= -1 + GDP / sum(pCj*(Cj+Gj+Ij)+pXj*Xj-pMj*Mj)
 
@@ -215,7 +214,7 @@ def eqGDP(GDP,pCj,Cj,Gj,Ij,pXj,Xj,pMj,Mj):
 #tp=time_previous
 def eqGDPPI(GDPPI,pCj,pCtp,pXj,pXtp,Cj,Gj,Ij,Xj,Mj,Ctp,Gtp,Itp,Xtp,Mtp):
 
-    GDPPI=GDPPI.item()
+   
 
     zero=-1 + GDPPI / sqrt(
         ( sum( pCj*(Cj+Gj+Ij)+pXj*(Xj-Mj) ) / sum( pCtp*(Cj+Gj+Ij)+pXtp*(Xj-Mj) ) ) * ( sum( pCj*(Ctp+Gtp+Itp)+pXj*(Xtp-Mtp) ) / sum( pCtp*(Ctp+Gtp+Itp)+pXtp*(Xtp-Mtp) ) )
@@ -225,7 +224,7 @@ def eqGDPPI(GDPPI,pCj,pCtp,pXj,pXtp,Cj,Gj,Ij,Xj,Mj,Ctp,Gtp,Itp,Xtp,Mtp):
 
 def eqCPI(CPI,pCj,pCtp,Cj,Ctp):
 
-    CPI=CPI.item()
+   
 
     zero=-1 + CPI / sqrt(
         ( sum( pCj*Cj ) / sum( pCtp*Cj ) ) * ( sum( pCj*Ctp ) / sum( pCtp*Ctp ) )
@@ -235,14 +234,14 @@ def eqCPI(CPI,pCj,pCtp,Cj,Ctp):
 
 #GDPPI is the GDPPI time series
 def eqGDPreal(GDPreal, GDP, GDPPI):
-    GDP=GDP.item()
+   
     zero=-1 + GDPreal /(
         GDP / np.prod(GDPPI)
     )
     return zero
 
 def eqRreal(Rreal, R, CPI):
-    R.item()
+   
     zero=-1 + Rreal /(
         R / np.prod(CPI)
     )
@@ -348,7 +347,7 @@ def eqpI(pI,pCj,alphaIj):
     return zero
     
 def eqinventory(Knext,K,delta, I):
-    zero = 1 - pI / ( sum(pCj*Ij)/sum(Ij) )
+    zero = 1 - Knext / ( K * (1-delta) + I )
     return zero
     
 

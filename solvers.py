@@ -18,7 +18,7 @@ def non_zero_index(dvar):
     return np.where(array_var != 0)[0]
 
 def to_dict(vec, dvec, is_variable):  #takes array WITHOUT ZEROS, returns dict of arrays (of equal dimensions and keys as dvec)
-    lengths = np.array([np.prod(np.shape(item)) for item in dvec.values()])
+    lengths = np.array([int(np.prod(np.shape(item))) for item in dvec.values()])
     #N=int(min(lengths[lengths!=1]))
     keys=dvec.keys()
     #add zeros to vector
@@ -30,6 +30,9 @@ def to_dict(vec, dvec, is_variable):  #takes array WITHOUT ZEROS, returns dict o
     vec = np.split(vec,np.cumsum(lengths))[:-1]
     #create array of arrays and matrices (if needed)
     vec = [np.reshape(i, (N, N)) if len(i) == N**2 else i for i in vec]
+    for i in range(len(vec)):
+        if np.shape(vec[i])== (1,): 
+            vec[i]=vec[i].item()
     return dict(zip(keys, vec))
 
 
@@ -51,7 +54,6 @@ def dict_fsolve(f, dvar, dpar):
     result.dvar= to_dict(result, dvar)
     result.d= {**result.dvar, **dpar}
     return result;
-
 
 
 ########################  MINIMIZE  ########################
@@ -84,7 +86,7 @@ def dict_least_squares(f, dvar, dpar, bounds, verb=1, check=True):
     if check:
         non_zero_dvar=to_array(dvar)[to_array(dvar)!=0]
         same_number(f(dvar,dpar), non_zero_dvar)
-    
+
     result = optimize.least_squares(
         lambda x,y: f(to_dict(x,dvar,is_variable=True), to_dict(y,dpar,is_variable=False)),# wrap the argument in a dict
         to_array(dvar)[to_array(dvar)!=0], # unwrap the initial dictionary
@@ -92,7 +94,7 @@ def dict_least_squares(f, dvar, dpar, bounds, verb=1, check=True):
         args= list([to_array(dpar)],),
         verbose=verb
     )
-    
+
     result.dvar= to_dict(result.x, dvar, is_variable=True)
     result.d= {**result.dvar, **dpar}
     return result;

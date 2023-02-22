@@ -44,31 +44,31 @@ Kj0= imp.pKKj / pK0
 Yj0=(imp.pKLjKLj+imp.pCiYij.sum(axis=0))*(1+tauYj0)/pYj0
 
 
-T0= np.array([sum(imp.production_taxes+imp.sales_taxes)])
+T0= sum(imp.production_taxes+imp.sales_taxes)
 
-L0=np.array([sum(Lj0)])
+L0=sum(Lj0)
 
-K0=np.array([sum(Kj0)])
+K0=sum(Kj0)
 
-B0=np.array([sum(imp.pXjXj)-sum(imp.pMjMj)])
+B0=sum(imp.pXjXj)-sum(imp.pMjMj)
 
-R0= np.array([sum(imp.pCjCj)])
+R0= sum(imp.pCjCj)
 
-Ri0= np.array([sum(imp.pCjIj)])
+Ri0= sum(imp.pCjIj)
 
-Rg0= np.array([sum(imp.pCjGj)])
+Rg0= sum(imp.pCjGj)
 
-l0=np.array([sum(Lj0/KLj0)])
+l0=sum(Lj0/KLj0)
 
-uL0 = np.array([0.105])
+uL0 = 0.105
 
-sigmaw= np.array([0])
+sigmaw= 0
 
-uK0 = np.array([0.105])
+uK0 = 0.105
 
-sigmapK= np.array([-0.1])
+sigmapK= -0.1
 
-GDP0= np.array([sum(imp.pCjCj+imp.pCjGj+imp.pCjIj+imp.pXjXj-imp.pMjMj)])
+GDP0= sum(imp.pCjCj+imp.pCjGj+imp.pCjIj+imp.pXjXj-imp.pMjMj)
 
 # parameter definitions
 
@@ -144,8 +144,6 @@ sD0=sum(imp.pCjIj+imp.pXjXj-imp.pMjMj)/GDP0
 #calibrate alphaIj, I and pI
 
 
-
-
 def eqpI(pI,pCj,alphaIj):
     zero= -1+ pI / sum(pCj*alphaIj)
     return zero
@@ -175,13 +173,22 @@ bounds=np.array([ ([0]*(this_len+2)),([np.inf]*(2+this_len)) ])
 
 solI = dict_least_squares(systemI, variables , parameters, bounds, check=False)
 
-I0=solI.dvar['I']
+I0=float(solI.dvar['I'])
 
-pI0=solI.dvar['pI']
+pI0=float(solI.dvar['pI'])
 
 alphaIj=np.zeros(N)
 alphaIj[imp.pCjIj!=0]=solI.dvar['alphaIj']
 
+delta=0.04
+
+K0next = K0 * (1-delta) + I0
+
+L0u=sum(Lj0)/(1-uL0)
+
+K0u=sum(Kj0)/(1-uK0)
+
+K0u_next= K0u * (1-delta) + I0
 
 #CALIBRATE betaRj WITH REVENUE ELASTICITY OF CONSUMPTION (INSTEAD OF PRICE ELASTICITY) 
 

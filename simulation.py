@@ -1,69 +1,59 @@
 ####### define closure : "johansen" , "neoclassic", "kaldorian", "keynes-marshall", "keynes", "keynes-kaldor","neokeynesian1", "neokeynesian2"   ########
-closure="keynes"
+
+
+closure="kaldorian"
+
+start=2015
+stop=2050
+step=1
+
+#growth_rates = {'L':0.1 } if closure != "keynes-marshall" else {}
+growth_rates = {}
+
 
 import numpy as np
 import pandas as pd
 import sys
-import simple_calibration as cal
-from data_closures import bounds, N, variablesSystem
+from data_closures import bounds, N, calibrationDict
 from import_csv import non_zero_index_G, non_zero_index_I, non_zero_index_C, non_zero_index_X, non_zero_index_M, non_zero_index_Yij
 import import_csv as imp
 sys.path.append('/home/rita/Documents/Stage/Code')
 import model_equations as eq
 from solvers import dict_minimize, dict_least_squares, dict_fsolve, dict_basinhopping, MyBounds, to_dict
+from time_series_data import sys_df
+
+calibration = calibrationDict(closure)
+
+variables_calibration = calibration.endogeouns_dict
+
+parameters_calibration = calibration.exogenous_dict
+
+####  Y axis  ####
+years = np.array(range(start, stop+1, step))
 
 
-system=variablesSystem(closure)
-
-variables=system.endogeouns_dict
-
-parameters=system.exogenous_dict
-
-#####   DYNAMICS   ######
-
-GDPgrowth=0.1
-
-Lgrowth=0.1
+System=sys_df(years, growth_rates, variables_calibration, parameters_calibration)
 
 
 ####### check for errors ########
 
-for k in (pavars := {**parameters, **variables}).keys():
-    if not isinstance(pavars[k], np.ndarray):
-        print(k, " is not an array!")
-        sys.exit()
-
-for item in variables.keys():
-    if item in parameters:
+for item in variables_calibration.keys():
+    if item in parameters_calibration:
         print("the same variable is both in variables and parameters")
         sys.exit()
 
-for k in parameters.keys():
-    for par in parameters[k].flatten():
+for k in parameters_calibration.keys():
+    for par in np.array([parameters_calibration[k]]).flatten() :
         if par < bounds[k][0] or par > bounds[k][1]:
-            print(par)
-            print(bounds[k][0])
             print("parameter ", k ," out of bounds")
             sys.exit()
-            
-for k in variables.keys():
-    for var in variables[k].flatten():
+
+for k in variables_calibration.keys():
+    for var in  np.array([variables_calibration[k]]).flatten():
         if var < bounds[k][0] or var > bounds[k][1]:
             print("variable ", k ," out of bounds")
             sys.exit()
 
-def augment_dict(d, key0, indexes, value_key):
-    array=np.zeros(N)
-    array[indexes] = d[value_key]
-    d[key0] = array
-    
-def augment_dict2D(d, key0, indexes, value_key):
-    array=np.zeros([N,N])
-    for i,j,k in zip(indexes[0], indexes[1], range(len(indexes[0]))):
-            array[i,j]=d[value_key][k]
-    d[key0] = array
-
-    
 def system(var, par):
 
     d = {**var, **par}
@@ -124,6 +114,8 @@ def system(var, par):
         eq.eqpI(pI=d['pI'],pCj=d['pCj'],alphaIj=d['alphaIj']),
         
         eq.eqMult(result=d['Ri'],mult1=d['pI'],mult2=d['I']),
+        
+        eq.eqinventory(Knext=d['Knext'], K=d['K'], delta=d['delta'], I=d['I'])
         ])
     
 
@@ -147,7 +139,7 @@ def system(var, par):
     elif closure=="neoclassic":
         return np.hstack([common_equations,        
                           np.hstack([
-                                      eq.eqRi(Ri=d['Ri'], sL=d['sL'], w=d['w'], Lj=d['Lj'], sK=d['sK'], K=d['K'], pK=d['pK'], sG=d['sG'], T=d['T'], Rg=d['Rg'], B=d['B']),
+                                      eq.eqRi(Ri=d['Ri'], sL=d['sL'], w=d['w'], Lj=d['Lj'], sK=d['sK'], Kj=d['Kj'], pK=d['pK'], sG=d['sG'], T=d['T'], Rg=d['Rg'], B=d['B']),
                                       
                                       eq.eqFj(Fj=d['Lj'],pF=d['pL'],KLj=d['KLj'],pKLj= d['pKLj'],alphaFj=d['alphaLj']),
                                       
@@ -155,7 +147,7 @@ def system(var, par):
                                       
                                       eq.eqF(F=d['K'],Fj=d['Kj']),
                                       
-                                      eq.eqMult(result=d['B'],mult1=d['wB'],GDP=d['GDP']),
+                                      eq.eqMult(result=d['B'],mult1=d['wB'],mult2=d['GDP']),
 
                                                                             
                           ])
@@ -175,7 +167,7 @@ def system(var, par):
                                       eq.eqF(F=d['K'],Fj=d['Kj']),
                                       
                                       eq.eqMult(result=d['B'],mult1=d['wB'],mult2=d['GDP']),
-
+                        
                                     ])
                          ])
     elif closure=="keynes-marshall":
@@ -254,7 +246,7 @@ def system(var, par):
                                       eq.eqMult(result=d['B'],mult1=d['wB'],mult2=d['GDP']),
                           
                           ])
-                         ])    
+                         ])   
      
     
     elif closure=="neokeynesian2":
@@ -283,9 +275,16 @@ def system(var, par):
     else:
         print("the closure doesn't exist")
         sys.exit()
+        
+#### Calibration check ####
 
+if max(system(variables_calibration, parameters_calibration))>1e-07:
+    d={**variables_calibration,**parameters_calibration}
+    print("the system is not correctly calibrated")
+    d = {**variables_calibration, **parameters_calibration}
+    sys.exit()
 
-#put the bounds in the good format for the solver
+#### put the bounds in the good format for the solver ####
 def multiply_bounds_len(key,this_bounds,this_variables):
     return [this_bounds[key] for i in range(len(this_variables[key].flatten()))]
 
@@ -296,44 +295,49 @@ def flatten_bounds_dict(this_bounds,this_variables):
     return np.vstack(list(bounds_dict(this_bounds,this_variables).values()))
 
 
-#####  create a reduced dictionary for variables (without zeros)  #####
+#####  create a reduced dictionary for variables (without zeros) and correspondent set of bounds#####
 
-variables_values = [ variables[keys][variables[keys]!=0] for keys in variables.keys()]
+def to_array(candidate):
+    return candidate if isinstance(candidate, np.ndarray) else np.array([candidate])
 
-var_keys=list(variables.keys())
+variables_values = [ to_array(variables_calibration[keys])[to_array(variables_calibration[keys]) !=0 ] for keys in variables_calibration.keys()]
+
+var_keys=list(variables_calibration.keys())
 
 non_zero_variables = {var_keys[i]: variables_values[i] for i in range(len(var_keys))}
 
 bounds_variables = [[row[i] for row in flatten_bounds_dict(bounds, non_zero_variables)] for i in (0,1)]
 
 
-#### Calibration check ####
-
-if max(system(variables, parameters))>1e-07:
-    d={**variables,**parameters}
-    print("the system is not correctly calibrated")
-    sys.exit()
-    
-
-##### Growth  #####
-
-parameters["GDPreal"]= parameters["GDPreal"]*(1+GDPgrowth)
-
-parameters["L"]= parameters["L"]*(1+Lgrowth)
-
-
-#####  disrupt the initial condition #####
-variables["R"]=variables["R"]*0.9
-variables["I"]=variables["I"]*0.9
-variables["Kj"]=variables["Kj"]*0.9
-variables["Yj"]=variables["Yj"]*0.9
-variables["Cj"]=variables["Cj"]*0.9
-
 
 ######  SYSTEM SOLUTION  ######
 
-sol= dict_least_squares(system, variables, parameters, bounds_variables, verb=2, check=False)
 
+for t in years[:-1]:
+    variables=System.df_to_dict(var=True, t=t)
+    
+    parameters=System.df_to_dict(var=False, t=t+1)
+    
+    sol = dict_least_squares( system, variables, parameters, bounds_variables, verb=0, check=False )
+    
+    maxerror=max(abs( system(sol.dvar, parameters)))
+    
+    if maxerror>1e-06:
+        print("the system doesn't converge, maxerror=",maxerror)
+        sys.exit()
+    print("year: ", t)
+    
+    #print("\n \n", closure," closure \n max of the system of equations calculated at the solution: \n")
+    #print(maxerror, "\n")
+    
+    System.dict_to_df(sol.dvar, t+1)
+    
+    if t<years[-2]:
+        System.evolve_K(t+1)
+
+results=pd.concat([System.variables_df,System.parameters_df], ignore_index=False)
+
+results.to_csv(str().join(["results/",closure,str(start),"-",str(stop),".csv"]))
 
 
 
@@ -342,22 +346,25 @@ sol= dict_least_squares(system, variables, parameters, bounds_variables, verb=2,
 # mybounds=MyBounds(bounds_variables)
 # sol= dict_minimize(system, variables, parameters, mybounds.bounds)
 
+# print("\n \n", closure," closure \n max of the system of equations calculated at the solution: \n")
+# print(max(abs( system(sol.dvar, parameters))))
 
-
-print("\n \n", closure," closure \n max of the system of equations calculated at the solution: \n")
-print(max(abs( system(sol.dvar, parameters))))
-
-d = {**sol.dvar, **parameters}
-
-
-
-
-
-
-
+# d = {**sol.dvar, **parameters}
 
 
 #EXPORT TO CSV
+
+# def augment_dict(d, key0, indexes, value_key):
+#     array=np.zeros(N)
+#     array[indexes] = d[value_key]
+#     d[key0] = array
+    
+# def augment_dict2D(d, key0, indexes, value_key):
+#     array=np.zeros([N,N])
+#     for i,j,k in zip(indexes[0], indexes[1], range(len(indexes[0]))):
+#             array[i,j]=d[value_key][k]
+#     d[key0] = array
+
 # #to_dict(sol.dvar,variables,is_variable=True)
 
 # augment_dict(sol.dvar, 'Gj', non_zero_index_G,'Gjn0')
@@ -367,10 +374,8 @@ d = {**sol.dvar, **parameters}
 # augment_dict(sol.dvar, 'Mj', non_zero_index_M, 'Mjn0')
 # augment_dict2D(sol.dvar, 'Yij', non_zero_index_Yij, 'Yijn0')
     
-    
 # keysN=[k for k, v in sol.dvar.items() if np.shape(v) == np.shape(sol.dvar["Kj"])]
 # keys1=[k for k, v in sol.dvar.items() if np.shape(v) == np.shape(sol.dvar["R"])]
-
 
 # sol_N=pd.DataFrame({ key: sol.dvar[key] for key in keysN })
 # sol_1=pd.DataFrame({ key: sol.dvar[key] for key in keys1 })
@@ -379,4 +384,3 @@ d = {**sol.dvar, **parameters}
 # sol_N.to_csv("results/classic_N.csv")
 # sol_1.to_csv("results/classic_1.csv")
 # sol_Yij.to_csv("results/classic_Yij.csv")    
-
