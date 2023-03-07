@@ -6,6 +6,7 @@ from scipy.ndimage.interpolation import shift
 import import_csv as imp
 import sys
 from simple_calibration import N
+import matplotlib.colors as mcolors
 
 sectors_names_eng=[
     "AGRICULTURE",
@@ -49,9 +50,11 @@ sectors_names_eng=[
 
 name = imp.sectors
 
-df = pd.read_csv("results/neoclassic2015-2050.csv")
+df = pd.read_csv("results/johansen2015-2050exoKnext(02-03-2023_18:37).csv", index_col=0)
 df.rename(columns={df.columns[0]: 'variable'},inplace=True)
 
+df.loc[ df['variable'] == "L" ].drop("variable", axis=1)
+a=df.loc[ df['variable'] == "bKL" ].drop("variable", axis=1)
 
 
 diff= False
@@ -77,6 +80,7 @@ else:
     print("wrong pq!")
     sys.exit()
 
+VA.insert(0, "Name", sectors_names_eng, True)
 
 # start_range=sectors_names_eng.index("PHARMACEUTICAL IND.")
 # this_range=range(N*start_range,N*start_range+N)
@@ -87,14 +91,70 @@ else:
 
 # VA=Q
 
-VA.insert(0, "Name", sectors_names_eng, True)
+fig = plt.figure(figsize=(20,15))
+ax = fig.add_subplot(111)
+
+x=np.array(VA.columns[2:]).astype('int')
+
+y0= x[1].astype(str)
+yL=x[-1].astype(str)
+
+rank= np.argsort(VA[y0].values/VA[yL].values)
+index_side_writing=np.hstack([rank[:3],rank[-3:]])
+
+for j in VA.index:
+    y=np.array(VA.loc[j])[2:].astype('float')
+    y= y/y[0]-shift(y/y[0], 1, cval=np.NaN) if diff else y/y[0]
+    lab=VA.loc[j][0]
+    ax.plot(x[0:],y[0:] , label = lab)
+    if j in index_side_writing:
+        print(j)
+        print(VA.loc[j][0])
+        ax.annotate(xy=(x[-1],y[-1]), xytext=(5,0), textcoords='offset points', text=VA.loc[j][0], va='center')
+
+    
+    
+colors1=plt.cm.Accent(np.linspace(0., 1, 128))
+colors2=plt.cm.tab10(np.linspace(0., 1, 128))
+colors3=plt.cm.Set3(np.linspace(0.1, 1, 128))
+colors4=plt.cm.gist_ncar(np.linspace(0., .8, 128))
+mycolors = np.vstack((colors1, colors2, colors3, colors4))
+colormap = mcolors.LinearSegmentedColormap.from_list('my_colormap', mycolors)
+
+
+ #nipy_spectral, Set1,Paired   
+colors = [colormap(i) for i in np.linspace(0, 1,len(ax.lines))]
+for i,j in enumerate(ax.lines):
+    j.set_color(colors[i])
+    
+# Shrink current axis's height by 10% on the bottom
+# Shrink current axis by 20%
+box = ax.get_position()
+ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+
+# # Put a legend to the right of the current axis
+ax.legend(loc='center left', bbox_to_anchor=(1.16, 0.5), prop={'size': 16})
+
+if pq=="pq":
+    plt.title("p"+var+var)
+elif pq == "p":
+    plt.title("p"+var)
+elif pq == "q":
+    plt.title(var)
+plt.xlim(2014.99,2050.01)
+
+plt.show()
+
+
+
+
 
 for i in np.split(VA.index, [9,18,27]):
     for j in i:
-        x=np.array(VA.columns[2:]).astype('int')
-        y=np.array(VA.loc[j])[2:].astype('float')
-        y= y-shift(y, 1, cval=np.NaN) if diff else y
-        plt.plot(x[1:],y[1:] , label = VA.loc[j][0])
+        x=np.array(VA.columns[1:]).astype('int')
+        y=np.array(VA.loc[j])[1:].astype('float')
+        y= y/y[0]-shift(y/y[0], 1, cval=np.NaN) if diff else y/y[0]
+        plt.plot(x[0:],y[0:] , label = VA.loc[j][0])
     ax = plt.subplot(111)
     
     # Shrink current axis's height by 10% on the bottom
@@ -143,25 +203,28 @@ y=np.array(pK)[0].astype('float')
 y= y-shift(y, 1, cval=np.NaN) if diff else y
 plt.plot(x[1:],y[1:] , label = "pL")
 plt.title("pK")
+plt.show()
+
+
 
 #plot GDP growth, capital and labour growth
 L=np.array(df.loc[(df['variable'] == "L")].iloc[:,1:])[0].astype("float")
+bKL=np.array(df.loc[(df['variable'] == "bKL")].iloc[:,1:])[0].astype("float")
+LbKL=L*bKL
 K=np.array(df.loc[(df['variable'] == "K")].iloc[:,1:])[0].astype("float")
 GDPreal=np.array(df.loc[(df['variable'] == "GDPreal")].iloc[:,1:])[0].astype("float")
 
+fig = plt.figure(figsize=(15,10))
+ax = fig.add_subplot(111)
 x=np.array(df.columns[1:]).astype('int')
-y= GDPreal
-plt.plot(x,y,label = "GDPreal")
-plt.title("GDPreal")
-plt.show()
+y= LbKL/LbKL[0]-shift(LbKL/LbKL[0], 1, cval=np.NaN) if diff else LbKL/LbKL[0]
+plt.plot(x,y,label = "$L$ x $b_{KL}$")
+y= GDPreal/GDPreal[0]-shift(GDPreal/GDPreal[0], 1, cval=np.NaN) if diff else GDPreal/GDPreal[0]
+plt.plot(x,y,label = "$GDPreal$")
+y= K/K[0]-shift(K/K[0], 1, cval=np.NaN) if diff else K/K[0]
+plt.plot(x,y,label = "$K$")
 
-x=np.array(df.columns[1:]).astype('int')
-y= L
-plt.plot(x,y,label = "L")
-y= K
-plt.plot(x,y,label = "K")
 
-ax = plt.subplot(111)
 
 # Shrink current axis's height by 10% on the bottom
 # Shrink current axis by 20%
@@ -169,9 +232,30 @@ box = ax.get_position()
 ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
 
 # Put a legend to the right of the current axis
-ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
-plt.title("L & K")
+ax.legend(loc='center left', bbox_to_anchor=(1, 0.5), prop={'size': 16})
 plt.show()
+
+
+
+
+
+# x=np.array(df.columns[1:]).astype('int')
+# y= L
+# plt.plot(x,y,label = "L")
+# y= K
+# plt.plot(x,y,label = "K")
+
+# ax = plt.subplot(111)
+
+# # Shrink current axis's height by 10% on the bottom
+# # Shrink current axis by 20%
+# box = ax.get_position()
+# ax.set_position([box.x0, box.y0, box.width * 0.8, box.height])
+
+# # Put a legend to the right of the current axis
+# ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+# plt.title("L & K")
+# plt.show()
 
 
 

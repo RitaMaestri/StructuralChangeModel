@@ -1,9 +1,9 @@
 import numpy as np 
-import simple_calibration as cal
+from simple_calibration import calibrationVariables
+from import_csv import N
 import pandas as pd
 import sys
 
-N=cal.N
 
 #######  Class Variable  #############
 
@@ -21,24 +21,25 @@ class Variable:
 
 
 class calibrationDict:
-    def assignClosure(self):
+    
+    
+    def assignClosure(self,cal):
         
         sKLneoclassic = (cal.Ri0+cal.B0)/(cal.w * sum(cal.Lj0) + cal.pK0 * sum(cal.Kj0))
         
         sLkaldorian = (cal.Ri0+cal.B0)/(cal.w*sum(cal.Lj0))
         
-
-        
-
         if self.closure == "johansen":
             return {**self.commonDict, 
-                         **{'K':Variable("exo", cal.K0),
-                            'sD':Variable("endo", cal.sD0),
+                         **{'sD':Variable("endo", cal.sD0),
+                            
+                            'K':Variable("exo", cal.K0),
                             'wI':Variable("exo",cal.wI),
                             'wB':Variable("exo", cal.wB),
                             'L':Variable("exo", cal.L0)
                             }
                          }
+        
         elif self.closure == "neoclassic":
             return {**self.commonDict, 
                          **{'K':Variable("exo", cal.K0),
@@ -51,8 +52,9 @@ class calibrationDict:
         
         elif self.closure == "kaldorian":
             return {**self.commonDict, 
-                         **{'K':Variable("exo", cal.K0),
-                             'l':Variable("endo", cal.l0),
+                         **{'l':Variable("endo", cal.l0),
+                            
+                            'K':Variable("exo", cal.K0),
                             'alphalj':Variable("exo", cal.alphalj),
                             'sK':Variable("exo", 0),
                             'sL':Variable("exo", sLkaldorian),
@@ -77,18 +79,18 @@ class calibrationDict:
         
         elif self.closure == "keynes-kaldor":
             return {**self.commonDict, 
-                         **{'K':Variable("exo", cal.K0),
-                             'l':Variable("endo", cal.l0),
+                         **{ 'l':Variable("endo", cal.l0),
+                            'w_real':Variable("endo",cal.w),
+                            'uL':Variable("endo",cal.uL0),
+                            
+                            'K':Variable("exo", cal.K0),
                             'alphalj':Variable("exo", cal.alphalj),
                             'sK':Variable("exo", 0),
                             'sL':Variable("exo", sLkaldorian),
                             'sG':Variable("exo", 0),
                             'wI':Variable("exo",cal.wI),
-                            
-                            'w_real':Variable("endo",cal.w),
                             'alphaw':Variable("exo", cal.alphaw),
                             'sigmaw':Variable("exo", cal.sigmaw),
-                            'uL':Variable("endo",cal.uL0),
                             'wB':Variable("exo", cal.wB),
                             'L':Variable("exo", cal.L0u)
                             
@@ -97,21 +99,18 @@ class calibrationDict:
         
         elif self.closure == "keynes":
             return {**self.commonDict, 
-                         **{ 'K':Variable("exo", cal.K0),
+                         **{ 'l':Variable("endo", cal.l0),
+                            'w_real':Variable("endo",cal.w),
+                            'uL':Variable("endo",cal.uL0),
                             
-                             'l':Variable("endo", cal.l0),
+                            'K':Variable("exo", cal.K0),
                             'alphalj':Variable("exo", cal.alphalj),
-                            
                             'sK':Variable("exo", sKLneoclassic),
                             'sL':Variable("exo", sKLneoclassic),
                             'sG':Variable("exo", 0),
-                            
                             'wI':Variable("exo",cal.wI),
-                            
-                            'w_real':Variable("endo",cal.w),
                             'alphaw':Variable("exo", cal.alphaw),
                             'sigmaw':Variable("exo", cal.sigmaw),
-                            'uL':Variable("endo",cal.uL0),
                             'wB':Variable("exo", cal.wB),
                             'L':Variable("exo", cal.L0u)
                             }
@@ -119,22 +118,21 @@ class calibrationDict:
         
         elif self.closure == "neokeynesian1":
             return {**self.commonDict, 
-                         **{'sK':Variable("exo", sKLneoclassic),
+                         **{'uL':Variable("endo",cal.uL0),
+                            'pK_real':Variable("endo",cal.pK0),
+                            'uK':Variable("endo",cal.uK0),
+                            'w_real':Variable("endo",cal.w),
+                             
+                             
+                            'sK':Variable("exo", sKLneoclassic),
                             'sL':Variable("exo", sKLneoclassic),
                             'sG':Variable("exo", 0),                            
-                            
-                            'w_real':Variable("endo",cal.w),
                             'alphaw':Variable("exo", cal.alphaw),
                             'sigmaw':Variable("exo", cal.sigmaw),
-                            'uL':Variable("endo",cal.uL0),
                             'L':Variable("exo", cal.L0u),
-                            
-                            'pK_real':Variable("endo",cal.pK0),
                             'alphapK':Variable("exo", cal.alphapK),
                             'sigmapK':Variable("exo", cal.sigmapK),
-                            'uK':Variable("endo",cal.uK0),
                             'K':Variable("exo", cal.K0u),
-                            
                             'wB':Variable("exo", cal.wB),
                             
                             }
@@ -142,22 +140,20 @@ class calibrationDict:
 
         elif self.closure == "neokeynesian2":
             return {**self.commonDict, 
-                         **{'sK':Variable("exo", sKLneoclassic),
+                         **{'w_real':Variable("endo",cal.w),
+                            'uL':Variable("endo",cal.uL0),
+                            'pK_real':Variable("endo",cal.pK0),
+                            'uK':Variable("endo",cal.uK0),
+                            
+                            'sK':Variable("exo", sKLneoclassic),
                             'sL':Variable("exo", sKLneoclassic),
                             'sG':Variable("exo", 0),                            
-                            
-                            'w_real':Variable("endo",cal.w),
                             'alphaw':Variable("exo", cal.alphaw),
-                            'sigmaw':Variable("exo", cal.sigmaw),
-                            'uL':Variable("endo",cal.uL0),
+                            'sigmaw':Variable("exo", cal.sigmaw),                            
                             'L':Variable("exo", cal.L0u),
-                            
-                            'pK_real':Variable("endo",cal.pK0),
                             'alphapK':Variable("exo", cal.alphapK),
                             'sigmapK':Variable("exo", cal.sigmapK),
-                            'uK':Variable("endo",cal.uK0),
                             'K':Variable("exo", cal.K0u),
-                            
                             'alphaIK':Variable("exo", cal.alphaIK),
                             
                             }
@@ -169,9 +165,10 @@ class calibrationDict:
     def toEndoExoDict(self, status):
         return { k : v.value for k,v in self.variables_dict.items() if v.status == status }
 
-            
 
-    def __init__(self, closure):
+    def __init__(self, closure,initial_L_gr, endoKnext):
+        cal = calibrationVariables(initial_L_gr)
+        
         self.commonDict = {
             'pL': Variable("endo", cal.pL0),
             'pK':Variable("endo", cal.pK0),
@@ -206,7 +203,6 @@ class calibrationDict:
             'Ij': Variable("endo", cal.Ij0),
             'Yij': Variable("endo", cal.Yij0),
             'I':Variable("endo", cal.I0),
-            'Knext':Variable("endo", cal.K0u_next) if closure in ["neokeynesian1","neokeynesian2"] else Variable("endo", cal.K0next),
             
             'wG':Variable("exo", cal.wG),
             'GDPreal':Variable("exo",cal.GDPreal ),
@@ -238,11 +234,13 @@ class calibrationDict:
             'delta':Variable("exo", cal.delta)
             }
         
-    
-
+        Knext = Variable("endo", cal.K0u_next) if closure in ["neokeynesian1","neokeynesian2"] else Variable("endo", cal.K0next)
+        
+        self.commonDict = {**self.commonDict, **{'Knext': Knext}} if endoKnext else self.commonDict
+        
         self.closure=closure
         
-        self.variables_dict = self.assignClosure()
+        self.variables_dict = self.assignClosure(cal)
         
         self.endogeouns_dict = self.toEndoExoDict("endo")
         

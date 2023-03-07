@@ -4,191 +4,133 @@ from import_csv import N
 from solvers import dict_least_squares
 import pandas as pd
 
-GDPgrowth=0.0
 
 def division_by_zero(num,den):
     result=np.zeros(N)
     result[den!=0]=num[den!=0]/den[den!=0]
     return result
 
-pYj0=np.array([100]*N)
-pSj0=np.array([100]*N)
-pKLj0=np.array([100]*N)
-pXj0=np.array([100]*N)
-pMj0=np.array([100]*N)
-pDj0=np.array([100]*N)
-pXj=np.array([100]*N)
-pK0=100
-w=100
-
-tauYj0 = imp.production_taxes/(imp.pYjYj-imp.production_taxes)
-tauSj0 = imp.sales_taxes / (imp.pCiYij.sum(axis=1)+imp.pCjCj+imp.pCjGj+imp.pCjIj - imp.sales_taxes)
-tauL0 = 0
-
-pCj0 = (1+tauSj0)*pSj0
-pL0 = (1+tauL0)*w
-
-Ij0 = imp.pCjIj/pCj0
-Cj0 = imp.pCjCj/pCj0
-Gj0 = imp.pCjGj/pCj0
-Yij0 = imp.pCiYij/pCj0[:,None]
-
-
-KLj0=imp.pKLjKLj/pKLj0
-Xj0=imp.pXjXj/pXj0
-Mj0=imp.pMjMj/pMj0
-Dj0=imp.pDjDj/pDj0
-Sj0=imp.pSjSj/pSj0
-Lj0= imp.pLLj / pL0
-Kj0= imp.pKKj / pK0
-Yj0=(imp.pKLjKLj+imp.pCiYij.sum(axis=0))*(1+tauYj0)/pYj0
-
-
-T0= sum(imp.production_taxes+imp.sales_taxes)
-
-L0=sum(Lj0)
-
-K0=sum(Kj0)
-
-B0=sum(imp.pXjXj)-sum(imp.pMjMj)
-
-R0= sum(imp.pCjCj)
-
-Ri0= sum(imp.pCjIj)
-
-Rg0= sum(imp.pCjGj)
-
-l0=sum(Lj0/KLj0)
-
-uL0 = 0.105
-
-sigmaw= 0
-
-uK0 = 0.105
-
-sigmapK= -0.1
-
-GDP0= sum(imp.pCjCj+imp.pCjGj+imp.pCjIj+imp.pXjXj-imp.pMjMj)
-
-# parameter definitions
-
-sigmaXj=imp.sigmaXj
-
-sigmaSj=imp.sigmaSj
-
-etaXj=(imp.sigmaXj-1)/imp.sigmaXj
-
-etaSj=(imp.sigmaSj-1)/imp.sigmaSj
-
-alphaLj = imp.pLLj/imp.pKLjKLj
-
-alphaKj = imp.pKKj/imp.pKLjKLj
-
-bKLj=KLj0/(np.float_power(Lj0,alphaLj) * np.float_power(Kj0,alphaKj))
-
-aYij= Yij0 / Yj0[None,:]
-
-aKLj=KLj0/Yj0
-
-alphaXj=np.float_power(division_by_zero(Yj0,Xj0),etaXj)*imp.pXjXj/imp.pYjYj
-
-alphaDj=np.float_power(division_by_zero(Yj0,Dj0),etaXj)*imp.pDjDj/imp.pYjYj
-
-betaMj=np.float_power(division_by_zero(Sj0,Mj0),etaSj)*imp.pMjMj/imp.pSjSj
-
-betaDj=np.float_power(division_by_zero(Sj0,Dj0),etaSj)*imp.pDjDj/imp.pSjSj
-
-alphaCj=imp.pCjCj/R0
-
-alphaGj=imp.pCjGj/Rg0
-
-alphalj=Lj0/(KLj0*l0)
-
-alphaw = w/(uL0**sigmaw)
-
-alphapK = pK0/(uK0**sigmapK)
-
-alphaIK = Ri0/K0
-
-wB = B0/GDP0
-
-wG = Rg0/GDP0
-
-wI = Ri0/GDP0
-
-GDPreal=GDP0
-
-pCjtp=pCj0
-
-pXtp=pXj
-
-Ctp=Cj0
-
-Gtp=Gj0
-
-Itp=Ij0
-
-pXtp=pXj
-
-Xtp=Xj0
-
-Mtp = Mj0
-
-betaRj= (imp.epsilonPCj+1)/(alphaCj-1)
-
-epsilonRj=imp.epsilonRj
-
-sD0=sum(imp.pCjIj+imp.pXjXj-imp.pMjMj)/GDP0
-
-
-#calibrate alphaIj, I and pI
-
-
-def eqpI(pI,pCj,alphaIj):
-    zero= -1+ pI / sum(pCj*alphaIj)
-    return zero
-
-def eqIj(Ij,alphaIj,I):
-    zero= -1+Ij/(alphaIj*I)
-    return zero
-
-def eqRi(Ri,pI,I):
-    zero= - 1 + Ri / (pI*I)
-    return zero
-
-def systemI(var, par):
-    d = {**var, **par}
-    return np.hstack([eqpI(pI=d['pI'],pCj=d['pCj'],alphaIj=d['alphaIj']),
-                      eqIj(Ij=d['Ij'], alphaIj=d['alphaIj'],I=d['I']),
-                      eqRi(Ri=d['Ri'],pI=d['pI'],I=d['I'])]
-                      )
-
-this_len=len(imp.pCjIj[imp.pCjIj!=0])
-
-variables={ 'I':Ri0/sum(np.array([0.1]*N)*pCj0), 'alphaIj':pCj0[imp.pCjIj!=0]/Ri0,'pI':np.array([sum(np.array([0.1]*N)*pCj0)])}
-
-parameters={'pCj':pCj0[imp.pCjIj!=0],'Ij':(imp.pCjIj/pCj0)[imp.pCjIj!=0], 'Ri':Ri0}
-
-bounds=np.array([ ([0]*(this_len+2)),([np.inf]*(2+this_len)) ])
-
-solI = dict_least_squares(systemI, variables , parameters, bounds, check=False)
-
-I0=float(solI.dvar['I'])
-
-pI0=float(solI.dvar['pI'])
-
-alphaIj=np.zeros(N)
-alphaIj[imp.pCjIj!=0]=solI.dvar['alphaIj']
-
-delta=0.04
-
-K0next = K0 * (1-delta) + I0
-
-L0u=sum(Lj0)/(1-uL0)
-
-K0u=sum(Kj0)/(1-uK0)
-
-K0u_next= K0u * (1-delta) + I0
+class calibrationVariables:
+    def __init__(self, initial_L_gr):
+        #prezzi
+        self.pYj0=np.array([100]*N)
+        self.pSj0=np.array([100]*N)
+        self.pKLj0=np.array([100]*N)
+        self.pXj0=np.array([100]*N)
+        self.pMj0=np.array([100]*N)
+        self.pDj0=np.array([100]*N)
+        self.pXj=np.array([100]*N)
+        self.w=100
+        self.tauYj0 = imp.production_taxes/(imp.pYjYj-imp.production_taxes)
+        self.tauSj0 = imp.sales_taxes / (imp.pCiYij.sum(axis=1)+imp.pCjCj+imp.pCjGj+imp.pCjIj - imp.sales_taxes)
+        self.tauL0 = 0
+        self.pCj0 = (1+self.tauSj0)*self.pSj0
+        self.pL0 = (1+self.tauL0)*self.w
+        #quantità
+        self.Ij0 = imp.pCjIj/self.pCj0
+        self.Cj0 = imp.pCjCj/self.pCj0
+        self.Gj0 = imp.pCjGj/self.pCj0
+        self.Yij0 = imp.pCiYij/self.pCj0[:,None]
+        self.KLj0= imp.pKLjKLj / self.pKLj0
+        self.Xj0= imp.pXjXj / self.pXj0
+        self.Mj0= imp.pMjMj / self.pMj0
+        self.Dj0= imp.pDjDj / self.pDj0
+        self.Sj0= imp.pSjSj / self.pSj0
+        self.Lj0= imp.pLLj / self.pL0
+        self.Yj0=(imp.pKLjKLj+imp.pCiYij.sum(axis=0))*(1+self.tauYj0)/self.pYj0
+        #scalari
+        self.T0= sum(imp.production_taxes+imp.sales_taxes)
+        self.L0=sum(self.Lj0)
+        self.B0=sum(imp.pXjXj)-sum(imp.pMjMj)
+        self.R0= sum(imp.pCjCj)
+        self.Ri0= sum(imp.pCjIj)
+        self.Rg0= sum(imp.pCjGj)
+        self.l0=sum(self.Lj0/self.KLj0)
+        self.uL0 = 0.105
+        self.sigmaw= 0
+        self.uK0 = 0.105
+        self.sigmapK= -0.1
+        self.GDP0= sum(imp.pCjCj+imp.pCjGj+imp.pCjIj+imp.pXjXj-imp.pMjMj)
+        # parametri
+        self.sigmaXj=imp.sigmaXj
+        self.sigmaSj=imp.sigmaSj
+        self.etaXj=(imp.sigmaXj-1)/imp.sigmaXj
+        self.etaSj=(imp.sigmaSj-1)/imp.sigmaSj
+        self.alphaLj = imp.pLLj/imp.pKLjKLj
+        self.alphaKj = imp.pKKj/imp.pKLjKLj
+        self.aYij= self.Yij0 / self.Yj0[None,:]
+        self.aKLj=self.KLj0/self.Yj0
+        self.alphaXj=np.float_power(division_by_zero(self.Yj0,self.Xj0),self.etaXj)*imp.pXjXj/imp.pYjYj
+        self.alphaDj=np.float_power(division_by_zero(self.Yj0,self.Dj0),self.etaXj)*imp.pDjDj/imp.pYjYj
+        self.betaMj=np.float_power(division_by_zero(self.Sj0,self.Mj0),self.etaSj)*imp.pMjMj/imp.pSjSj 
+        self.betaDj=np.float_power(division_by_zero(self.Sj0,self.Dj0),self.etaSj)*imp.pDjDj/imp.pSjSj
+        self.alphaCj=imp.pCjCj/self.R0
+        self.alphaGj=imp.pCjGj/self.Rg0
+        self.alphalj=self.Lj0/(self.KLj0*self.l0)
+        self.alphaw = self.w/(self.uL0**self.sigmaw)
+        self.wB = self.B0/self.GDP0
+        self.wG = self.Rg0/self.GDP0
+        self.wI = self.Ri0/self.GDP0
+        self.GDPreal=self.GDP0
+        self.pCjtp=self.pCj0
+        self.pXtp=self.pXj
+        self.Ctp=self.Cj0
+        self.Gtp=self.Gj0
+        self.Itp=self.Ij0
+        self.pXtp=self.pXj
+        self.Xtp=self.Xj0
+        self.Mtp = self.Mj0
+        self.betaRj= (imp.epsilonPCj+1)/(self.alphaCj-1)
+        self.epsilonRj=imp.epsilonRj
+        self.sD0=sum(imp.pCjIj+imp.pXjXj-imp.pMjMj)/self.GDP0
+        
+        #calibrate alphaIj, I and pI
+        
+        def eqpI(pI,pCj,alphaIj):
+            zero= -1+ pI / sum(pCj*alphaIj)
+            return zero
+        
+        def eqIj(Ij,alphaIj,I):
+            zero= -1+Ij/(alphaIj*I)
+            return zero
+        
+        def eqRi(Ri,pI,I):
+            zero= - 1 + Ri / (pI*I)
+            return zero
+        
+        def systemI(var, par):
+            d = {**var, **par}
+            return np.hstack([eqpI(pI=d['pI'],pCj=d['pCj'],alphaIj=d['alphaIj']),
+                              eqIj(Ij=d['Ij'], alphaIj=d['alphaIj'],I=d['I']),
+                              eqRi(Ri=d['Ri'],pI=d['pI'],I=d['I'])]
+                              )
+        
+        this_len=len(imp.pCjIj[imp.pCjIj!=0])
+        
+        variables={ 'I': self.Ri0/sum(np.array([0.1]*N)*self.pCj0), 'alphaIj':self.pCj0[imp.pCjIj!=0]/self.Ri0,'pI':np.array([sum(np.array([0.1]*N)*self.pCj0)])}
+        
+        parameters={'pCj':self.pCj0[imp.pCjIj!=0],'Ij':(imp.pCjIj/self.pCj0)[imp.pCjIj!=0], 'Ri':self.Ri0}
+        
+        bounds=np.array([ ([0]*(this_len+2)),([np.inf]*(2+this_len)) ])
+        
+        solI = dict_least_squares(systemI, variables , parameters, bounds, check=False)
+        
+        self.I0=float(solI.dvar['I'])
+        self.pI0=float(solI.dvar['pI'])
+        self.alphaIj=np.zeros(N)
+        self.alphaIj[imp.pCjIj!=0]=solI.dvar['alphaIj']
+        self.delta=0.04
+        self.g0=initial_L_gr
+        self.pK0 = (sum(imp.pKKj)*(self.g0+self.delta))/self.I0
+        self.Kj0= imp.pKKj / self.pK0
+        self.K0=sum(self.Kj0)
+        self.bKLj = self.KLj0/(np.float_power(self.Lj0,self.alphaLj) * np.float_power(self.Kj0,self.alphaKj))
+        self.alphapK = self.pK0/(self.uK0**self.sigmapK)
+        self.alphaIK = self.Ri0/self.K0
+        self.K0next = self.K0 * (1-self.delta) + self.I0
+        self.L0u=sum(self.Lj0)/(1-self.uL0)
+        self.K0u=sum(self.Kj0)/(1-self.uK0)
+        self.K0u_next= self.K0u * (1-self.delta) + self.I0
 
 #CALIBRATE betaRj WITH REVENUE ELASTICITY OF CONSUMPTION (INSTEAD OF PRICE ELASTICITY) 
 

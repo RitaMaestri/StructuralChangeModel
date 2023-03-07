@@ -1,16 +1,3 @@
-####### define closure : "johansen" , "neoclassic", "kaldorian", "keynes-marshall", "keynes", "keynes-kaldor","neokeynesian1", "neokeynesian2"   ########
-
-
-closure="kaldorian"
-
-start=2015
-stop=2050
-step=1
-
-#growth_rates = {'L':0.1 } if closure != "keynes-marshall" else {}
-growth_rates = {}
-
-
 import numpy as np
 import pandas as pd
 import sys
@@ -20,19 +7,55 @@ import import_csv as imp
 sys.path.append('/home/rita/Documents/Stage/Code')
 import model_equations as eq
 from solvers import dict_minimize, dict_least_squares, dict_fsolve, dict_basinhopping, MyBounds, to_dict
-from time_series_data import sys_df
+from time_series_data import sys_df, growth_ratio_to_rate
+from datetime import datetime
 
-calibration = calibrationDict(closure)
+
+
+now = datetime.now()
+dt_string = now.strftime("%d-%m-%Y_%H:%M")
+
+###### PARAMETERS SETTING ###########
+
+# closure : "johansen" , "neoclassic", "kaldorian", "keynes-marshall", "keynes", "keynes-kaldor","neokeynesian1", "neokeynesian2"   ########
+closure="johansen"
+
+stop=2050
+
+step=1
+years = np.array(range(2015, stop+1, step))
+add_string="-exoProductivity"
+
+
+growth_ratios = pd.read_csv("data/growth_ratios.csv", index_col="variable")[years.astype(str)]
+
+Lg_rate=growth_ratio_to_rate( np.array( growth_ratios.loc["L"]) )
+Kg_rate=growth_ratio_to_rate( np.array( growth_ratios.loc["K"]) )
+bKLg_rate=growth_ratio_to_rate( np.array( growth_ratios.loc["bKL"]) )
+
+growth_rates = {'L':Lg_rate, 'K':Kg_rate, 'bKL':bKLg_rate} if closure != "keynes-marshall" else {'K':Kg_rate, 'bKL':bKLg_rate}
+
+dynamic_parameters= {
+    "GDPreal":np.array(pd.read_csv("data/GDPreal_evolution.csv")[years.astype(str)].iloc[0])
+    }
+
+endoKnext = False if 'K' in {**growth_rates,**dynamic_parameters}.keys() else True
+endostring="endoKnext" if endoKnext else "exoKnext"
+
+name = str().join(["results/",closure,str(2015),"-",str(stop),endostring,add_string,"(",dt_string,")",".csv"])
+
+######### CALIBRATION AND MODEL SOLUTION #############
+
+
+calibration = calibrationDict(closure, Lg_rate[0], endoKnext)
 
 variables_calibration = calibration.endogeouns_dict
 
 parameters_calibration = calibration.exogenous_dict
 
-####  Y axis  ####
-years = np.array(range(start, stop+1, step))
+## Build the systen ##
 
-
-System=sys_df(years, growth_rates, variables_calibration, parameters_calibration)
+System=sys_df(years, growth_rates, variables_calibration, parameters_calibration, dynamic_parameters)
 
 
 ####### check for errors ########
@@ -115,9 +138,10 @@ def system(var, par):
         
         eq.eqMult(result=d['Ri'],mult1=d['pI'],mult2=d['I']),
         
-        eq.eqinventory(Knext=d['Knext'], K=d['K'], delta=d['delta'], I=d['I'])
         ])
     
+    common_equations = np.hstack([common_equations, eq.eqinventory(Knext=d['Knext'], K=d['K'], delta=d['delta'], I=d['I'])]) if endoKnext else common_equations
+                      
 
     if closure=="johansen": 
         return np.hstack([common_equations,
@@ -318,7 +342,7 @@ for t in years[:-1]:
     
     parameters=System.df_to_dict(var=False, t=t+1)
     
-    sol = dict_least_squares( system, variables, parameters, bounds_variables, verb=0, check=False )
+    sol = dict_least_squares( system, variables, parameters, bounds_variables, verb=2, check=False )
     
     maxerror=max(abs( system(sol.dvar, parameters)))
     
@@ -332,12 +356,12 @@ for t in years[:-1]:
     
     System.dict_to_df(sol.dvar, t+1)
     
-    if t<years[-2]:
+    if endoKnext and t<years[-2] :
         System.evolve_K(t+1)
 
 results=pd.concat([System.variables_df,System.parameters_df], ignore_index=False)
 
-results.to_csv(str().join(["results/",closure,str(start),"-",str(stop),".csv"]))
+results.to_csv(name)
 
 
 
@@ -384,3 +408,6 @@ results.to_csv(str().join(["results/",closure,str(start),"-",str(stop),".csv"]))
 # sol_N.to_csv("results/classic_N.csv")
 # sol_1.to_csv("results/classic_1.csv")
 # sol_Yij.to_csv("results/classic_Yij.csv")    
+
+
+
