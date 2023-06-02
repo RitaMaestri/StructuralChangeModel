@@ -3,7 +3,6 @@
 from scipy import optimize
 import numpy as np
 from math import sqrt
-from data_calibration_from_matrix import N
 import sys
 
 # TYPE CONVERTERS 
@@ -17,7 +16,7 @@ def non_zero_index(dvar):
     array_var= to_array(dvar)
     return np.where(array_var != 0)[0]
 
-def to_dict(vec, dvec, is_variable):  #takes array WITHOUT ZEROS, returns dict of arrays (of equal dimensions and keys as dvec)
+def to_dict(vec, dvec, N, is_variable):  #takes array WITHOUT ZEROS, returns dict of arrays (of equal dimensions and keys as dvec)
     lengths = np.array([int(np.prod(np.shape(item))) for item in dvec.values()])
     #N=int(min(lengths[lengths!=1]))
     keys=dvec.keys()
@@ -45,13 +44,13 @@ def same_number(var,system):
         sys.exit()
 
 ########################  FSOLVE  ########################
-def dict_fsolve(f, dvar, dpar):
+def dict_fsolve(f, dvar, dpar,N):
     result = optimize.fsolve(
-        lambda x,y: f(to_dict(x,dvar), y), # wrap the argument in a dict
+        lambda x,y: f(to_dict(x,dvar), y, N), # wrap the argument in a dict
         to_array(dvar), # unwrap the initial dictionary
         args= dpar
     )
-    result.dvar= to_dict(result, dvar)
+    result.dvar= to_dict(result, dvar,N)
     result.d= {**result.dvar, **dpar}
     return result;
 
@@ -61,9 +60,9 @@ def cost_function(array):
     return sqrt(sum(np.square(array)))
 
 
-def dict_minimize(f, dvar, dpar, bounds):
+def dict_minimize(f, dvar, dpar, bounds,N):
     result = optimize.minimize(
-        fun=lambda x,y: cost_function(f(to_dict(x,dvar), to_dict(y,dpar))),# wrap the argument in a dict
+        fun=lambda x,y: cost_function(f(to_dict(x,dvar,N), to_dict(y,dpar,N))),# wrap the argument in a dict
         x0=to_array(dvar), # unwrap the initial dictionary
         bounds=bounds,
         args= to_array(dpar),
@@ -74,28 +73,28 @@ def dict_minimize(f, dvar, dpar, bounds):
         #)
         verbose=2,
     )
-    result.dvar= to_dict(result.x, dvar)
+    result.dvar= to_dict(result.x, dvar,N)
     result.d= {**result.dvar, **dpar}
     return result;
 
 
 ####################  LEAST_SQUARE  #########################
 
-def dict_least_squares(f, dvar, dpar, bounds, verb=1, check=True):
+def dict_least_squares(f, dvar, dpar, bounds, N, verb=1, check=True):
     #check same number
     if check:
         non_zero_dvar=to_array(dvar)[to_array(dvar)!=0]
         same_number(f(dvar,dpar), non_zero_dvar)
 
     result = optimize.least_squares(
-        lambda x,y: f(to_dict(x,dvar,is_variable=True), to_dict(y,dpar,is_variable=False)),# wrap the argument in a dict
+        lambda x,y: f(to_dict(x,dvar,N,is_variable=True), to_dict(y,dpar,N,is_variable=False)),# wrap the argument in a dict
         to_array(dvar)[to_array(dvar)!=0], # unwrap the initial dictionary
         bounds=bounds,
         args= list([to_array(dpar)],),
         verbose=verb
     )
 
-    result.dvar= to_dict(result.x, dvar, is_variable=True)
+    result.dvar= to_dict(result.x, dvar,N, is_variable=True)
     result.d= {**result.dvar, **dpar}
     return result;
 
@@ -114,9 +113,9 @@ class MyBounds:
         return tmax and tmin
 
 
-def dict_basinhopping(f, dvar, dpar, mybounds):
+def dict_basinhopping(f, dvar, dpar, mybounds,N):
     result = optimize.basinhopping(
-        lambda x,y: cost_function(f(to_dict(x,dvar,is_variable=True), to_dict(y,dpar,is_variable=False))),# wrap the argument in a dict
+        lambda x,y: cost_function(f(to_dict(x,dvar,N, is_variable=True), to_dict(y,dpar,N, is_variable=False))),# wrap the argument in a dict
         x0=to_array(dvar), # unwrap the initial dictionary     
         #niter=2,
         minimizer_kwargs = dict(method="L-BFGS-B",  bounds=mybounds.bounds, args= to_array(dpar)),

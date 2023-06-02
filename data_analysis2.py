@@ -178,21 +178,21 @@ def plot_varj_evol(var, pq, diff=False):
     ax.legend(loc='center left', bbox_to_anchor=(1.16, 0.5), prop={'size': 16})
     
     if pq=="pq":
-        plt.title("p"+var+var)
+        plt.title("p"+var+var,fontsize = 15)
     elif pq == "p":
-        plt.title("p"+var)
+        plt.title("p"+var,fontsize = 15)
     elif pq == "q":
-        plt.title(var)
+        plt.title(var,fontsize = 15)
     plt.xlim(2014.99,2050.01)
     
-    plt.title("Value added by sector", fontsize = 25)
+    #plt.title("Value added by sector", fontsize = 25)
     plt.xlabel("Year",fontsize = 15)
     plt.ylabel("Relative change with respect to year 2015", fontsize = 15)
 
     
     plt.show()
 
-plot_varj_evol(var="KLj", pq="q", diff=False)
+plot_varj_evol(var="Dj", pq="p", diff=False)
 
 
 def plot_splitted_evolutions(var, pq, diff):
@@ -324,7 +324,7 @@ par_keys = ['tauSj', 'tauYj', 'pXj', 'bKLj', 'alphaKj', 'alphaLj', 'aKLj', 'alph
 nansX=np.argwhere(np.array(df["2050"].loc[ df['variable'] == "Xj" ]==0)).flatten()
 
 
-plot_varj_evol(var="KLj", pq="q", diff=False)
+plot_varj_evol(var="Dj", pq="p", diff=False)
 
 order_variablesj("alphaXj")#.drop([sectors_names_eng[i] for i in nans])
 
@@ -338,12 +338,12 @@ value("pDj", "AGRICULTURE")
 
 print(function_pD(pY=value("pYj"),
                   sigmaY=value("sigmaXj"),
-                  alphaX=value("alphaXj","AGRICULTURE"),
+                  alphaX=value("alphaXj"),
                   pX=value("pXj"),
                   alphaD=value("alphaDj")))
 
 
-plot_varj_evol(var="KLj", pq="q", diff=False)
+plot_varj_evol(var="Yj", pq="q", diff=False)
 
 
 ###########

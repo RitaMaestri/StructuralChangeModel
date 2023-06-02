@@ -17,7 +17,7 @@ sectors_names_eng=[
     "EXTRACTIVE IND.",
     "FOOD IND.",
     "TEXTILE IND.",
-    "PAPER & WOOD IND.",
+    "PAPER & WOOD IND.",salut cirediens! pour les fans du theatre: mardi à 20h30 à la comédie Nation aura lieu la première du spectacle Rondeur, mis en scène par une très chère amie. Rejoignez si interessés!
     "REFINERIES",
     "CHEMICAL IND.",
     "PHARMACEUTICAL IND.",

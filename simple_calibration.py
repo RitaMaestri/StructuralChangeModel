@@ -1,12 +1,18 @@
 import numpy as np 
-import import_csv as imp
-from import_csv import N
+import import_GTAP_data as imp
+from import_GTAP_data import N
 from solvers import dict_least_squares
-import pandas as pd
+import sys
+#import pandas as pd
 
 
 def division_by_zero(num,den):
-    result=np.zeros(N)
+    if len(num)==len(den):
+        n=len(num)
+    else:
+        print("denominator and numerator have different shapes")
+        sys.exit()
+    result=np.zeros(n)
     result[den!=0]=num[den!=0]/den[den!=0]
     return result
 
@@ -23,7 +29,7 @@ class calibrationVariables:
         self.w=100
         self.tauYj0 = imp.production_taxes/(imp.pYjYj-imp.production_taxes)
         self.tauSj0 = imp.sales_taxes / (imp.pCiYij.sum(axis=1)+imp.pCjCj+imp.pCjGj+imp.pCjIj - imp.sales_taxes)
-        self.tauL0 = 0
+        self.tauL0 = imp.labor_taxes / (imp.pLLj - imp.labor_taxes)
         self.pCj0 = (1+self.tauSj0)*self.pSj0
         self.pL0 = (1+self.tauL0)*self.w
         #quantità
@@ -80,8 +86,8 @@ class calibrationVariables:
         self.pXtp=self.pXj
         self.Xtp=self.Xj0
         self.Mtp = self.Mj0
-        self.betaRj= (imp.epsilonPCj+1)/(self.alphaCj-1)
-        self.epsilonRj=imp.epsilonRj
+        #self.betaRj= (imp.epsilonPCj+1)/(self.alphaCj-1)
+        #self.epsilonRj=imp.epsilonRj
         self.sD0=sum(imp.pCjIj+imp.pXjXj-imp.pMjMj)/self.GDP0
         
         #calibrate alphaIj, I and pI
@@ -113,12 +119,14 @@ class calibrationVariables:
         
         bounds=np.array([ ([0]*(this_len+2)),([np.inf]*(2+this_len)) ])
         
-        solI = dict_least_squares(systemI, variables , parameters, bounds, check=False)
+        solI = dict_least_squares(systemI, variables , parameters, bounds, N, check=False)
+        print("calibrazione I: ", systemI(solI, parameters) )
         
         self.I0=float(solI.dvar['I'])
         self.pI0=float(solI.dvar['pI'])
         self.alphaIj=np.zeros(N)
         self.alphaIj[imp.pCjIj!=0]=solI.dvar['alphaIj']
+        
         self.delta=0.04
         self.g0=initial_L_gr
         self.pK0 = (sum(imp.pKKj)*(self.g0+self.delta))/self.I0

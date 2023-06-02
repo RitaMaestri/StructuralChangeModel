@@ -1,6 +1,5 @@
 import numpy as np 
-from simple_calibration import calibrationVariables
-from import_csv import N
+from simple_calibration import calibrationVariables, N
 import pandas as pd
 import sys
 
@@ -155,7 +154,7 @@ class calibrationDict:
                             'sigmapK':Variable("exo", cal.sigmapK),
                             'K':Variable("exo", cal.K0u),
                             'alphaIK':Variable("exo", cal.alphaIK),
-                            
+
                             }
                     }
         else: 
@@ -168,7 +167,7 @@ class calibrationDict:
 
     def __init__(self, closure,initial_L_gr, endoKnext):
         cal = calibrationVariables(initial_L_gr)
-        
+
         self.commonDict = {
             'pL': Variable("endo", cal.pL0),
             'pK':Variable("endo", cal.pK0),
@@ -246,8 +245,6 @@ class calibrationDict:
         
         self.exogenous_dict = self.toEndoExoDict("exo")
 
-        
-
 
 
 ###########   BOUNDS    ################
@@ -273,7 +270,7 @@ bounds={
     'Rg':(0,np.inf),
     'l':(0,np.inf),
     'bKL':(-np.inf,np.inf),
-    'tauL':(0,1),
+    'tauL':(-1,5),
     'tauSj':(-1,1),
     'tauYj':(-1,1),
     'T':(-np.inf,np.inf),

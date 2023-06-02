@@ -34,7 +34,10 @@ def clean_data(db):
 sectors=employment_table.index.values[:-3]
 sectors_names=list(employment_table["Activity"][:-3].values)
 np.where(sectors=="DZ")[0].item()
-# consumptions
+
+
+####### CONSUMPTION ##########
+
 households=employment_table["Ménages"]
 households=clean_data(households)
 
@@ -47,9 +50,10 @@ investment = clean_data(investment)
 export=employment_table["Exportations de biens et de services"]
 export = clean_data(export)
 
-#costs
+
 imports= resources_table["Importations de biens et de services"] + resources_table["Correction CAF/FAB"]
 imports=clean_data(imports)
+
 
 sales_taxes = resources_table["Impôts sur les produits - total -"] + resources_table["Subventions sur les produits"]
 sales_taxes=clean_data(sales_taxes)
@@ -73,27 +77,29 @@ pCjIj=pCjIj-(com_margins)*(pCjIj/total_domestic_production)
 pXjXj=pXjXj-(com_margins)*(pXjXj/total_domestic_production)
 
 
-#production
+#### PRODUCTION #######
+
+#Labour
 pLLj=exploitation_table["Rémunération des salariés"]
 pLLj=shorten(pLLj)
 
+#Capital
 pKKj=exploitation_table["EBE et revenu mixte brut (1)"]
 pKKj=shorten(pKKj)
 
-#distribute Y taxes, transfer and margins across L and K
+#CORRECTION: transfer
 transfer = exploitation_table["Total des transferts"]
 transfer=shorten(transfer)
 
-production_taxes=exploitation_table["Autres impôts sur la production"]+exploitation_table["Autres subv. sur la production"]
-production_taxes=shorten(production_taxes)
-
 proportionL=pLLj/(pKKj+pLLj)
-
 
 pLLj=pLLj+(transfer)*proportionL
 pKKj=pKKj+(transfer)*(1-proportionL)
 
 
+#production taxes
+production_taxes=exploitation_table["Autres impôts sur la production"]+exploitation_table["Autres subv. sur la production"]
+production_taxes=shorten(production_taxes)
 
 #intermediate consumption
 pCiYij=intermediate_cons_table
@@ -101,6 +107,7 @@ pCiYij=pCiYij.drop(["TOTAL" ],axis=1)
 pCiYij=pCiYij.drop(["PCHTR ", "PCAFAB","TOTAL "],axis=0)
 pCiYij.astype(float)
 
+#CORRECTION: trade margins
 trans_margins= resources_table["Marges de transport"]
 trans_margins=shorten(trans_margins)
 
@@ -108,6 +115,9 @@ trans_margins=shorten(trans_margins)
 pCiYij.loc["HZ"]= pCiYij.loc["HZ"]+trans_margins
 
 pCiYij=pCiYij.to_numpy()
+
+
+#### DERIVED QUANTITIES #######
 
 #gross domestic product
 pYjYj=pCiYij.sum(axis=0)+pLLj+pKKj+production_taxes
@@ -121,15 +131,17 @@ pSjSj=pCjCj+pCjGj+pCjIj+pCiYij.sum(axis=1)-sales_taxes
 #domestic good
 pDjDj=pSjSj-pMjMj
 
+#labour taxes
+labor_taxes=0
 
-#check goods poorly consumed by final consumers 
+####### CHECK FOR GOODS POORLY CONSUMED BY HOUSEHOLDS ########
 
 quartile = np.percentile(households, 20)
 
 employment_table.loc[(employment_table['Ménages'] < quartile)][['Activity','Ménages']]
 
 
-#check for equilibrium
+######## CHECK FOR EQUILIBRIUM ###########
 
 cons_cost_diff= (
     pCiYij.sum(axis=0)+pLLj+pKKj+production_taxes+sales_taxes-(
@@ -177,7 +189,7 @@ sigmaXj=np.array(export_elasticities["elasticity"])
 
 Armington_elasticities=pd.read_csv("data/Armington_elasticities.csv")
 
-sigmaSj=np.array(Armington_elasticities[" elasticity"])
+sigmaSj=np.array(Armington_elasticities["elasticity"])
 
 #consumption elasticities
 

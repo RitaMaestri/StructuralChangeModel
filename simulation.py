@@ -2,15 +2,12 @@ import numpy as np
 import pandas as pd
 import sys
 from data_closures import bounds, N, calibrationDict
-from import_csv import non_zero_index_G, non_zero_index_I, non_zero_index_C, non_zero_index_X, non_zero_index_M, non_zero_index_Yij
-import import_csv as imp
+from import_GTAP_data import non_zero_index_G, non_zero_index_I, non_zero_index_C, non_zero_index_X, non_zero_index_M, non_zero_index_Yij
 sys.path.append('/home/rita/Documents/Stage/Code')
 import model_equations as eq
 from solvers import dict_minimize, dict_least_squares, dict_fsolve, dict_basinhopping, MyBounds, to_dict
 from time_series_data import sys_df, growth_ratio_to_rate
 from datetime import datetime
-
-
 
 now = datetime.now()
 dt_string = now.strftime("%d-%m-%Y_%H:%M")
@@ -20,23 +17,26 @@ dt_string = now.strftime("%d-%m-%Y_%H:%M")
 # closure : "johansen" , "neoclassic", "kaldorian", "keynes-marshall", "keynes", "keynes-kaldor","neokeynesian1", "neokeynesian2"   ########
 closure="johansen"
 
-stop=2050
+stop=2017
 
 step=1
 years = np.array(range(2015, stop+1, step))
 add_string="-exoProductivity"
-
 
 growth_ratios = pd.read_csv("data/growth_ratios.csv", index_col="variable")[years.astype(str)]
 
 Lg_rate=growth_ratio_to_rate( np.array( growth_ratios.loc["L"]) )
 Kg_rate=growth_ratio_to_rate( np.array( growth_ratios.loc["K"]) )
 bKLg_rate=growth_ratio_to_rate( np.array( growth_ratios.loc["bKL"]) )
+wIg_rate=growth_ratio_to_rate( np.array( growth_ratios.loc["wI"]) )
 
-growth_rates = {'L':Lg_rate, 'K':Kg_rate, 'bKL':bKLg_rate} if closure != "keynes-marshall" else {'K':Kg_rate, 'bKL':bKLg_rate}
+growth_rates = {'L':Lg_rate, 'K':Kg_rate, 'wI':wIg_rate} if closure != "keynes-marshall" else {'K':Kg_rate}
 
-dynamic_parameters= {
-    "GDPreal":np.array(pd.read_csv("data/GDPreal_evolution.csv")[years.astype(str)].iloc[0])
+dynamic_parameters_df= pd.read_csv("data/dynamic parameters.csv", index_col="variable")[years.astype(str)]
+
+
+dynamic_parameters={
+    "GDPreal":np.array(dynamic_parameters_df.loc["GDPreal"]),
     }
 
 endoKnext = False if 'K' in {**growth_rates,**dynamic_parameters}.keys() else True
@@ -45,7 +45,6 @@ endostring="endoKnext" if endoKnext else "exoKnext"
 name = str().join(["results/",closure,str(2015),"-",str(stop),endostring,add_string,"(",dt_string,")",".csv"])
 
 ######### CALIBRATION AND MODEL SOLUTION #############
-
 
 calibration = calibrationDict(closure, Lg_rate[0], endoKnext)
 
@@ -56,7 +55,6 @@ parameters_calibration = calibration.exogenous_dict
 ## Build the systen ##
 
 System=sys_df(years, growth_rates, variables_calibration, parameters_calibration, dynamic_parameters)
-
 
 ####### check for errors ########
 
@@ -112,7 +110,7 @@ def system(var, par):
         
         eq.eqCobbDouglasj(Qj=d['Gj'],alphaQj=d['alphaGj'],pCj=d['pCj'],Q=d['Rg'], _index=non_zero_index_G),
         
-        eq.eqIj(Ij=d['Ij'],alphaIj=d['alphaIj'],I=d['I'],_index=non_zero_index_I),
+        #eq.eqIj(Ij=d['Ij'],alphaIj=d['alphaIj'],I=d['I'],_index=non_zero_index_I),
         
         eq.eqMult(result=d['Rg'],mult1=d['wG'],mult2=d['GDP']),
         
@@ -134,7 +132,7 @@ def system(var, par):
         
         eq.eqPriceTax(pGross=d['pL'], pNet=d['w'], tau=d['tauL']),
         
-        eq.eqpI(pI=d['pI'],pCj=d['pCj'],alphaIj=d['alphaIj']),
+        #eq.eqpI(pI=d['pI'],pCj=d['pCj'],alphaIj=d['alphaIj']),
         
         eq.eqMult(result=d['Ri'],mult1=d['pI'],mult2=d['I']),
         
@@ -308,7 +306,7 @@ if max(system(variables_calibration, parameters_calibration))>1e-07:
     d = {**variables_calibration, **parameters_calibration}
     sys.exit()
 
-#### put the bounds in the good format for the solver ####
+#### set the bounds in the good format for the solver ####
 def multiply_bounds_len(key,this_bounds,this_variables):
     return [this_bounds[key] for i in range(len(this_variables[key].flatten()))]
 
@@ -342,7 +340,7 @@ for t in years[:-1]:
     
     parameters=System.df_to_dict(var=False, t=t+1)
     
-    sol = dict_least_squares( system, variables, parameters, bounds_variables, verb=2, check=False )
+    sol = dict_least_squares( system, variables, parameters, bounds_variables, N, verb=0, check=False )
     
     maxerror=max(abs( system(sol.dvar, parameters)))
     

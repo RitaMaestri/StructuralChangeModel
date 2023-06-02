@@ -1,7 +1,7 @@
 #equations cge
 import numpy as np
 from math import sqrt
-import data_calibration_from_matrix as dt
+#import data_calibration_from_matrix as dt
 
 #EQUATIONS
 
