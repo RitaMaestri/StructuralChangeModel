@@ -30,8 +30,9 @@ def to_dict(vec, dvec, N, is_variable):  #takes array WITHOUT ZEROS, returns dic
     #create array of arrays and matrices (if needed)
     vec = [np.reshape(i, (N, N)) if len(i) == N**2 else i for i in vec]
     for i in range(len(vec)):
-        if np.shape(vec[i])== (1,): 
+        if isinstance(vec[i], np.ndarray) and vec[i].size == 1:
             vec[i]=vec[i].item()
+            #print("to_dict ", list(keys)[i] )
     return dict(zip(keys, vec))
 
 
@@ -85,7 +86,7 @@ def dict_least_squares(f, dvar, dpar, bounds, N, verb=1, check=True):
     if check:
         non_zero_dvar=to_array(dvar)[to_array(dvar)!=0]
         same_number(f(dvar,dpar), non_zero_dvar)
-
+        
     result = optimize.least_squares(
         lambda x,y: f(to_dict(x,dvar,N,is_variable=True), to_dict(y,dpar,N,is_variable=False)),# wrap the argument in a dict
         to_array(dvar)[to_array(dvar)!=0], # unwrap the initial dictionary

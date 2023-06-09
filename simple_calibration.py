@@ -3,6 +3,7 @@ import import_GTAP_data as imp
 from import_GTAP_data import N
 from solvers import dict_least_squares
 import sys
+from scipy import optimize
 #import pandas as pd
 
 
@@ -10,15 +11,28 @@ def division_by_zero(num,den):
     if len(num)==len(den):
         n=len(num)
     else:
-        print("denominator and numerator have different shapes")
+        print("denominator and numerator have different len")
         sys.exit()
+        
     result=np.zeros(n)
     result[den!=0]=num[den!=0]/den[den!=0]
     return result
 
 class calibrationVariables:
-    def __init__(self, initial_L_gr):
+    def __init__(self, L_gr0, L0=None):
+        
+        #labor
+        if L0 is None:   
+            self.pL0 = 100
+            self.Lj0= imp.pLLj / self.pL0
+            self.L0=sum(self.Lj0)
+        else:
+            self.L0=L0
+            self.pL0=sum(imp.pLLj)/L0
+            self.Lj0 = imp.pLLj / self.pL0
+        
         #prezzi
+        
         self.pYj0=np.array([100]*N)
         self.pSj0=np.array([100]*N)
         self.pKLj0=np.array([100]*N)
@@ -26,13 +40,17 @@ class calibrationVariables:
         self.pMj0=np.array([100]*N)
         self.pDj0=np.array([100]*N)
         self.pXj=np.array([100]*N)
-        self.w=100
-        self.tauYj0 = imp.production_taxes/(imp.pYjYj-imp.production_taxes)
+        
+        #taxes
+        
+        self.tauYj0 = imp.production_taxes/( imp.pYjYj - imp.production_taxes)
         self.tauSj0 = imp.sales_taxes / (imp.pCiYij.sum(axis=1)+imp.pCjCj+imp.pCjGj+imp.pCjIj - imp.sales_taxes)
         self.tauL0 = imp.labor_taxes / (imp.pLLj - imp.labor_taxes)
         self.pCj0 = (1+self.tauSj0)*self.pSj0
-        self.pL0 = (1+self.tauL0)*self.w
+        self.w=self.pL0/(1+self.tauL0)
+        
         #quantità
+        
         self.Ij0 = imp.pCjIj/self.pCj0
         self.Cj0 = imp.pCjCj/self.pCj0
         self.Gj0 = imp.pCjGj/self.pCj0
@@ -42,11 +60,11 @@ class calibrationVariables:
         self.Mj0= imp.pMjMj / self.pMj0
         self.Dj0= imp.pDjDj / self.pDj0
         self.Sj0= imp.pSjSj / self.pSj0
-        self.Lj0= imp.pLLj / self.pL0
-        self.Yj0=(imp.pKLjKLj+imp.pCiYij.sum(axis=0))*(1+self.tauYj0)/self.pYj0
+        self.Yj0= imp.pYjYj / self.pYj0
+        
         #scalari
-        self.T0= sum(imp.production_taxes+imp.sales_taxes)
-        self.L0=sum(self.Lj0)
+        
+        self.T0= sum(imp.production_taxes + imp.sales_taxes + imp.labor_taxes)
         self.B0=sum(imp.pXjXj)-sum(imp.pMjMj)
         self.R0= sum(imp.pCjCj)
         self.Ri0= sum(imp.pCjIj)
@@ -57,22 +75,28 @@ class calibrationVariables:
         self.uK0 = 0.105
         self.sigmapK= -0.1
         self.GDP0= sum(imp.pCjCj+imp.pCjGj+imp.pCjIj+imp.pXjXj-imp.pMjMj)
+        
         # parametri
         self.sigmaXj=imp.sigmaXj
         self.sigmaSj=imp.sigmaSj
-        self.etaXj=(imp.sigmaXj-1)/imp.sigmaXj
+        
+        #self.etaXj=(imp.sigmaXj-1)/imp.sigmaXj
+        
         self.etaSj=(imp.sigmaSj-1)/imp.sigmaSj
+        self.etaXj=(imp.sigmaXj-1)/imp.sigmaXj
         self.alphaLj = imp.pLLj/imp.pKLjKLj
         self.alphaKj = imp.pKKj/imp.pKLjKLj
         self.aYij= self.Yij0 / self.Yj0[None,:]
         self.aKLj=self.KLj0/self.Yj0
-        self.alphaXj=np.float_power(division_by_zero(self.Yj0,self.Xj0),self.etaXj)*imp.pXjXj/imp.pYjYj
-        self.alphaDj=np.float_power(division_by_zero(self.Yj0,self.Dj0),self.etaXj)*imp.pDjDj/imp.pYjYj
-        self.betaMj=np.float_power(division_by_zero(self.Sj0,self.Mj0),self.etaSj)*imp.pMjMj/imp.pSjSj 
-        self.betaDj=np.float_power(division_by_zero(self.Sj0,self.Dj0),self.etaSj)*imp.pDjDj/imp.pSjSj
-        self.alphaCj=imp.pCjCj/self.R0
-        self.alphaGj=imp.pCjGj/self.Rg0
-        self.alphalj=self.Lj0/(self.KLj0*self.l0)
+        
+        self.alphaXj = np.float_power(division_by_zero(self.Yj0,self.Xj0),self.etaXj) * imp.pXjXj / imp.pYjYj
+        self.alphaDj = np.float_power(division_by_zero(self.Yj0,self.Dj0),self.etaXj) * imp.pDjDj / imp.pYjYj
+        
+        self.betaMj = np.float_power(division_by_zero(self.Sj0,self.Mj0),self.etaSj)*imp.pMjMj / imp.pSjSj
+        self.betaDj = np.float_power(division_by_zero(self.Sj0,self.Dj0),self.etaSj)*imp.pDjDj / imp.pSjSj
+        self.alphaCj = imp.pCjCj/self.R0
+        self.alphaGj = imp.pCjGj/self.Rg0
+        self.alphalj = self.Lj0/(self.KLj0*self.l0)
         self.alphaw = self.w/(self.uL0**self.sigmaw)
         self.wB = self.B0/self.GDP0
         self.wG = self.Rg0/self.GDP0
@@ -113,14 +137,19 @@ class calibrationVariables:
         
         this_len=len(imp.pCjIj[imp.pCjIj!=0])
         
-        variables={ 'I': self.Ri0/sum(np.array([0.1]*N)*self.pCj0), 'alphaIj':self.pCj0[imp.pCjIj!=0]/self.Ri0,'pI':np.array([sum(np.array([0.1]*N)*self.pCj0)])}
+        variables = { 'I': self.Ri0/sum(np.array([0.02]*N)*self.pCj0),
+                   'alphaIj': np.array([10]*this_len),
+                   'pI': np.array([sum(np.array([0.02]*N)*self.pCj0)])
+                   }
         
-        parameters={'pCj':self.pCj0[imp.pCjIj!=0],'Ij':(imp.pCjIj/self.pCj0)[imp.pCjIj!=0], 'Ri':self.Ri0}
+        parameters={'pCj':self.pCj0[imp.pCjIj!=0],
+                    'Ij':self.Ij0[imp.pCjIj!=0], 
+                    'Ri':self.Ri0
+                    }
         
-        bounds=np.array([ ([0]*(this_len+2)),([np.inf]*(2+this_len)) ])
+        bounds= np.array([ ([0]*(this_len+2)),([np.inf]*(2+this_len)) ])
         
         solI = dict_least_squares(systemI, variables , parameters, bounds, N, check=False)
-        print("calibrazione I: ", systemI(solI, parameters) )
         
         self.I0=float(solI.dvar['I'])
         self.pI0=float(solI.dvar['pI'])
@@ -128,7 +157,7 @@ class calibrationVariables:
         self.alphaIj[imp.pCjIj!=0]=solI.dvar['alphaIj']
         
         self.delta=0.04
-        self.g0=initial_L_gr
+        self.g0=L_gr0
         self.pK0 = (sum(imp.pKKj)*(self.g0+self.delta))/self.I0
         self.Kj0= imp.pKKj / self.pK0
         self.K0=sum(self.Kj0)
@@ -233,3 +262,21 @@ class calibrationVariables:
 # alphaCDESj[alphaCj!=0]=solalpha.x
 
 # sum(alphaCDESj)
+
+pSj0=np.array([100]*N)
+tauSj0 = imp.sales_taxes / (imp.pCiYij.sum(axis=1)+imp.pCjCj+imp.pCjGj+imp.pCjIj - imp.sales_taxes)
+pCj0 = (1+tauSj0)*pSj0
+
+def fun(x):
+    return 1 - (.1/ sum(x * pCj0[imp.pCjIj!=0]))
+
+this_len=len(imp.pCjIj[imp.pCjIj!=0])
+
+a=optimize.least_squares(
+    fun,
+    np.array([.1]*59),
+    bounds=np.array([ ([0]*(this_len)),([np.inf]*(this_len)) ])
+    )
+
+sum(a.x * pCj0[imp.pCjIj!=0])
+

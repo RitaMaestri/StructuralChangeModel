@@ -59,9 +59,11 @@ sales_taxes = np.array(mydict["T_CI_dom_cor"].sum(axis=0) +
                mydict["T_Exp_cor"] + 
                mydict["Auto_TMX"])
 
-pLLj = np.array( mydict["tech_aspros"] + mydict["clerks"] + mydict["service_shop"] + mydict["off_mgr_pros"] + mydict["ag_othlowsk"] )
+wLj =np.array(  mydict["tech_aspros"] + mydict["clerks"] + mydict["service_shop"] + mydict["off_mgr_pros"] + mydict["ag_othlowsk"] )
 
-labor_taxes = np.array( mydict["T_tech_aspros"] + mydict["T_clerks"] + mydict["T_service_shop"] + mydict["T_off_mgr_pros"] + mydict["T_ag_othlowsk"] )
+labor_taxes =np.array(  mydict["T_tech_aspros"] + mydict["T_clerks"] + mydict["T_service_shop"] + mydict["T_off_mgr_pros"] + mydict["T_ag_othlowsk"] )
+
+pLLj= wLj + labor_taxes
 
 K = np.array( mydict["Capital"] + mydict["T_Capital"] )
 
@@ -79,29 +81,53 @@ pCjIj = np.array( mydict["FBCF_imp"] + mydict["FBCF_dom"] )
 
 pXjXj= np.array( mydict["Exp_trans_cor"] + mydict["Exp_cor"] )
 
+pKKj = K + R
+
+
 #check for equilibrium
-equilibrium = pLLj + labor_taxes + K + R + production_taxes + sales_taxes + pMjMj + pCiYij.sum(axis=0) - (pCjCj + pCjGj + pCjIj + pXjXj + pCiYij.sum(axis=1))
+
+equilibrium = ( pLLj + pKKj + production_taxes + sales_taxes + pMjMj + pCiYij.sum(axis=0) - 
+               (pCjCj + pCjGj + pCjIj + pXjXj + pCiYij.sum(axis=1))
+               )
+
 print("equilibrium:", sum(equilibrium**2))
 if sum(equilibrium**2)>2:
     "the system is not at the equilibrium"
     sys.exit()
 
-#### DERIVED QUANTITIES #######
 
-pKKj = K + R
+
+#CORRECTION FOR SMALL DISEQUILIBRIUM 
+
+cons_cost_diff= (pLLj + pKKj + production_taxes + sales_taxes + pMjMj + pCiYij.sum(axis=0) - 
+                 (pCjCj + pCjGj + pCjIj + pXjXj + pCiYij.sum(axis=1)))
+                 
+total_domestic_production=pCjCj+pCjGj+pCjIj
+pCjCj=pCjCj+(cons_cost_diff)*(pCjCj/total_domestic_production)
+pCjGj=pCjGj+(cons_cost_diff)*(pCjGj/total_domestic_production)
+pCjIj=pCjIj+(cons_cost_diff)*(pCjIj/total_domestic_production)
+
+diff_final= (
+    pCiYij.sum(axis=0)+pLLj+pKKj+production_taxes+sales_taxes-(
+    pCiYij.sum(axis=1)+pCjCj+pCjGj+pCjIj-pMjMj+pXjXj
+    )
+    )
+
+
+#### DERIVED QUANTITIES #######
 
 #gross domestic product
 pYjYj = pCiYij.sum(axis=0) + pLLj + pKKj + production_taxes
 
 #KL good
-pKLjKLj = pKKj + pLLj
+pKLjKLj = pKKj + pLLj 
 
 #Armington good
 pSjSj = pCjCj + pCjGj + pCjIj + pCiYij.sum(axis=1) - sales_taxes
 
 #domestic good
 pDjDj = pSjSj - pMjMj
-
+(pSjSj - pMjMj) / (pYjYj-pXjXj)
 
 #GTAP Import elasticities + default export elasticities (-2 for all sectors)
 

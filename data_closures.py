@@ -9,7 +9,12 @@ import sys
 class Variable:
     def __init__(self, status, value):
         self.status=status
-        self.value=value
+        if isinstance(value, np.ndarray) and value.size == 1:
+            self.value=value.item()
+
+        else:
+
+            self.value=value
    
     def __call__(self):
             list(self.status, self.value)
@@ -63,7 +68,7 @@ class calibrationDict:
                             'L':Variable("exo", cal.L0)
                             }
                          }
-        
+
         elif self.closure == "keynes-marshall":
             return {**self.commonDict, 
                          **{'K':Variable("exo", cal.K0),
@@ -168,6 +173,7 @@ class calibrationDict:
     def __init__(self, closure,initial_L_gr, endoKnext):
         cal = calibrationVariables(initial_L_gr)
 
+
         self.commonDict = {
             'pL': Variable("endo", cal.pL0),
             'pK':Variable("endo", cal.pK0),
@@ -270,7 +276,7 @@ bounds={
     'Rg':(0,np.inf),
     'l':(0,np.inf),
     'bKL':(-np.inf,np.inf),
-    'tauL':(-1,5),
+    'tauL':(-1,1),
     'tauSj':(-1,1),
     'tauYj':(-1,1),
     'T':(-np.inf,np.inf),

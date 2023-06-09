@@ -10,25 +10,28 @@ def growth_ratio_to_rate(ratio): #the first element of ratio is 1 (at calibratio
     for t in range(1,len(ratio)-1):
         growth_rates[t]= ratio[t+1] /np.prod(1+growth_rates[:t])-1
     return growth_rates
-
+#to be done: define growth_rate_to_ratio
 
 # BUILD DATAFRAME
 
 class sys_df:
-
-    def evolve_par(self):
+    #it creates a dicitonary of parameters' temporal series based on growth rates wrt year 0 or growth ratios
+    def evolve_par(self, growth_rate = False):
         
-        growth_dictionary = {key: None for key in self.growth_rates.keys()}
+        growth_dictionary = {key: None for key in self.growth_ratios.keys()}
         
         step=self.years[1]-self.years[0]
         
-        for i in self.growth_rates.keys():
-            par0=[self.calib_par_dict[i]]
-            [par0.append( par0[-1]*( 1 + self.growth_rates[i][j])**step ) for j in range(len(self.growth_rates[i])) ]
-            par0=np.array(par0)
-
-            growth_dictionary[i]=par0
-        
+        if growth_rate:
+            for i in self.growth_rates.keys():
+                par0=[self.calib_par_dict[i]]
+                [par0.append( par0[-1]*( 1 + self.growth_rates[i][j])**step ) for j in range(len(self.growth_rates[i])) ]
+                par0=np.array(par0)
+                growth_dictionary[i]=par0
+        else:
+            for i in self.growth_ratios.keys():
+                growth_dictionary[i]=self.calib_par_dict[i]*self.growth_ratios[i]
+                
         return growth_dictionary
 
     ####  X axis  ####
@@ -49,8 +52,8 @@ class sys_df:
         return df
 
     def __parameters_dynamics(self):
-        static_par=list(set(self.calib_par_dict.keys())-set(self.dynamic_parameters.keys()))
-        dynamic_par=list(self.calib_par_dict.keys() & self.dynamic_parameters.keys())
+        static_par = list(set(self.calib_par_dict.keys()) - set(self.dynamic_parameters.keys()))
+        dynamic_par = list(self.calib_par_dict.keys() & self.dynamic_parameters.keys())
         
         for key, value in {k: self.calib_par_dict[k] for k in static_par}.items():
                 self.parameters_df.loc[key] = np.repeat([value.flatten() if isinstance(value, np.ndarray) else value], int(len(self.years)), axis=0).T
@@ -59,7 +62,7 @@ class sys_df:
                 self.parameters_df.loc[key] = self.dynamic_parameters[key]
 
     def __initialize_variables_df(self):
-        
+
         self.variables_df= self.empty_dataframe(self.calib_var_dict)
         
         self.dict_to_df(self.calib_var_dict, self.years[0])
@@ -73,8 +76,8 @@ class sys_df:
 
     def dict_to_df(self,dictionary, t):
         for key, value in dictionary.items():
-                self.variables_df[t].loc[key] = value.flatten() if isinstance(value, np.ndarray) else value
-                
+
+            self.variables_df[t].loc[key] = value.flatten() if isinstance(value, np.ndarray) else value
     
     def df_to_dict(self, var, t):
         calib_dict = self.calib_var_dict if var else self.calib_par_dict
@@ -82,24 +85,24 @@ class sys_df:
         
         shapes = {key:np.shape(value) for key, value in calib_dict.items()}
         new_dict = calib_dict.copy()
-        
+
         for key in new_dict.keys():
-            newvalue = np.array(df[t].loc[key].astype(float)).reshape(shapes[key]) if hasattr(df[t].loc[key] , "astype") else df[t].loc[key]
+            newvalue = np.array(df[t].loc[key].astype(float)).reshape(shapes[key]) if hasattr(df[t].loc[key] , "__len__") else (df[t].loc[key])
             new_dict[key] = newvalue
+
         return new_dict
-    
+
     def evolve_K(self,t):
         self.parameters_df[t+1].loc['K'] = self.variables_df[t].loc['Knext']
     
-    def __init__(self, Years, Growth_rates, Variables_dict, Parameters_dict, Dynamic_parameters):
-        
+    def __init__(self, Years, Growth_ratios, Variables_dict, Parameters_dict, Dynamic_parameters={}):
+
         self.years=Years
-        self.growth_rates = Growth_rates
+        self.growth_ratios = Growth_ratios
         self.calib_var_dict = Variables_dict
         self.calib_par_dict = Parameters_dict
         self.dynamic_parameters = Dynamic_parameters
-        endoKnext= True if "K" not in {**self.dynamic_parameters,**self.growth_rates}.keys() else False
-        
+        endoKnext= True if "K" not in {**self.dynamic_parameters,**self.growth_ratios}.keys() else False
         if endoKnext:
             K0=np.array([np.nan]*(len(self.years)))
             K0[0]=self.calib_par_dict['K']

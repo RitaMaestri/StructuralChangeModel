@@ -8,7 +8,9 @@ import model_equations as eq
 from solvers import dict_minimize, dict_least_squares, dict_fsolve, dict_basinhopping, MyBounds, to_dict
 from time_series_data import sys_df, growth_ratio_to_rate
 from datetime import datetime
-
+import random
+import math
+import copy
 now = datetime.now()
 dt_string = now.strftime("%d-%m-%Y_%H:%M")
 
@@ -17,29 +19,33 @@ dt_string = now.strftime("%d-%m-%Y_%H:%M")
 # closure : "johansen" , "neoclassic", "kaldorian", "keynes-marshall", "keynes", "keynes-kaldor","neokeynesian1", "neokeynesian2"   ########
 closure="johansen"
 
-stop=2017
+#stop=2017
+#step=1
+#years = np.array(range(2015, stop+1, step))
+add_string=""
 
-step=1
-years = np.array(range(2015, stop+1, step))
-add_string="-exoProductivity"
+growth_ratios_df = pd.read_csv("data/REMIND_exogenous_data.csv", index_col="variable")#[years.astype(str)]
 
-growth_ratios = pd.read_csv("data/growth_ratios.csv", index_col="variable")[years.astype(str)]
+growth_ratios=growth_ratios_df.T.reset_index().to_dict(orient='list')
+growth_ratios.pop("index")
+growth_ratios={k:np.array(v) for k,v in growth_ratios.items()}
 
-Lg_rate=growth_ratio_to_rate( np.array( growth_ratios.loc["L"]) )
-Kg_rate=growth_ratio_to_rate( np.array( growth_ratios.loc["K"]) )
-bKLg_rate=growth_ratio_to_rate( np.array( growth_ratios.loc["bKL"]) )
-wIg_rate=growth_ratio_to_rate( np.array( growth_ratios.loc["wI"]) )
+years = np.array([eval(i) for i in growth_ratios_df.columns])
+stop=years[-1]
 
-growth_rates = {'L':Lg_rate, 'K':Kg_rate, 'wI':wIg_rate} if closure != "keynes-marshall" else {'K':Kg_rate}
-
-dynamic_parameters_df= pd.read_csv("data/dynamic parameters.csv", index_col="variable")[years.astype(str)]
+Lg_rate = growth_ratio_to_rate( growth_ratios["L"])
 
 
-dynamic_parameters={
-    "GDPreal":np.array(dynamic_parameters_df.loc["GDPreal"]),
-    }
+dynamic_parameters={}
+#dynamic_parameters_df= pd.read_csv("data/INSEE FRA/dynamic parameters.csv", index_col="variable")[years.astype(str)]
 
-endoKnext = False if 'K' in {**growth_rates,**dynamic_parameters}.keys() else True
+
+
+#dynamic_parameters={
+#    "GDPreal":np.array(dynamic_parameters_df.loc["GDPreal"]),
+#`    }
+
+endoKnext = False if 'K' in {**growth_ratios,**dynamic_parameters}.keys() else True
 endostring="endoKnext" if endoKnext else "exoKnext"
 
 name = str().join(["results/",closure,str(2015),"-",str(stop),endostring,add_string,"(",dt_string,")",".csv"])
@@ -54,7 +60,7 @@ parameters_calibration = calibration.exogenous_dict
 
 ## Build the systen ##
 
-System=sys_df(years, growth_rates, variables_calibration, parameters_calibration, dynamic_parameters)
+System=sys_df(years, growth_ratios, variables_calibration, parameters_calibration)
 
 ####### check for errors ########
 
@@ -94,7 +100,7 @@ def system(var, par):
         
         eq.eqCESquantity(Xj=d['Dj'], Zj=d['Yj'], alphaXj=d['alphaDj'], alphaYj=d['alphaXj'], pXj=d['pDj'], pYj=d['pXj'], sigmaj=d['sigmaXj']),
         
-        eq.eqCESprice(pZj=d['pYj'],pXj=d['pXj'],pYj=d['pDj'],alphaXj=d['alphaXj'],alphaYj=d['alphaDj'],sigmaj=d['sigmaXj']),
+        eq.eqCESprice(pZj=d['pYj'], pXj=d['pXj'], pYj=d['pDj'], alphaXj=d['alphaXj'], alphaYj=d['alphaDj'], sigmaj=d['sigmaXj']),
         
         eq.eqCESquantity(Xj=d['Dj'], Zj=d['Sj'], alphaXj=d['betaDj'], alphaYj=d['betaMj'], pXj=d['pDj'], pYj=d['pMj'], sigmaj=d['sigmaSj']),
         
@@ -110,7 +116,7 @@ def system(var, par):
         
         eq.eqCobbDouglasj(Qj=d['Gj'],alphaQj=d['alphaGj'],pCj=d['pCj'],Q=d['Rg'], _index=non_zero_index_G),
         
-        #eq.eqIj(Ij=d['Ij'],alphaIj=d['alphaIj'],I=d['I'],_index=non_zero_index_I),
+        eq.eqIj(Ij=d['Ij'],alphaIj=d['alphaIj'],I=d['I'],_index=non_zero_index_I),
         
         eq.eqMult(result=d['Rg'],mult1=d['wG'],mult2=d['GDP']),
         
@@ -126,13 +132,13 @@ def system(var, par):
         
         eq.eqRreal(Rreal=d['Rreal'],R=d['R'], CPI=d['CPI']), #expected GDPPI time series
         
-        eq.eqT(T=d['T'], tauYj=d['tauYj'], pYj=d['pYj'], Yj=d['Yj'], tauSj=d['tauSj'], pSj=d['pSj'], Sj=d['Sj'], tauL=d['tauL'], w=d['w'], Lj=d['Lj']),
+        eq.eqT(T=d['T'], tauYj=d['tauYj'], pYj=d['pYj'], Yj=d['Yj'], tauSj=d['tauSj'], pSj=d['pSj'], Sj=d['Sj'], tauL=d['tauL'], w=d['w'], Lj=d['Lj']),#
         
         eq.eqPriceTax(pGross=d['pCj'], pNet=d['pSj'], tau=d['tauSj']),
         
         eq.eqPriceTax(pGross=d['pL'], pNet=d['w'], tau=d['tauL']),
         
-        #eq.eqpI(pI=d['pI'],pCj=d['pCj'],alphaIj=d['alphaIj']),
+        eq.eqpI(pI=d['pI'],pCj=d['pCj'],alphaIj=d['alphaIj']),
         
         eq.eqMult(result=d['Ri'],mult1=d['pI'],mult2=d['I']),
         
@@ -193,7 +199,7 @@ def system(var, par):
                                     ])
                          ])
     elif closure=="keynes-marshall":
-        return np.hstack([common_equations,        
+        return np.hstack([common_equations,
                           np.hstack([
                                       eq.eqRi(Ri=d['Ri'], sL=d['sL'], w=d['w'], Lj=d['Lj'], sK=d['sK'], Kj=d['Kj'], pK=d['pK'], sG=d['sG'], T=d['T'], Rg=d['Rg'], B=d['B']),
                                       
@@ -332,14 +338,44 @@ bounds_variables = [[row[i] for row in flatten_bounds_dict(bounds, non_zero_vari
 
 
 
+def kick(variables, number_modified=10, percentage_modified=0.1, modification=0.1):
+    kicked_variables = copy.deepcopy(variables)
+    keys = random.sample(list(variables.keys()), k =number_modified)
+    for v_key in keys:
+        if hasattr(variables[v_key], "__len__"):
+            v_len=len(variables[v_key])
+            sec = random.sample(range(v_len), k = math.ceil(v_len*percentage_modified))
+            new_values= [(1+random.choice((-1, 1))*modification)*kicked_variables[v_key][i] for i in sec]
+            
+            kicked_variables[v_key][sec]=new_values
+#            print("v_key:", v_key, "\n",
+#                  "sec:", sec, "\n",
+#                  "kicked ", kicked_variables[v_key][sec], "\n",
+#                  "variables ", variables[v_key][sec], "\n")
+        else: 
+            new_values= (1+random.choice((-1, 1))*modification)*kicked_variables[v_key]
+            kicked_variables[v_key]= new_values
+#            print("v_key:", v_key, "\n",
+#                  "kicked ", kicked_variables[v_key], "\n",
+#                  "variables ", variables[v_key], "\n")
+        return kicked_variables
+
+
 ######  SYSTEM SOLUTION  ######
 
+max(abs( system( kick(variables_calibration, number_modified=2, percentage_modified=0.1, modification=0.01), parameters_calibration)))
 
-for t in years[:-1]:
-    variables=System.df_to_dict(var=True, t=t)
+sol = dict_least_squares( system, variables_calibration, parameters_calibration, bounds_variables, N, verb=2, check=True )
+maxerror=max(abs( system(variables_calibration, parameters_calibration)))
+
+0.5 * sum(system(sol.dvar, parameters_calibration)**2)
+         
+
+for t in range(len(years[:-1])):
+    variables=System.df_to_dict(var=True, t=years[t])
     
-    parameters=System.df_to_dict(var=False, t=t+1)
-    
+    parameters=System.df_to_dict(var=False, t=years[t+1])
+
     sol = dict_least_squares( system, variables, parameters, bounds_variables, N, verb=0, check=False )
     
     maxerror=max(abs( system(sol.dvar, parameters)))
@@ -352,18 +388,16 @@ for t in years[:-1]:
     #print("\n \n", closure," closure \n max of the system of equations calculated at the solution: \n")
     #print(maxerror, "\n")
     
-    System.dict_to_df(sol.dvar, t+1)
+    System.dict_to_df(sol.dvar, years[t+1])
     
-    if endoKnext and t<years[-2] :
+    if endoKnext and years[t]<years[-2] :
         System.evolve_K(t+1)
 
 results=pd.concat([System.variables_df,System.parameters_df], ignore_index=False)
 
 results.to_csv(name)
-
-
-
-
+   
+            
 # bounds_variables = flatten_bounds_dict(bounds, variables)
 # mybounds=MyBounds(bounds_variables)
 # sol= dict_minimize(system, variables, parameters, mybounds.bounds)
@@ -409,3 +443,14 @@ results.to_csv(name)
 
 
 
+array_zero_keys = []
+scalar_zero_keys = []
+
+for key, value in variables.items():
+    if isinstance(value, list) and 0 in value:
+        array_zero_keys.append(key)
+    elif isinstance(value, (int, float)) and value == 0:
+        scalar_zero_keys.append(key)
+
+print("Keys with at least one zero array element:", array_zero_keys)
+print("Keys with zero scalar value:", scalar_zero_keys)

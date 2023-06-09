@@ -2,20 +2,20 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 
-resources_table=pd.read_csv("data/ressources.csv")
+resources_table=pd.read_csv("data/INSEE FRA/ressources.csv")
 resources_table.set_index('Activity code',inplace=True)
 
-employment_table=pd.read_csv("data/emplois.csv")
+employment_table=pd.read_csv("data/INSEE FRA/emplois.csv")
 employment_table.set_index('Activity code',inplace=True)
 
-intermediate_cons_table=pd.read_csv("data/intermediaire.csv")
+intermediate_cons_table=pd.read_csv("data/INSEE FRA/intermediaire.csv")
 intermediate_cons_table.set_index("Branche",inplace=True)
 
-production_table=pd.read_csv("data/production.csv")
+production_table=pd.read_csv("data/INSEE FRA/production.csv")
 production_table.set_index('Branche',inplace=True)
 production_table=production_table.transpose()
 
-exploitation_table=pd.read_csv("data/exploitation.csv")
+exploitation_table=pd.read_csv("data/INSEE FRA/exploitation.csv")
 exploitation_table.set_index('Branche',inplace=True)
 exploitation_table=exploitation_table.transpose()
 
@@ -169,7 +169,7 @@ pSjSj=pCjCj+pCjGj+pCjIj+pCiYij.sum(axis=1)-sales_taxes
 
 pDjDj=pSjSj-pMjMj
 
-
+pSjSj-pMjMj - (pYjYj-pXjXj)
 
 non_zero_index_G=np.array(np.where(pCjGj != 0)).flatten()
 non_zero_index_I=np.array(np.where(pCjIj != 0)).flatten()
