@@ -18,18 +18,15 @@ def eqKLj(KLj,bKL, bKLj, Lj, Kj, alphaLj, alphaKj):
 
 def eqFj(Fj,pF,KLj,pKLj,alphaFj):
 
-
     zero= -1 + Fj / (
         (np.prod(np.vstack([pKLj,KLj,alphaFj]), axis=0))/pF
     )
 
     return zero
 
-
 def eqlj(l, alphalj, KLj, Lj):
     zero = - 1 + KLj * alphalj * l /Lj
     return zero
-
 
 def eqYij(Yij,aYij,Yj, _index=None):
     
