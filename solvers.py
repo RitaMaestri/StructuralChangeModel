@@ -46,11 +46,13 @@ def same_number(var,system):
 
 ########################  FSOLVE  ########################
 def dict_fsolve(f, dvar, dpar,N):
+    print("I'm in fsolve, before solving")
     result = optimize.fsolve(
         lambda x,y: f(to_dict(x,dvar), y, N), # wrap the argument in a dict
         to_array(dvar), # unwrap the initial dictionary
         args= dpar
     )
+    print("I'm in fsolve, after solving")
     result.dvar= to_dict(result, dvar,N)
     result.d= {**result.dvar, **dpar}
     return result;
@@ -86,7 +88,7 @@ def dict_least_squares(f, dvar, dpar, bounds, N, verb=1, check=True):
     if check:
         non_zero_dvar=to_array(dvar)[to_array(dvar)!=0]
         same_number(f(dvar,dpar), non_zero_dvar)
-        
+    
     result = optimize.least_squares(
         lambda x,y: f(to_dict(x,dvar,N,is_variable=True), to_dict(y,dpar,N,is_variable=False)),# wrap the argument in a dict
         to_array(dvar)[to_array(dvar)!=0], # unwrap the initial dictionary

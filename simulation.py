@@ -11,6 +11,7 @@ from datetime import datetime
 import random
 import math
 import copy
+import json
 now = datetime.now()
 dt_string = now.strftime("%d-%m-%Y_%H:%M")
 
@@ -35,11 +36,8 @@ stop=years[-1]
 
 Lg_rate = growth_ratio_to_rate( growth_ratios["L"])
 
-
 dynamic_parameters={}
 #dynamic_parameters_df= pd.read_csv("data/INSEE FRA/dynamic parameters.csv", index_col="variable")[years.astype(str)]
-
-
 
 #dynamic_parameters={
 #    "GDPreal":np.array(dynamic_parameters_df.loc["GDPreal"]),
@@ -81,10 +79,14 @@ for k in variables_calibration.keys():
             print("variable ", k ," out of bounds")
             sys.exit()
 
-def system(var, par):
+def system(var, par, write=True):
 
     d = {**var, **par}
-
+    
+    if write:
+        np.savez('var.npz', **var)
+        np.savez('par.npz', **par)
+        
     common_equations= np.hstack([
         eq.eqKLj(KLj =d['KLj'],bKL=d['bKL'], bKLj=d['bKLj'], Lj=d['Lj'], Kj=d['Kj'], alphaLj=d['alphaLj'], alphaKj=d['alphaKj']),
                 
@@ -148,7 +150,7 @@ def system(var, par):
                       
 
     if closure=="johansen": 
-        return np.hstack([common_equations,
+        solution = np.hstack([common_equations,
                           np.hstack([
                                         eq.eqsD(sD=d['sD'], Ij=d['Ij'], pCj=d['pCj'], Mj=d['Mj'], Xj=d['Xj'], pXj=d['pXj'], GDP=d['GDP']),
                                         
@@ -163,6 +165,10 @@ def system(var, par):
                                         eq.eqMult(result=d['B'],mult1=d['wB'],mult2=d['GDP']),
                                     ])
                         ])
+        
+        #print("cost=",0.5 * sum(solution**2))
+        
+        return solution 
 
     elif closure=="neoclassic":
         return np.hstack([common_equations,        
@@ -306,7 +312,7 @@ def system(var, par):
         
 #### Calibration check ####
 
-if max(system(variables_calibration, parameters_calibration))>1e-07:
+if max(system(variables_calibration, parameters_calibration, False))>1e-07:
     d={**variables_calibration,**parameters_calibration}
     print("the system is not correctly calibrated")
     d = {**variables_calibration, **parameters_calibration}
@@ -363,13 +369,12 @@ def kick(variables, number_modified=10, percentage_modified=0.1, modification=0.
 
 ######  SYSTEM SOLUTION  ######
 
-max(abs( system( kick(variables_calibration, number_modified=2, percentage_modified=0.1, modification=0.01), parameters_calibration)))
-
+#max(abs( system( kick(variables_calibration, number_modified=2, percentage_modified=0.1, modification=0.01), parameters_calibration)))
+print("I got here")
 sol = dict_least_squares( system, variables_calibration, parameters_calibration, bounds_variables, N, verb=2, check=True )
-maxerror=max(abs( system(variables_calibration, parameters_calibration)))
 
-0.5 * sum(system(sol.dvar, parameters_calibration)**2)
-         
+#maxerror=max(abs( system(variables_calibration, parameters_calibration)))
+sys.exit()
 
 for t in range(len(years[:-1])):
     variables=System.df_to_dict(var=True, t=years[t])
@@ -454,3 +459,16 @@ for key, value in variables.items():
 
 print("Keys with at least one zero array element:", array_zero_keys)
 print("Keys with zero scalar value:", scalar_zero_keys)
+
+
+loaded_data = np.load('var.npz')
+loaded_dict_var = {key: loaded_data[key] for key in loaded_data.files}
+
+# Close the loaded_data object to release the resources
+loaded_data.close()
+
+loaded_data = np.load('par.npz')
+loaded_dict_par = {key: loaded_data[key] for key in loaded_data.files}
+
+# Close the loaded_data object to release the resources
+loaded_data.close()
