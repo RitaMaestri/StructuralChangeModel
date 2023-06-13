@@ -12,6 +12,7 @@ import random
 import math
 import copy
 import json
+
 now = datetime.now()
 dt_string = now.strftime("%d-%m-%Y_%H:%M")
 
@@ -82,230 +83,219 @@ for k in variables_calibration.keys():
 def system(var, par, write=True):
 
     d = {**var, **par}
-    
+
     if write:
         np.savez('var.npz', **var)
         np.savez('par.npz', **par)
         
-    common_equations= np.hstack([
-        eq.eqKLj(KLj =d['KLj'],bKL=d['bKL'], bKLj=d['bKLj'], Lj=d['Lj'], Kj=d['Kj'], alphaLj=d['alphaLj'], alphaKj=d['alphaKj']),
+    equations= {
+        "eqKLj":eq.eqKLj(KLj =d['KLj'],bKL=d['bKL'], bKLj=d['bKLj'], Lj=d['Lj'], Kj=d['Kj'], alphaLj=d['alphaLj'], alphaKj=d['alphaKj']),
                 
-        eq.eqFj(Fj=d['Kj'],pF=d['pK'],KLj=d['KLj'],pKLj=d['pKLj'],alphaFj=d['alphaKj']),        
+        "eqFjK":eq.eqFj(Fj=d['Kj'],pF=d['pK'],KLj=d['KLj'],pKLj=d['pKLj'],alphaFj=d['alphaKj']),        
         
-        eq.eqYij(Yij=d['Yij'],aYij=d['aYij'],Yj=d['Yj'], _index=non_zero_index_Yij),
+        "eqYij":eq.eqYij(Yij=d['Yij'],aYij=d['aYij'],Yj=d['Yj'], _index=non_zero_index_Yij),
         
-        eq.eqKL(KLj=d['KLj'],aKLj=d['aKLj'],Yj=d['Yj']),
+        "eqKL":eq.eqKL(KLj=d['KLj'],aKLj=d['aKLj'],Yj=d['Yj']),
         
-        eq.eqpYj(pYj=d['pYj'],pCj=d['pCj'],aKLj=d['aKLj'],pKLj=d['pKLj'],aYij=d['aYij'], tauYj=d['tauYj']),
+        "eqpYj":eq.eqpYj(pYj=d['pYj'],pCj=d['pCj'],aKLj=d['aKLj'],pKLj=d['pKLj'],aYij=d['aYij'], tauYj=d['tauYj']),
         
-        eq.eqCESquantity(Xj=d['Xj'], Zj=d['Yj'], alphaXj=d['alphaXj'], alphaYj=d['alphaDj'], pXj=d['pXj'], pYj=d['pDj'], sigmaj=d['sigmaXj'], _index=non_zero_index_X),#e-5
+        "eqCESquantityX":eq.eqCESquantity(Xj=d['Xj'], Zj=d['Yj'], alphaXj=d['alphaXj'], alphaYj=d['alphaDj'], pXj=d['pXj'], pYj=d['pDj'], sigmaj=d['sigmaXj'], _index=non_zero_index_X),#e-5
         
-        eq.eqCESquantity(Xj=d['Dj'], Zj=d['Yj'], alphaXj=d['alphaDj'], alphaYj=d['alphaXj'], pXj=d['pDj'], pYj=d['pXj'], sigmaj=d['sigmaXj']),
+        "eqCESquantityDy":eq.eqCESquantity(Xj=d['Dj'], Zj=d['Yj'], alphaXj=d['alphaDj'], alphaYj=d['alphaXj'], pXj=d['pDj'], pYj=d['pXj'], sigmaj=d['sigmaXj']),
         
-        eq.eqCESprice(pZj=d['pYj'], pXj=d['pXj'], pYj=d['pDj'], alphaXj=d['alphaXj'], alphaYj=d['alphaDj'], sigmaj=d['sigmaXj']),
+        "eqCESpriceY":eq.eqCESprice(pZj=d['pYj'], pXj=d['pXj'], pYj=d['pDj'], alphaXj=d['alphaXj'], alphaYj=d['alphaDj'], sigmaj=d['sigmaXj']),
         
-        eq.eqCESquantity(Xj=d['Dj'], Zj=d['Sj'], alphaXj=d['betaDj'], alphaYj=d['betaMj'], pXj=d['pDj'], pYj=d['pMj'], sigmaj=d['sigmaSj']),
+        "eqCESquantityDs":eq.eqCESquantity(Xj=d['Dj'], Zj=d['Sj'], alphaXj=d['betaDj'], alphaYj=d['betaMj'], pXj=d['pDj'], pYj=d['pMj'], sigmaj=d['sigmaSj']),
         
-        eq.eqCESquantity(Xj=d['Mj'], Zj=d['Sj'], alphaXj=d['betaMj'], alphaYj=d['betaDj'], pXj=d['pMj'], pYj=d['pDj'], sigmaj=d['sigmaSj'],_index=non_zero_index_M),
+        "eqCESquantityM":eq.eqCESquantity(Xj=d['Mj'], Zj=d['Sj'], alphaXj=d['betaMj'], alphaYj=d['betaDj'], pXj=d['pMj'], pYj=d['pDj'], sigmaj=d['sigmaSj'],_index=non_zero_index_M),
         
-        eq.eqCESprice(pZj=d['pSj'],pXj=d['pMj'],pYj=d['pDj'],alphaXj=d['betaMj'],alphaYj=d['betaDj'],sigmaj=d['sigmaSj']),
+        "eqCESpriceS":eq.eqCESprice(pZj=d['pSj'],pXj=d['pMj'],pYj=d['pDj'],alphaXj=d['betaMj'],alphaYj=d['betaDj'],sigmaj=d['sigmaSj']),
         
-        eq.eqB(B=d['B'],pXj=d['pXj'],Xj=d['Xj'],pMj=d['pMj'],Mj=d['Mj']),
+        "eqB":eq.eqB(B=d['B'],pXj=d['pXj'],Xj=d['Xj'],pMj=d['pMj'],Mj=d['Mj']),
                 
-        eq.eqID(x=d['pXj'],y=d['pMj']),
+        "eqIDpX":eq.eqID(x=d['pXj'],y=d['pMj']),
         
-        eq.eqCobbDouglasj(Qj=d['Cj'],alphaQj=d['alphaCj'],pCj=d['pCj'],Q=d['R'], _index=non_zero_index_C),
+        "eqCobbDouglasjC":eq.eqCobbDouglasj(Qj=d['Cj'],alphaQj=d['alphaCj'],pCj=d['pCj'],Q=d['R'], _index=non_zero_index_C),
         
-        eq.eqCobbDouglasj(Qj=d['Gj'],alphaQj=d['alphaGj'],pCj=d['pCj'],Q=d['Rg'], _index=non_zero_index_G),
+        "eqCobbDouglasjG":eq.eqCobbDouglasj(Qj=d['Gj'],alphaQj=d['alphaGj'],pCj=d['pCj'],Q=d['Rg'], _index=non_zero_index_G),
         
-        eq.eqIj(Ij=d['Ij'],alphaIj=d['alphaIj'],I=d['I'],_index=non_zero_index_I),
+        "eqIj":eq.eqIj(Ij=d['Ij'],alphaIj=d['alphaIj'],I=d['I'],_index=non_zero_index_I),
         
-        eq.eqMult(result=d['Rg'],mult1=d['wG'],mult2=d['GDP']),
+        "eqMultRg":eq.eqMult(result=d['Rg'],mult1=d['wG'],mult2=d['GDP']),
         
-        eq.eqSj(Sj=d['Sj'],Cj=d['Cj'], Gj=d['Gj'], Ij=d['Ij'], Yij=d['Yij']),
+        "eqSj":eq.eqSj(Sj=d['Sj'],Cj=d['Cj'], Gj=d['Gj'], Ij=d['Ij'], Yij=d['Yij']),
     
-        eq.eqGDP(GDP=d['GDP'],pCj=d['pCj'],Cj=d['Cj'],Gj=d['Gj'],Ij=d['Ij'],pXj=d['pXj'],Xj=d['Xj'],pMj=d['pMj'],Mj=d['Mj']),
+        "eqGDP":eq.eqGDP(GDP=d['GDP'],pCj=d['pCj'],Cj=d['Cj'],Gj=d['Gj'],Ij=d['Ij'],pXj=d['pXj'],Xj=d['Xj'],pMj=d['pMj'],Mj=d['Mj']),
         
-        eq.eqGDPPI(GDPPI = d['GDPPI'], pCj=d['pCj'], pXj=d['pXj'], pCtp= d['pCtp'], pXtp=d['pXtp'], Cj= d['Cj'], Gj= d['Gj'], Ij= d['Ij'], Xj=d['Xj'], Mj=d['Mj'], Ctp= d['Ctp'], Gtp= d['Gtp'], Itp= d['Itp'], Xtp=d['Xtp'], Mtp=d['Mtp']),
+        "eqGDPPI":eq.eqGDPPI(GDPPI = d['GDPPI'], pCj=d['pCj'], pXj=d['pXj'], pCtp= d['pCtp'], pXtp=d['pXtp'], Cj= d['Cj'], Gj= d['Gj'], Ij= d['Ij'], Xj=d['Xj'], Mj=d['Mj'], Ctp= d['Ctp'], Gtp= d['Gtp'], Itp= d['Itp'], Xtp=d['Xtp'], Mtp=d['Mtp']),
         
-        eq.eqGDPreal(GDPreal=d['GDPreal'],GDP=d['GDP'], GDPPI=d['GDPPI']), #expected GDPPI time series
+        "eqGDPreal":eq.eqGDPreal(GDPreal=d['GDPreal'],GDP=d['GDP'], GDPPI=d['GDPPI']), #expected GDPPI time series
         
-        eq.eqCPI(CPI = d['CPI'], pCj=d['pCj'], pCtp= d['pCtp'], Cj= d['Cj'], Ctp= d['Ctp']),
+        "eqCPI":eq.eqCPI(CPI = d['CPI'], pCj=d['pCj'], pCtp= d['pCtp'], Cj= d['Cj'], Ctp= d['Ctp']),
         
-        eq.eqRreal(Rreal=d['Rreal'],R=d['R'], CPI=d['CPI']), #expected GDPPI time series
+        "eqRreal":eq.eqRreal(Rreal=d['Rreal'],R=d['R'], CPI=d['CPI']), #expected GDPPI time series
         
-        eq.eqT(T=d['T'], tauYj=d['tauYj'], pYj=d['pYj'], Yj=d['Yj'], tauSj=d['tauSj'], pSj=d['pSj'], Sj=d['Sj'], tauL=d['tauL'], w=d['w'], Lj=d['Lj']),#
+        "eqT":eq.eqT(T=d['T'], tauYj=d['tauYj'], pYj=d['pYj'], Yj=d['Yj'], tauSj=d['tauSj'], pSj=d['pSj'], Sj=d['Sj'], tauL=d['tauL'], w=d['w'], Lj=d['Lj']),#
         
-        eq.eqPriceTax(pGross=d['pCj'], pNet=d['pSj'], tau=d['tauSj']),
+        "eqPriceTaxtauS":eq.eqPriceTax(pGross=d['pCj'], pNet=d['pSj'], tau=d['tauSj']),
         
-        eq.eqPriceTax(pGross=d['pL'], pNet=d['w'], tau=d['tauL']),
+        "eqPriceTaxtauL":eq.eqPriceTax(pGross=d['pL'], pNet=d['w'], tau=d['tauL']),
         
-        eq.eqpI(pI=d['pI'],pCj=d['pCj'],alphaIj=d['alphaIj']),
+        "eqpI":eq.eqpI(pI=d['pI'],pCj=d['pCj'],alphaIj=d['alphaIj']),
         
-        eq.eqMult(result=d['Ri'],mult1=d['pI'],mult2=d['I']),
+        "eqMultRi":eq.eqMult(result=d['Ri'],mult1=d['pI'],mult2=d['I']),
         
-        ])
-    
-    common_equations = np.hstack([common_equations, eq.eqinventory(Knext=d['Knext'], K=d['K'], delta=d['delta'], I=d['I'])]) if endoKnext else common_equations
+        }
+    if endoKnext:
+        equations.update("eqinventory", eq.eqinventory(Knext=d['Knext'], K=d['K'], delta=d['delta'], I=d['I']) )
                       
 
     if closure=="johansen": 
-        solution = np.hstack([common_equations,
-                          np.hstack([
-                                        eq.eqsD(sD=d['sD'], Ij=d['Ij'], pCj=d['pCj'], Mj=d['Mj'], Xj=d['Xj'], pXj=d['pXj'], GDP=d['GDP']),
+        equations.update({"eqsD":eq.eqsD(sD=d['sD'], Ij=d['Ij'], pCj=d['pCj'], Mj=d['Mj'], Xj=d['Xj'], pXj=d['pXj'], GDP=d['GDP']),
                                         
-                                        eq.eqMult(result=d['Ri'],mult1=d['wI'],mult2=d['GDP']),
-                                        
-                                        eq.eqFj(Fj=d['Lj'],pF=d['pL'],KLj=d['KLj'],pKLj= d['pKLj'],alphaFj=d['alphaLj']),
-                                        
-                                        eq.eqF(F=d['L'],Fj=d['Lj']),
-                                        
-                                        eq.eqF(F=d['K'],Fj=d['Kj']),
-                                        
-                                        eq.eqMult(result=d['B'],mult1=d['wB'],mult2=d['GDP']),
-                                    ])
-                        ])
+                                "eqMultwI":eq.eqMult(result=d['Ri'],mult1=d['wI'],mult2=d['GDP']),
+                                
+                                "eqFjL":eq.eqFj(Fj=d['Lj'],pF=d['pL'],KLj=d['KLj'],pKLj= d['pKLj'],alphaFj=d['alphaLj']),
+                                
+                                "eqFL":eq.eqF(F=d['L'],Fj=d['Lj']),
+                                
+                                "eqFK":eq.eqF(F=d['K'],Fj=d['Kj']),
+                                
+                                "eqMultB":eq.eqMult(result=d['B'],mult1=d['wB'],mult2=d['GDP'])}
+                                )
         
-        #print("cost=",0.5 * sum(solution**2))
-        
+        solution = np.hstack(list(equations.values()))
+        #print("equations Ij ", equations["eqIj"])
         return solution 
 
     elif closure=="neoclassic":
-        return np.hstack([common_equations,        
-                          np.hstack([
-                                      eq.eqRi(Ri=d['Ri'], sL=d['sL'], w=d['w'], Lj=d['Lj'], sK=d['sK'], Kj=d['Kj'], pK=d['pK'], sG=d['sG'], T=d['T'], Rg=d['Rg'], B=d['B']),
+        equations.update({"eqRi":eq.eqRi(Ri=d['Ri'], sL=d['sL'], w=d['w'], Lj=d['Lj'], sK=d['sK'], Kj=d['Kj'], pK=d['pK'], sG=d['sG'], T=d['T'], Rg=d['Rg'], B=d['B']),
                                       
-                                      eq.eqFj(Fj=d['Lj'],pF=d['pL'],KLj=d['KLj'],pKLj= d['pKLj'],alphaFj=d['alphaLj']),
+                          "eqLj":eq.eqFj(Fj=d['Lj'],pF=d['pL'],KLj=d['KLj'],pKLj= d['pKLj'],alphaFj=d['alphaLj']),
                                       
-                                      eq.eqF(F=d['L'],Fj=d['Lj']),
+                          "eqL":eq.eqF(F=d['L'],Fj=d['Lj']),
                                       
-                                      eq.eqF(F=d['K'],Fj=d['Kj']),
+                          "eqF":eq.eqF(F=d['K'],Fj=d['Kj']),
                                       
-                                      eq.eqMult(result=d['B'],mult1=d['wB'],mult2=d['GDP']),
+                          "eqMult":eq.eqMult(result=d['B'],mult1=d['wB'],mult2=d['GDP'])
+                          })
+        solution = np.hstack(list(equations.values()))
+        #print("equations Ij ", equations["eqIj"])
+        return solution 
 
-                                                                            
-                          ])
-                         ])
     
     elif closure=="kaldorian":
-        return np.hstack([common_equations,        
-                          np.hstack([
-                                      eq.eqlj(l=d['l'], alphalj=d['alphalj'], KLj=d['KLj'], Lj=d['Lj']),
+        equations.update({"eqlj":eq.eqlj(l=d['l'], alphalj=d['alphalj'], KLj=d['KLj'], Lj=d['Lj']),
                                       
-                                      eq.eqRi(Ri=d['Ri'], sL=d['sL'], w=d['w'], Lj=d['Lj'], sK=d['sK'], Kj=d['Kj'], pK=d['pK'], sG=d['sG'], T=d['T'], Rg=d['Rg'], B=d['B']),
-                                      
-                                      eq.eqMult(result=d['Ri'],mult1=d['wI'],mult2=d['GDP']),
-                                      
-                                      eq.eqF(F=d['L'],Fj=d['Lj']),
-                                      
-                                      eq.eqF(F=d['K'],Fj=d['Kj']),
-                                      
-                                      eq.eqMult(result=d['B'],mult1=d['wB'],mult2=d['GDP']),
-                        
-                                    ])
-                         ])
+                           "eqRi": eq.eqRi(Ri=d['Ri'], sL=d['sL'], w=d['w'], Lj=d['Lj'], sK=d['sK'], Kj=d['Kj'], pK=d['pK'], sG=d['sG'], T=d['T'], Rg=d['Rg'], B=d['B']),
+                            
+                           "eqwI": eq.eqMult(result=d['Ri'],mult1=d['wI'],mult2=d['GDP']),
+                            
+                           "eqL": eq.eqF(F=d['L'],Fj=d['Lj']),
+                            
+                           "eqK": eq.eqF(F=d['K'],Fj=d['Kj']),
+                            
+                           "eqB": eq.eqMult(result=d['B'],mult1=d['wB'],mult2=d['GDP'])})
+        
+        solution = np.hstack(list(equations.values()))
+        #print("equations Ij ", equations["eqIj"])
+        return solution
+    
     elif closure=="keynes-marshall":
-        return np.hstack([common_equations,
-                          np.hstack([
-                                      eq.eqRi(Ri=d['Ri'], sL=d['sL'], w=d['w'], Lj=d['Lj'], sK=d['sK'], Kj=d['Kj'], pK=d['pK'], sG=d['sG'], T=d['T'], Rg=d['Rg'], B=d['B']),
+        equations.update({"eqRi":eq.eqRi(Ri=d['Ri'], sL=d['sL'], w=d['w'], Lj=d['Lj'], sK=d['sK'], Kj=d['Kj'], pK=d['pK'], sG=d['sG'], T=d['T'], Rg=d['Rg'], B=d['B']),
                                       
-                                      eq.eqFj(Fj=d['Lj'],pF=d['pL'],KLj=d['KLj'],pKLj= d['pKLj'],alphaFj=d['alphaLj']),
-                                      
-                                      eq.eqMult(result=d['Ri'],mult1=d['wI'],mult2=d['GDP']),
-                                      
-                                      eq.eqF(F=d['K'],Fj=d['Kj']),
-                                      
-                                      eq.eqMult(result=d['B'],mult1=d['wB'],mult2=d['GDP']),
+                          "eqLj":eq.eqFj(Fj=d['Lj'],pF=d['pL'],KLj=d['KLj'],pKLj= d['pKLj'],alphaFj=d['alphaLj']),
+                            
+                          "eqwI":eq.eqMult(result=d['Ri'],mult1=d['wI'],mult2=d['GDP']),
+                            
+                          "eqK":eq.eqF(F=d['K'],Fj=d['Kj']),
+                            
+                          "eqB":eq.eqMult(result=d['B'],mult1=d['wB'],mult2=d['GDP'])})
+       
+        solution = np.hstack(list(equations.values()))
+        #print("equations Ij ", equations["eqIj"])
+        return solution
 
-                                     ])
-                         ])
+
     
     elif closure=="keynes" or closure=="keynes-kaldor" :
-        return np.hstack([common_equations,        
-                          np.hstack([
-                                      eq.eqlj(l=d['l'], alphalj=d['alphalj'], KLj=d['KLj'], Lj=d['Lj']),
+        equations.update({"eqlj":eq.eqlj(l=d['l'], alphalj=d['alphalj'], KLj=d['KLj'], Lj=d['Lj']),
                                       
-                                      eq.eqRi(Ri=d['Ri'], sL=d['sL'], w=d['w'], Lj=d['Lj'], sK=d['sK'], Kj=d['Kj'], pK=d['pK'], sG=d['sG'], T=d['T'], Rg=d['Rg'], B=d['B']),
-                                      
-                                      eq.eqMult(result=d['Ri'],mult1=d['wI'],mult2=d['GDP']),
-                                      
-                                      eq.equ(u=d['uL'], L=d['L'], Lj=d['Lj']),
-                                      
-                                      eq.eqw_real(w_real=d['w_real'], CPI=d['CPI'], w=d['w']),
-                                      
-                                      eq.eqw_curve(w_real=d['w_real'], alphaw=d['alphaw'], u=d['uL'], sigmaw=d['sigmaw'] ),
-                                      
-                                      eq.eqF(F=d['K'],Fj=d['Kj']),
-                                      
-                                      eq.eqMult(result=d['B'],mult1=d['wB'],mult2=d['GDP']),
-
-                                      ])
-                         ])
-
+                          "eqRi":eq.eqRi(Ri=d['Ri'], sL=d['sL'], w=d['w'], Lj=d['Lj'], sK=d['sK'], Kj=d['Kj'], pK=d['pK'], sG=d['sG'], T=d['T'], Rg=d['Rg'], B=d['B']),
+                        
+                          "eqwI":eq.eqMult(result=d['Ri'],mult1=d['wI'],mult2=d['GDP']),
+                            
+                          "equL":eq.equ(u=d['uL'], L=d['L'], Lj=d['Lj']),
+                            
+                          "eqw_real":eq.eqw_real(w_real=d['w_real'], CPI=d['CPI'], w=d['w']),
+                            
+                          "eqw_curve":eq.eqw_curve(w_real=d['w_real'], alphaw=d['alphaw'], u=d['uL'], sigmaw=d['sigmaw'] ),
+                            
+                          "eqK":eq.eqF(F=d['K'],Fj=d['Kj']),
+                            
+                          "eqB":eq.eqMult(result=d['B'],mult1=d['wB'],mult2=d['GDP']),
+                          })
+        solution = np.hstack(list(equations.values()))
+        #print("equations Ij ", equations["eqIj"])
+        return solution
     elif closure=="keynes-marshall":
-        return np.hstack([common_equations,
-                          np.hstack([
-                                      eq.eqRi(Ri=d['Ri'], sL=d['sL'], w=d['w'], Lj=d['Lj'], sK=d['sK'], Kj=d['Kj'], pK=d['pK'], sG=d['sG'], T=d['T'], Rg=d['Rg'], B=d['B']),
-                                      
-                                      eq.eqFj(Fj=d['Lj'],pF=d['pL'],KLj=d['KLj'],pKLj= d['pKLj'],alphaFj=d['alphaLj']),
-                                      
-                                      eq.eqMult(result=d['I'],mult1=d['wI'],mult2=d['GDP']),
-                                      
-                                      eq.eqF(F=d['K'],Fj=d['Kj']),
-                                      
-                                      eq.eqMult(result=d['B'],mult1=d['wB'],mult2=d['GDP']),
-
-                                     ])
-                         ])
-    
+        equations.update({"eqRi":eq.eqRi(Ri=d['Ri'], sL=d['sL'], w=d['w'], Lj=d['Lj'], sK=d['sK'], Kj=d['Kj'], pK=d['pK'], sG=d['sG'], T=d['T'], Rg=d['Rg'], B=d['B']),
+                        
+                          "eqLj":eq.eqFj(Fj=d['Lj'],pF=d['pL'],KLj=d['KLj'],pKLj= d['pKLj'],alphaFj=d['alphaLj']),
+                            
+                          "eqwI":eq.eqMult(result=d['I'],mult1=d['wI'],mult2=d['GDP']),
+                            
+                          "eqK":eq.eqF(F=d['K'],Fj=d['Kj']),
+                            
+                          "eqB":eq.eqMult(result=d['B'],mult1=d['wB'],mult2=d['GDP']),
+                          })
+        solution = np.hstack(list(equations.values()))
+        #print("equations Ij ", equations["eqIj"])
+        return solution
     elif closure=="neokeynesian1":
-        return np.hstack([common_equations,        
-                          np.hstack([
-                                      eq.eqRi(Ri=d['Ri'], sL=d['sL'], w=d['w'], Lj=d['Lj'], sK=d['sK'], Kj=d['Kj'], pK=d['pK'], sG=d['sG'], T=d['T'], Rg=d['Rg'], B=d['B']),
+        equations.update({"eqRi":eq.eqRi(Ri=d['Ri'], sL=d['sL'], w=d['w'], Lj=d['Lj'], sK=d['sK'], Kj=d['Kj'], pK=d['pK'], sG=d['sG'], T=d['T'], Rg=d['Rg'], B=d['B']),
                                       
-                                      eq.eqFj(Fj=d['Lj'],pF=d['pL'],KLj=d['KLj'],pKLj= d['pKLj'],alphaFj=d['alphaLj']),
-                                      
-                                      eq.equ(u=d['uL'], L=d['L'], Lj=d['Lj']),
-                                      
-                                      eq.eqw_real(w_real=d['w_real'], CPI=d['CPI'], w=d['w']),
-                                      
-                                      eq.eqw_curve(w_real=d['w_real'], alphaw=d['alphaw'], u=d['uL'], sigmaw=d['sigmaw'] ),
-                                      
-                                      eq.equ(u=d['uK'], L=d['K'], Lj=d['Kj']),
-                                      
-                                      eq.eqw_real(w_real=d['pK_real'], CPI=d['CPI'], w=d['pK']),
-                                      
-                                      eq.eqw_curve(w_real=d['pK_real'], alphaw=d['alphapK'], u=d['uK'], sigmaw=d['sigmapK'] ),
-
-                                      eq.eqMult(result=d['B'],mult1=d['wB'],mult2=d['GDP']),
-                          
-                          ])
-                         ])   
-     
-    
+                          "eqLj":eq.eqFj(Fj=d['Lj'],pF=d['pL'],KLj=d['KLj'],pKLj= d['pKLj'],alphaFj=d['alphaLj']),
+                            
+                          "equL":eq.equ(u=d['uL'], L=d['L'], Lj=d['Lj']),
+                            
+                          "eqw_real":eq.eqw_real(w_real=d['w_real'], CPI=d['CPI'], w=d['w']),
+                            
+                          "eqw_curve":eq.eqw_curve(w_real=d['w_real'], alphaw=d['alphaw'], u=d['uL'], sigmaw=d['sigmaw'] ),
+                         
+                          "equK":eq.equ(u=d['uK'], L=d['K'], Lj=d['Kj']),
+                            
+                          "eqpK_real":eq.eqw_real(w_real=d['pK_real'], CPI=d['CPI'], w=d['pK']),
+                            
+                          "eqsigmapK":eq.eqw_curve(w_real=d['pK_real'], alphaw=d['alphapK'], u=d['uK'], sigmaw=d['sigmapK'] ),
+        
+                          "eqwB":eq.eqMult(result=d['B'],mult1=d['wB'],mult2=d['GDP']),
+                          })                          
+        solution = np.hstack(list(equations.values()))
+        #print("equations Ij ", equations["eqIj"])
+        return solution
     elif closure=="neokeynesian2":
-        return np.hstack([common_equations,        
-                          np.hstack([
-                                      eq.eqRi(Ri=d['Ri'], sL=d['sL'], w=d['w'], Lj=d['Lj'], sK=d['sK'], Kj=d['Kj'], pK=d['pK'], sG=d['sG'], T=d['T'], Rg=d['Rg'], B=d['B']),
+        equations.update({"eqRi":eq.eqRi(Ri=d['Ri'], sL=d['sL'], w=d['w'], Lj=d['Lj'], sK=d['sK'], Kj=d['Kj'], pK=d['pK'], sG=d['sG'], T=d['T'], Rg=d['Rg'], B=d['B']),
                                       
-                                      eq.eqFj(Fj=d['Lj'],pF=d['pL'],KLj=d['KLj'],pKLj= d['pKLj'],alphaFj=d['alphaLj']),
-                                      
-                                      eq.equ(u=d['uL'], L=d['L'], Lj=d['Lj']),
-                                      
-                                      eq.eqw_real(w_real=d['w_real'], CPI=d['CPI'], w=d['w']),
-                                      
-                                      eq.eqw_curve(w_real=d['w_real'], alphaw=d['alphaw'], u=d['uL'], sigmaw=d['sigmaw'] ),
-                                      
-                                      eq.equ(u=d['uK'], L=d['K'], Lj=d['Kj']),
-                                      
-                                      eq.eqw_real(w_real=d['pK_real'], CPI=d['CPI'], w=d['pK']),
-                                      
-                                      eq.eqw_curve(w_real=d['pK_real'], alphaw=d['alphapK'], u=d['uK'], sigmaw=d['sigmapK'] ),
-
-                                      eq.eqIneok(I=d['I'], K=d['K'], alphaIK=d['alphaIK'] )                                    
-                          ])
-                         ])   
+                          "eqLj":eq.eqFj(Fj=d['Lj'],pF=d['pL'],KLj=d['KLj'],pKLj= d['pKLj'],alphaFj=d['alphaLj']),
+                            
+                          "equL":eq.equ(u=d['uL'], L=d['L'], Lj=d['Lj']),
+                            
+                          "eqw_real":eq.eqw_real(w_real=d['w_real'], CPI=d['CPI'], w=d['w']),
+                            
+                          "eqw_curve":eq.eqw_curve(w_real=d['w_real'], alphaw=d['alphaw'], u=d['uL'], sigmaw=d['sigmaw'] ),
+                            
+                          "equK":eq.equ(u=d['uK'], L=d['K'], Lj=d['Kj']),
+                            
+                          "eqpK_real":eq.eqw_real(w_real=d['pK_real'], CPI=d['CPI'], w=d['pK']),
+                            
+                          "eqsigmapK":eq.eqw_curve(w_real=d['pK_real'], alphaw=d['alphapK'], u=d['uK'], sigmaw=d['sigmapK'] ),
     
+                          "eqIneok":eq.eqIneok(I=d['I'], K=d['K'], alphaIK=d['alphaIK'] )                                    
+                          })    
+        solution = np.hstack(list(equations.values()))
+        #print("equations Ij ", equations["eqIj"])
+        return solution
     else:
         print("the closure doesn't exist")
         sys.exit()
@@ -316,7 +306,6 @@ if max(system(variables_calibration, parameters_calibration, False))>1e-07:
     d={**variables_calibration,**parameters_calibration}
     print("the system is not correctly calibrated")
     d = {**variables_calibration, **parameters_calibration}
-    sys.exit()
 
 #### set the bounds in the good format for the solver ####
 def multiply_bounds_len(key,this_bounds,this_variables):
@@ -336,52 +325,56 @@ def to_array(candidate):
 
 variables_values = [ to_array(variables_calibration[keys])[to_array(variables_calibration[keys]) !=0 ] for keys in variables_calibration.keys()]
 
-var_keys=list(variables_calibration.keys())
+var_keys = list(variables_calibration.keys())
 
 non_zero_variables = {var_keys[i]: variables_values[i] for i in range(len(var_keys))}
 
 bounds_variables = [[row[i] for row in flatten_bounds_dict(bounds, non_zero_variables)] for i in (0,1)]
 
+#number_modified=10, percentage_modified=0.1, modification=0.1, seed=4
 
+seed = random.randrange(sys.maxsize)
 
-def kick(variables, number_modified=10, percentage_modified=0.1, modification=0.1):
+def kick(variables, number_modified=10, percentage_modified=0.1, modification=0.1, seed=seed):
+    random.seed(seed)
     kicked_variables = copy.deepcopy(variables)
-    keys = random.sample(list(variables.keys()), k =number_modified)
+    keys = random.sample(list(variables.keys()), k=number_modified)
+    print("Variables kicked at:", keys,
+          "\n number modified: ", number_modified,
+          "\n percentage: ",percentage_modified,
+          "\n modification: ",modification,
+          "\n seed: ",seed,)
+    
     for v_key in keys:
-        if hasattr(variables[v_key], "__len__"):
-            v_len=len(variables[v_key])
-            sec = random.sample(range(v_len), k = math.ceil(v_len*percentage_modified))
-            new_values= [(1+random.choice((-1, 1))*modification)*kicked_variables[v_key][i] for i in sec]
-            
-            kicked_variables[v_key][sec]=new_values
-#            print("v_key:", v_key, "\n",
-#                  "sec:", sec, "\n",
-#                  "kicked ", kicked_variables[v_key][sec], "\n",
-#                  "variables ", variables[v_key][sec], "\n")
-        else: 
-            new_values= (1+random.choice((-1, 1))*modification)*kicked_variables[v_key]
-            kicked_variables[v_key]= new_values
-#            print("v_key:", v_key, "\n",
-#                  "kicked ", kicked_variables[v_key], "\n",
-#                  "variables ", variables[v_key], "\n")
-        return kicked_variables
+        if v_key in kicked_variables:
+            if hasattr(kicked_variables[v_key], "__len__"):
+                v_len = len(kicked_variables[v_key])
+                sec = random.sample(range(v_len), k=math.ceil(v_len * percentage_modified))
+                new_values= [(1+random.choice((-1, 1))*modification)*float(kicked_variables[v_key][i]) for i in sec]
+                kicked_variables[v_key][sec] = new_values
+            else:
+                if kicked_variables[v_key] != 0:
+                    new_value = (1 + random.choice((-1, 1)) * modification) * kicked_variables[v_key]
+                    kicked_variables[v_key] = new_value
+
+    return kicked_variables
 
 
 ######  SYSTEM SOLUTION  ######
 
-#max(abs( system( kick(variables_calibration, number_modified=2, percentage_modified=0.1, modification=0.01), parameters_calibration)))
-print("I got here")
-sol = dict_least_squares( system, variables_calibration, parameters_calibration, bounds_variables, N, verb=2, check=True )
-
-#maxerror=max(abs( system(variables_calibration, parameters_calibration)))
-sys.exit()
+maxerror=max(abs( system(variables_calibration, parameters_calibration)))
+if maxerror>1e-5:
+    print("the system is not at equilibrium")
 
 for t in range(len(years[:-1])):
-    variables=System.df_to_dict(var=True, t=years[t])
+    if t==0:
+        variables=kick(variables_calibration)
+    else:
+        variables=System.df_to_dict(var=True, t=years[t])
     
-    parameters=System.df_to_dict(var=False, t=years[t+1])
+    parameters=System.df_to_dict(var=False, t=years[t])
 
-    sol = dict_least_squares( system, variables, parameters, bounds_variables, N, verb=0, check=False )
+    sol = dict_least_squares( system, variables, parameters, bounds_variables, N, verb=2, check=False )
     
     maxerror=max(abs( system(sol.dvar, parameters)))
     
@@ -392,11 +385,13 @@ for t in range(len(years[:-1])):
     
     #print("\n \n", closure," closure \n max of the system of equations calculated at the solution: \n")
     #print(maxerror, "\n")
-    
-    System.dict_to_df(sol.dvar, years[t+1])
+
+    System.dict_to_df(sol.dvar, years[t])
     
     if endoKnext and years[t]<years[-2] :
         System.evolve_K(t+1)
+    if t==0:
+        sys.exit()
 
 results=pd.concat([System.variables_df,System.parameters_df], ignore_index=False)
 
@@ -448,27 +443,81 @@ results.to_csv(name)
 
 
 
-array_zero_keys = []
-scalar_zero_keys = []
+# array_zero_keys = []
+# scalar_zero_keys = []
 
-for key, value in variables.items():
-    if isinstance(value, list) and 0 in value:
-        array_zero_keys.append(key)
-    elif isinstance(value, (int, float)) and value == 0:
-        scalar_zero_keys.append(key)
+# for key, value in variables.items():
+#     if isinstance(value, list) and 0 in value:
+#         array_zero_keys.append(key)
+#     elif isinstance(value, (int, float)) and value == 0:
+#         scalar_zero_keys.append(key)
 
-print("Keys with at least one zero array element:", array_zero_keys)
-print("Keys with zero scalar value:", scalar_zero_keys)
+# print("Keys with at least one zero array element:", array_zero_keys)
+# print("Keys with zero scalar value:", scalar_zero_keys)
 
 
-loaded_data = np.load('var.npz')
-loaded_dict_var = {key: loaded_data[key] for key in loaded_data.files}
+# loaded_data = np.load('var.npz')
+# loaded_dict_var = {key: loaded_data[key] for key in loaded_data.files}
 
-# Close the loaded_data object to release the resources
-loaded_data.close()
+# # Close the loaded_data object to release the resources
+# loaded_data.close()
 
-loaded_data = np.load('par.npz')
-loaded_dict_par = {key: loaded_data[key] for key in loaded_data.files}
+# loaded_data = np.load('par.npz')
+# loaded_dict_par = {key: loaded_data[key] for key in loaded_data.files}
 
-# Close the loaded_data object to release the resources
-loaded_data.close()
+# # Close the loaded_data object to release the resources
+# loaded_data.close()
+
+# f0 = loadtxt('f0.csv', delimiter=',')
+# pars = loadtxt('par.csv', delimiter=',')
+
+def compare_dictionaries(dict1, dict2):
+    if dict1.keys() != dict2.keys():
+        print("The dictionaries have different keys")
+    else:
+        equal_keys = True
+        for key in dict1.keys():
+            value1 = dict1[key]
+            value2 = dict2[key]
+            if type(value1) != type(value2):
+                equal_keys = False
+                print(f"The key '{key}' has different value types")
+            elif hasattr(value1, "__len__"):
+                if not np.array_equal(value1, value2):
+                    equal_keys = False
+                    if len(value1) != len(value2):
+                        print(f"The key '{key}' has arrays with different lengths")
+                    else:
+                        unequal_indexes = np.where(value1 != value2)[0]
+                        print(f"The key '{key}' has unequal values at indexes: {unequal_indexes}")
+                        print(f"Value 1 at unequal indexes: {value1[unequal_indexes]}")
+                        print(f"Value 2 at unequal indexes: {value2[unequal_indexes]}")
+            else:
+                if value1 != value2:
+                    equal_keys = False
+                    print(f"The key '{key}' has unequal float values")
+        if equal_keys:
+            print("The dictionaries are equal")
+
+
+
+parameters_hand=parameters_calibration
+parameters_hand["K"]=parameters_calibration["K"]*growth_ratios["K"][0]
+parameters_hand["L"]=parameters_calibration["L"]*growth_ratios["L"][0]
+parameters_hand["GDPreal"]=parameters_calibration["GDPreal"]*growth_ratios["GDPreal"][0]
+parameters_hand["wI"]=parameters_calibration["wI"]*growth_ratios["wI"][0]
+
+
+def count_elements(dictionary):
+    count = 0
+    for value in dictionary.values():
+        if isinstance(value, np.ndarray):
+            if value.ndim == 1:
+                count += len(value)
+            elif value.ndim == 2:
+                count += value.size
+        elif isinstance(value, (float, int)):
+            count += 1
+        else:
+            print("Unsupported type:", type(value))
+    return count

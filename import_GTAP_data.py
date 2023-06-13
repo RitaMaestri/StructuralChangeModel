@@ -9,6 +9,7 @@ import pandas as pd
 import glob
 import sys
 
+
 mydict={}
 
 
@@ -63,8 +64,6 @@ wLj =np.array(  mydict["tech_aspros"] + mydict["clerks"] + mydict["service_shop"
 
 labor_taxes =np.array(  mydict["T_tech_aspros"] + mydict["T_clerks"] + mydict["T_service_shop"] + mydict["T_off_mgr_pros"] + mydict["T_ag_othlowsk"] )
 
-pLLj= wLj + labor_taxes
-
 K = np.array( mydict["Capital"] + mydict["T_Capital"] )
 
 R = np.array( mydict["NatRes"] + mydict["Land"] + mydict["T_Land"] + mydict["T_NatRes"] )
@@ -81,8 +80,23 @@ pCjIj = np.array( mydict["FBCF_imp"] + mydict["FBCF_dom"] )
 
 pXjXj= np.array( mydict["Exp_trans_cor"] + mydict["Exp_cor"] )
 
-pKKj = K + R
 
+production_taxes[abs(production_taxes)<10e-7] = 0
+sales_taxes[abs(sales_taxes)<10e-7] = 0
+wLj[abs(wLj)<10e-7] = 0
+labor_taxes[abs(labor_taxes)<10e-7] = 0
+K[abs(K)<10e-7] = 0
+R[abs(R)<10e-7] = 0
+pMjMj[abs(pMjMj)<10e-7] = 0
+pCiYij[abs(pCiYij)<10e-7] = 0
+pCjCj[abs(pCjCj)<10e-7] = 0
+pCjGj[abs(pCjGj)<10e-7] = 0
+pCjIj[abs(pCjIj)<10e-7] = 0
+pXjXj[abs(pXjXj)<10e-7] = 0
+
+
+pLLj= wLj + labor_taxes
+pKKj = K + R
 
 #check for equilibrium
 
@@ -112,6 +126,8 @@ diff_final= (
     pCiYij.sum(axis=1)+pCjCj+pCjGj+pCjIj-pMjMj+pXjXj
     )
     )
+
+
 
 
 #### DERIVED QUANTITIES #######

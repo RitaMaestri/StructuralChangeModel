@@ -1,0 +1,59 @@
+code,product,armington_elasticity,other,other
+pdr,Paddy rice,5.05,10.10,0.24
+wht,Wheat,4.45,8.90,0.24
+gro,Cereal grains n.e.c.,1.30,2.60,0.24
+v_f,Vegetables fruit nuts,1.85,3.70,0.24
+osd,Oil seeds,2.45,4.90,0.24
+c_b,Sugar cane sugar beet,2.70,5.40,0.24
+pfb,Plant-based fibers,2.50,5.00,0.24
+ocr,Crops n.e.c.,3.25,6.50,0.24
+ctl,Bovine cattle sheep and goats,2.00,4.00,0.24
+oap,Animal products,1.30,2.60,0.24
+rmk,Raw milk,3.65,7.30,0.24
+wol,Wool silk-worm cocoons,6.45,12.90,0.24
+frs,Forestry,2.50,5.00,0.20
+fsh,Fishing,1.25,2.50,0.20
+coa,Coal,3.05,6.10,0.20
+oil,Oil,5.20,10.40,0.20
+gas,Gas,17.20,34.40,0.20
+omn,Minerals n.e.c.,0.90,1.80,0.20
+cmt,Bovine meat prods,3.85,7.70,1.12
+omt,Meat products n.e.c.,4.40,8.80,1.12
+vol,Vegetable oils and fats,3.30,6.60,1.12
+mil,Dairy products,3.65,7.30,1.12
+pcr,Processed rice,2.60,5.20,1.12
+sgr,Sugar,2.70,5.40,1.12
+ofd,Food products n.e.c.,2.00,4.00,1.12
+b_t,Beverages and tobacco products,1.15,2.30,1.12
+tex,Textiles,3.75,7.50,1.26
+wap,Wearing apparel,3.70,7.40,1.26
+lea,Leather products,4.05,8.10,1.26
+lum,Wood products,3.40,6.80,1.26
+ppp,Paper products publishing,2.95,5.90,1.26
+p_c,Petroleum coal products,2.10,4.20,1.26
+crp,Chemical rubber plastic products,3.30,6.60,1.26
+nmm,Mineral,2.90,5.80,1.26
+i_s,Ferrous metals,2.95,5.90,1.26
+nfm,metals,4.20,8.40,1.26
+fmp,Metal,3.75,7.50,1.26
+mvh,Motor vehicles and parts,2.80,5.60,1.26
+otn,Transport equipment,4.30,8.60,1.26
+ele,Electronic equipment,4.40,8.80,1.26
+ome,Machinery and equipment,4.05,8.10,1.26
+omf,Manufactures,3.75,7.50,1.26
+ely,Electricity,2.80,5.60,1.26
+gdt,Gas manufacture distribution,2.80,5.60,1.26
+wtr,Water,2.80,5.60,1.26
+cns,Construction,1.90,3.80,1.68
+trd,Trade,1.90,3.80,1.68
+otp,Transport,1.90,3.80,1.68
+wtp,Water transport,1.90,3.80,1.68
+atp,Air transport,1.90,3.80,1.68
+cmn,Communication,1.90,3.80,1.26
+ofi,Financial services,1.90,3.80,1.26
+isr,Insurance,1.90,3.80,1.26
+obs,Business services,1.90,3.80,1.26
+ros,Recreational and others ervices,1.90,3.80,1.26
+osg,Public Admin Defense Education,1.90,3.80,1.26
+dwe,Dwellings,1.90,3.80,1.26
+

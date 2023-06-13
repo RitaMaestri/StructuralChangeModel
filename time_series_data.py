@@ -65,7 +65,7 @@ class sys_df:
 
         self.variables_df= self.empty_dataframe(self.calib_var_dict)
         
-        self.dict_to_df(self.calib_var_dict, self.years[0])
+        #self.dict_to_df(self.calib_var_dict, self.years[0])
 
     def __initialize_parameters_df(self):
         

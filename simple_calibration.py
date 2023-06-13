@@ -23,7 +23,7 @@ class calibrationVariables:
         
         #labor
         if L0 is None:   
-            self.pL0 = 100
+            self.pL0 = 1
             self.Lj0= imp.pLLj / self.pL0
             self.L0=sum(self.Lj0)
         else:
@@ -33,13 +33,13 @@ class calibrationVariables:
         
         #prezzi
         
-        self.pYj0=np.array([100]*N)
-        self.pSj0=np.array([100]*N)
-        self.pKLj0=np.array([100]*N)
-        self.pXj0=np.array([100]*N)
-        self.pMj0=np.array([100]*N)
-        self.pDj0=np.array([100]*N)
-        self.pXj=np.array([100]*N)
+        self.pYj0=np.array([float(1)]*N)
+        self.pSj0=np.array([float(1)]*N)
+        self.pKLj0=np.array([float(1)]*N)
+        self.pXj0=np.array([float(1)]*N)
+        self.pMj0=np.array([float(1)]*N)
+        self.pDj0=np.array([float(1)]*N)
+        self.pXj=np.array([float(1)]*N)
         
         #taxes
         
@@ -155,7 +155,25 @@ class calibrationVariables:
         self.pI0=float(solI.dvar['pI'])
         self.alphaIj=np.zeros(N)
         self.alphaIj[imp.pCjIj!=0]=solI.dvar['alphaIj']
-        
+#         self.I0=1395.532824265621 
+#         self.pI0=2650.182180045942 
+#         self.alphaIj=np.array([5.97780611e-05,2.31155359e-03,2.75605530e-03,9.40803591e-03
+# ,1.75098464e-03,2.87839490e-04,2.97471645e-04,6.28461385e-03
+# ,5.16597687e-03,7.67345637e-03,4.11191888e-03,1.01757817e-03
+# ,6.06774907e-03,3.76377174e-04,1.51273351e-02,9.42553004e-05
+# ,2.17355047e-04,1.67800489e-04,2.02527441e-04,6.04762054e-06
+# ,4.62264142e-05,6.10731436e-04,1.70715559e-04,6.63490428e-03
+# ,8.25267799e-03,3.58818494e-03,6.12709001e-02,1.91017131e-01
+# ,3.43150646e-02,1.06485938e-02,1.14869095e-02,4.12068742e-02
+# ,1.54471318e-02,1.40217225e-02,5.09509515e-01,9.41832685e-01
+# ,7.50701076e-01,2.27230154e+00,1.02164439e+00,8.25383543e-01
+# ,6.82781782e-01,4.27129323e-03,1.10683984e+01,1.13001813e+00
+# ,3.86629510e-04,5.17996812e-02,4.84060959e-03,1.09745413e-03
+# ,4.59309983e-03,2.61505618e+00,4.66758158e-03,1.67500269e-05
+# ,1.90415287e-01,2.41307375e+00,1.28385948e-01,2.55922758e-02
+# ,1.95683066e-02,2.07986623e-02,4.96593235e-07,0.00000000e+00
+# ,0.00000000e+00,0.00000000e+00,0.00000000e+00,0.00000000e+00
+# ,0.00000000e+00])
         self.delta=0.04
         self.g0=L_gr0
         self.pK0 = (sum(imp.pKKj)*(self.g0+self.delta))/self.I0
@@ -263,20 +281,20 @@ class calibrationVariables:
 
 # sum(alphaCDESj)
 
-pSj0=np.array([100]*N)
-tauSj0 = imp.sales_taxes / (imp.pCiYij.sum(axis=1)+imp.pCjCj+imp.pCjGj+imp.pCjIj - imp.sales_taxes)
-pCj0 = (1+tauSj0)*pSj0
+#pSj0=np.array([100]*N)
+#tauSj0 = imp.sales_taxes / (imp.pCiYij.sum(axis=1)+imp.pCjCj+imp.pCjGj+imp.pCjIj - imp.sales_taxes)
+#pCj0 = (1+tauSj0)*pSj0
 
-def fun(x):
-    return 1 - (.1/ sum(x * pCj0[imp.pCjIj!=0]))
+#def fun(x):
+#    return 1 - (.1/ sum(x * pCj0[imp.pCjIj!=0]))
 
-this_len=len(imp.pCjIj[imp.pCjIj!=0])
+#this_len=len(imp.pCjIj[imp.pCjIj!=0])
 
-a=optimize.least_squares(
-    fun,
-    np.array([.1]*59),
-    bounds=np.array([ ([0]*(this_len)),([np.inf]*(this_len)) ])
-    )
+#a=optimize.least_squares(
+#    fun,
+#    np.array([.1]*59),
+#    bounds=np.array([ ([0]*(this_len)),([np.inf]*(this_len)) ])
+#    )
 
-sum(a.x * pCj0[imp.pCjIj!=0])
+#sum(a.x * pCj0[imp.pCjIj!=0])
 
