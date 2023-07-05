@@ -15,10 +15,9 @@ mydict={}
 
 region="EUR"
 #folder_all="/home/rita/Documents/Tesi/Code/aggregation GTAP/SAMfiles/all/"
-folder_all="/home/rita/Documents/Tesi/Code/aggregation GTAP/SAMfiles EUR/SAMfiles/all/"
+folder_all="/home/rita/Documents/Tesi/Code/aggregation GTAP/SAMfiles EUR 3/SAMfiles/all/"
 #folder_reg="/home/rita/Documents/Tesi/Code/aggregation GTAP/SAMfiles/france/"    
-folder_reg="/home/rita/Documents/Tesi/Code/aggregation GTAP/SAMfiles EUR/SAMfiles/EUR/"
-
+folder_reg="/home/rita/Documents/Tesi/Code/aggregation GTAP/SAMfiles EUR 3/SAMfiles/EUR/"
 
 
 files_all = glob.glob(folder_all+"*.csv")
@@ -37,10 +36,12 @@ for f in files_reg:
     df = pd.read_csv(f,sep="|",index_col=0)
     key = f.replace("_"+region+".csv", "").replace(folder_reg,"")
     mydict[key]=df
-    
+
 #these correspondences are taken from the file aggregated_inputoutput_table_FRA
 
 N=len(mydict["Capital"])
+sectors=list(mydict["Capital"].index.values)
+
 
 production_taxes = np.array(mydict["T_prod"])
 
@@ -147,10 +148,10 @@ pDjDj = pSjSj - pMjMj
 
 #GTAP Import elasticities + default export elasticities (-2 for all sectors)
 
-Armington_elasticities=pd.read_csv("data/GTAP_Armington_elasticities.csv", index_col="commodity").squeeze()
+Armington_elasticities=pd.read_csv("data/GTAP_Armington_elasticities3.csv", index_col="commodity").squeeze()
 sigmaSj=Armington_elasticities.to_numpy()
 
-export_elasticities=pd.read_csv("data/GTAP_export_elasticities.csv", index_col="code").squeeze()
+export_elasticities=pd.read_csv("data/GTAP_export_elasticities3.csv", index_col="code").squeeze()
 sigmaXj=np.array(export_elasticities)
 
 
@@ -161,4 +162,3 @@ non_zero_index_M=np.array(np.where(pMjMj != 0)).flatten()
 non_zero_index_C=np.array(np.where(pCjCj != 0)).flatten()
 non_zero_index_Yij=np.array(np.where(pCiYij != 0))
 len(pCiYij[pCiYij != 0])
-

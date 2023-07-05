@@ -3,9 +3,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.ndimage.interpolation import shift
-import import_csv as imp
 import sys
-from simple_calibration import N
+from import_csv import N,sectors
 import matplotlib.colors as mcolors
 from scipy import stats
 
@@ -90,7 +89,7 @@ cmap=["#E06969",
 
 my_cmap=mcolors.ListedColormap(cmap)
 
-name = imp.sectors
+name = sectors
 
 df = pd.read_csv("results/johansen2015-2050exoKnext(02-03-2023_18:37).csv")
 df.rename(columns={df.columns[0]: 'variable'},inplace=True)
@@ -343,7 +342,7 @@ print(function_pD(pY=value("pYj"),
                   alphaD=value("alphaDj")))
 
 
-plot_varj_evol(var="Yj", pq="q", diff=False)
+plot_varj_evol(var="Mj", pq="pq", diff=False)
 
 
 ###########

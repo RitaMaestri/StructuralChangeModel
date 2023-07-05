@@ -30,8 +30,13 @@ class sys_df:
                 growth_dictionary[i]=par0
         else:
             for i in self.growth_ratios.keys():
-                growth_dictionary[i]=self.calib_par_dict[i]*self.growth_ratios[i]
-                
+                if self.growth_ratios[i].ndim == 1 :
+
+                    growth_dictionary[i]=self.growth_ratios[i]*self.calib_par_dict[i]
+                else: 
+                    repeated_array = np.tile(self.calib_par_dict[i], (np.shape(self.growth_ratios[i])[1], 1)).T
+                    growth_dictionary[i] = self.growth_ratios[i]*repeated_array
+                    
         return growth_dictionary
 
     ####  X axis  ####
@@ -113,6 +118,7 @@ class sys_df:
         #L=Lgrowth*[self.calib_par_dict['L']]
         
         self.dynamic_parameters={
+        
             **self.evolve_par(),
             **self.dynamic_parameters
         }

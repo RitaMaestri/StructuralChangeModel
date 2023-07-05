@@ -12,10 +12,11 @@ import random
 import math
 import copy
 import json
+import collections
 
 now = datetime.now()
 dt_string = now.strftime("%d-%m-%Y_%H:%M")
-
+exogenous_data="REMIND_exogenous_data"
 ###### PARAMETERS SETTING ###########
 
 # closure : "johansen" , "neoclassic", "kaldorian", "keynes-marshall", "keynes", "keynes-kaldor","neokeynesian1", "neokeynesian2"   ########
@@ -24,18 +25,29 @@ closure="johansen"
 #stop=2017
 #step=1
 #years = np.array(range(2015, stop+1, step))
-add_string=""
+add_string="REMIND-3sectors"
 
-growth_ratios_df = pd.read_csv("data/REMIND_exogenous_data.csv", index_col="variable")#[years.astype(str)]
+growth_ratios_df = pd.read_csv("data/"+exogenous_data+".csv", index_col="variable")#[years.astype(str)]
+growth_ratios_df_T = growth_ratios_df.T.reset_index().drop(columns="index")
 
-growth_ratios=growth_ratios_df.T.reset_index().to_dict(orient='list')
-growth_ratios.pop("index")
+counter=collections.Counter(list(growth_ratios_df.index))
+
+scalar_growth_ratios = [k for k,v in counter.items() if v == 1]
+
+growth_ratios=growth_ratios_df_T[growth_ratios_df_T.columns & scalar_growth_ratios].to_dict(orient='list')
 growth_ratios={k:np.array(v) for k,v in growth_ratios.items()}
+
+vector_growth_ratios =[k for k,v in counter.items() if v > 1]
+
+for key in vector_growth_ratios:
+    gr_array=growth_ratios_df_T[key].to_numpy().T
+    growth_ratios[key]=gr_array
 
 years = np.array([eval(i) for i in growth_ratios_df.columns])
 stop=years[-1]
-
+start=years[0]
 Lg_rate = growth_ratio_to_rate( growth_ratios["L"])
+
 
 dynamic_parameters={}
 #dynamic_parameters_df= pd.read_csv("data/INSEE FRA/dynamic parameters.csv", index_col="variable")[years.astype(str)]
@@ -47,7 +59,7 @@ dynamic_parameters={}
 endoKnext = False if 'K' in {**growth_ratios,**dynamic_parameters}.keys() else True
 endostring="endoKnext" if endoKnext else "exoKnext"
 
-name = str().join(["results/",closure,str(2015),"-",str(stop),endostring,add_string,"(",dt_string,")",".csv"])
+name = str().join(["results/",closure,str(start),"-",str(stop),endostring,add_string,"(",dt_string,")",".csv"])
 
 ######### CALIBRATION AND MODEL SOLUTION #############
 
@@ -87,7 +99,7 @@ def system(var, par, write=True):
     if write:
         np.savez('var.npz', **var)
         np.savez('par.npz', **par)
-        
+
     equations= {
         "eqKLj":eq.eqKLj(KLj =d['KLj'],bKL=d['bKL'], bKLj=d['bKLj'], Lj=d['Lj'], Kj=d['Kj'], alphaLj=d['alphaLj'], alphaKj=d['alphaKj']),
                 
@@ -99,17 +111,19 @@ def system(var, par, write=True):
         
         "eqpYj":eq.eqpYj(pYj=d['pYj'],pCj=d['pCj'],aKLj=d['aKLj'],pKLj=d['pKLj'],aYij=d['aYij'], tauYj=d['tauYj']),
         
-        "eqCESquantityX":eq.eqCESquantity(Xj=d['Xj'], Zj=d['Yj'], alphaXj=d['alphaXj'], alphaYj=d['alphaDj'], pXj=d['pXj'], pYj=d['pDj'], sigmaj=d['sigmaXj'], _index=non_zero_index_X),#e-5
+        "eqCESquantityX":eq.eqCESquantity(Xj=d['Xj'], Zj=d['Yj'], alphaXj=d['alphaXj'], alphaYj=d['alphaDj'], pXj=d['pXj'], pYj=d['pDj'], sigmaj=d['sigmaXj'], thetaj=d['thetaj'],_index=non_zero_index_X),#e-5
         
-        "eqCESquantityDy":eq.eqCESquantity(Xj=d['Dj'], Zj=d['Yj'], alphaXj=d['alphaDj'], alphaYj=d['alphaXj'], pXj=d['pDj'], pYj=d['pXj'], sigmaj=d['sigmaXj']),
+        "eqCESquantityDy":eq.eqCESquantity(Xj=d['Dj'], Zj=d['Yj'], alphaXj=d['alphaDj'], alphaYj=d['alphaXj'], pXj=d['pDj'], pYj=d['pXj'], sigmaj=d['sigmaXj'],  thetaj=d['thetaj']),
         
-        "eqCESpriceY":eq.eqCESprice(pZj=d['pYj'], pXj=d['pXj'], pYj=d['pDj'], alphaXj=d['alphaXj'], alphaYj=d['alphaDj'], sigmaj=d['sigmaXj']),
+        "eqCESpriceY":eq.eqCESprice(pZj=d['pYj'], pXj=d['pXj'], pYj=d['pDj'], alphaXj=d['alphaXj'], alphaYj=d['alphaDj'], sigmaj=d['sigmaXj'],  thetaj=d['thetaj']),
         
-        "eqCESquantityDs":eq.eqCESquantity(Xj=d['Dj'], Zj=d['Sj'], alphaXj=d['betaDj'], alphaYj=d['betaMj'], pXj=d['pDj'], pYj=d['pMj'], sigmaj=d['sigmaSj']),
         
-        "eqCESquantityM":eq.eqCESquantity(Xj=d['Mj'], Zj=d['Sj'], alphaXj=d['betaMj'], alphaYj=d['betaDj'], pXj=d['pMj'], pYj=d['pDj'], sigmaj=d['sigmaSj'],_index=non_zero_index_M),
+        "eqCESquantityDs":eq.eqCESquantity(Xj=d['Dj'], Zj=d['Sj'], alphaXj=d['betaDj'], alphaYj=d['betaMj'], pXj=d['pDj'], pYj=d['pMj'], sigmaj=d['sigmaSj'], thetaj=d['csij']),
         
-        "eqCESpriceS":eq.eqCESprice(pZj=d['pSj'],pXj=d['pMj'],pYj=d['pDj'],alphaXj=d['betaMj'],alphaYj=d['betaDj'],sigmaj=d['sigmaSj']),
+        "eqCESquantityM":eq.eqCESquantity(Xj=d['Mj'], Zj=d['Sj'], alphaXj=d['betaMj'], alphaYj=d['betaDj'], pXj=d['pMj'], pYj=d['pDj'], sigmaj=d['sigmaSj'], thetaj=d['csij'],_index=non_zero_index_M),
+        
+        "eqCESpriceS":eq.eqCESprice(pZj=d['pSj'],pXj=d['pMj'],pYj=d['pDj'],alphaXj=d['betaMj'],alphaYj=d['betaDj'],sigmaj=d['sigmaSj'], thetaj=d['csij']),
+        
         
         "eqB":eq.eqB(B=d['B'],pXj=d['pXj'],Xj=d['Xj'],pMj=d['pMj'],Mj=d['Mj']),
                 
@@ -165,7 +179,7 @@ def system(var, par, write=True):
                                 )
         
         solution = np.hstack(list(equations.values()))
-        #print("equations Ij ", equations["eqIj"])
+
         return solution 
 
     elif closure=="neoclassic":
@@ -213,7 +227,7 @@ def system(var, par, write=True):
                           "eqB":eq.eqMult(result=d['B'],mult1=d['wB'],mult2=d['GDP'])})
        
         solution = np.hstack(list(equations.values()))
-        #print("equations Ij ", equations["eqIj"])
+        #print("equations Ij ", equations["eqCESquantityX"])
         return solution
 
 
@@ -301,11 +315,14 @@ def system(var, par, write=True):
         sys.exit()
         
 #### Calibration check ####
+max_err_cal=max(abs(system(variables_calibration, parameters_calibration, False)))
+print("maxerrcal", max_err_cal)
 
-if max(system(variables_calibration, parameters_calibration, False))>1e-07:
+if max_err_cal>1e-07:
     d={**variables_calibration,**parameters_calibration}
     print("the system is not correctly calibrated")
     d = {**variables_calibration, **parameters_calibration}
+    sys.exit()
 
 #### set the bounds in the good format for the solver ####
 def multiply_bounds_len(key,this_bounds,this_variables):
@@ -339,12 +356,12 @@ def kick(variables, number_modified=10, percentage_modified=0.1, modification=0.
     random.seed(seed)
     kicked_variables = copy.deepcopy(variables)
     keys = random.sample(list(variables.keys()), k=number_modified)
-    print("Variables kicked at:", keys,
-          "\n number modified: ", number_modified,
-          "\n percentage: ",percentage_modified,
-          "\n modification: ",modification,
-          "\n seed: ",seed,)
-    
+#    print("Variables kicked at:", keys,
+#          "\n number modified: ", number_modified,
+#          "\n percentage: ",percentage_modified,
+#          "\n modification: ",modification,
+#          "\n seed: ",seed,)
+
     for v_key in keys:
         if v_key in kicked_variables:
             if hasattr(kicked_variables[v_key], "__len__"):
@@ -359,22 +376,23 @@ def kick(variables, number_modified=10, percentage_modified=0.1, modification=0.
 
     return kicked_variables
 
-
 ######  SYSTEM SOLUTION  ######
 
 maxerror=max(abs( system(variables_calibration, parameters_calibration)))
+print(maxerror)
 if maxerror>1e-5:
     print("the system is not at equilibrium")
 
-for t in range(len(years[:-1])):
+
+for t in range(len(years)):
     if t==0:
-        variables=kick(variables_calibration)
+        variables=variables_calibration #kick(variables_calibration)
     else:
-        variables=System.df_to_dict(var=True, t=years[t])
+        variables=System.df_to_dict(var=True, t=years[t-1]) #kick(System.df_to_dict(var=True, t=years[t-1]))
     
     parameters=System.df_to_dict(var=False, t=years[t])
 
-    sol = dict_least_squares( system, variables, parameters, bounds_variables, N, verb=2, check=False )
+    sol = dict_least_squares( system, variables, parameters, bounds_variables, N, verb=1, check=False)
     
     maxerror=max(abs( system(sol.dvar, parameters)))
     
@@ -390,8 +408,7 @@ for t in range(len(years[:-1])):
     
     if endoKnext and years[t]<years[-2] :
         System.evolve_K(t+1)
-    if t==0:
-        sys.exit()
+
 
 results=pd.concat([System.variables_df,System.parameters_df], ignore_index=False)
 
@@ -498,14 +515,6 @@ def compare_dictionaries(dict1, dict2):
                     print(f"The key '{key}' has unequal float values")
         if equal_keys:
             print("The dictionaries are equal")
-
-
-
-parameters_hand=parameters_calibration
-parameters_hand["K"]=parameters_calibration["K"]*growth_ratios["K"][0]
-parameters_hand["L"]=parameters_calibration["L"]*growth_ratios["L"][0]
-parameters_hand["GDPreal"]=parameters_calibration["GDPreal"]*growth_ratios["GDPreal"][0]
-parameters_hand["wI"]=parameters_calibration["wI"]*growth_ratios["wI"][0]
 
 
 def count_elements(dictionary):

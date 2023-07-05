@@ -89,11 +89,29 @@ class calibrationVariables:
         self.aYij= self.Yij0 / self.Yj0[None,:]
         self.aKLj=self.KLj0/self.Yj0
         
-        self.alphaXj = np.float_power(division_by_zero(self.Yj0,self.Xj0),self.etaXj) * imp.pXjXj / imp.pYjYj
-        self.alphaDj = np.float_power(division_by_zero(self.Yj0,self.Dj0),self.etaXj) * imp.pDjDj / imp.pYjYj
+        def compute_alphas_CES(Q1j,Q2j,p1j,p2j,etaj):
+            alphaj = 1 / (
+                1 + np.float_power( Q2j , (1 - etaj) ) * p2j / ( np.float_power( Q1j , 1-etaj ) * p1j )
+                )
+            return alphaj
         
-        self.betaMj = np.float_power(division_by_zero(self.Sj0,self.Mj0),self.etaSj)*imp.pMjMj / imp.pSjSj
-        self.betaDj = np.float_power(division_by_zero(self.Sj0,self.Dj0),self.etaSj)*imp.pDjDj / imp.pSjSj
+        def compute_theta_CES(Zj,alpha1j,alpha2j,Q1j,Q2j,etaj):
+            thetaj = Zj / ( 
+                np.float_power( 
+                    alpha1j * np.float_power(Q1j,etaj) + alpha2j * np.float_power( Q2j,etaj) ,
+                    1/etaj )
+                )
+            
+            return thetaj
+        
+        self.alphaXj= compute_alphas_CES(Q1j=self.Xj0,Q2j=self.Dj0,p1j=self.pXj0,p2j=self.pDj0,etaj=self.etaXj)
+        self.alphaDj= compute_alphas_CES(Q1j=self.Dj0,Q2j=self.Xj0,p1j=self.pDj0,p2j=self.pXj0,etaj=self.etaXj)
+        self.thetaj = compute_theta_CES(Zj=self.Yj0, alpha1j=self.alphaXj, alpha2j=self.alphaDj, Q1j=self.Xj0, Q2j=self.Dj0,etaj=self.etaXj)
+        
+        self.betaMj= compute_alphas_CES(Q1j=self.Mj0,Q2j=self.Dj0,p1j=self.pMj0,p2j=self.pDj0,etaj=self.etaSj)
+        self.betaDj= compute_alphas_CES(Q1j=self.Dj0,Q2j=self.Mj0,p1j=self.pDj0,p2j=self.pMj0,etaj=self.etaSj)
+        self.csij = compute_theta_CES(Zj=self.Sj0,alpha1j=self.betaMj,alpha2j=self.betaDj,Q1j=self.Mj0,Q2j=self.Dj0,etaj=self.etaSj)
+        
         self.alphaCj = imp.pCjCj/self.R0
         self.alphaGj = imp.pCjGj/self.Rg0
         self.alphalj = self.Lj0/(self.KLj0*self.l0)

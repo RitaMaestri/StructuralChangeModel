@@ -33,7 +33,6 @@ def clean_data(db):
 
 sectors=employment_table.index.values[:-3]
 sectors_names=list(employment_table["Activity"][:-3].values)
-np.where(sectors=="DZ")[0].item()
 
 
 ####### CONSUMPTION ##########
@@ -183,17 +182,17 @@ N=len(pLLj)
 
 #trade elasticities
 
-export_elasticities=pd.read_csv("data/Export elasticities.csv")
+export_elasticities=pd.read_csv("data/INSEE FRA/Export elasticities.csv")
 
 sigmaXj=np.array(export_elasticities["elasticity"])
 
-Armington_elasticities=pd.read_csv("data/Armington_elasticities.csv")
+Armington_elasticities=pd.read_csv("data/INSEE FRA/Armington_elasticities.csv")
 
 sigmaSj=np.array(Armington_elasticities["elasticity"])
 
 #consumption elasticities
 
-consumption_elasticities=pd.read_csv("data/revenue_elasticities2.csv")
+consumption_elasticities=pd.read_csv("data/INSEE FRA/revenue_elasticities2.csv")
 
 epsilonRj=np.array(consumption_elasticities['Revenue elasticity of consumption'])
 

@@ -233,6 +233,8 @@ class calibrationDict:
             'alphaDj':Variable("exo", cal.alphaDj),
             'betaDj':Variable("exo", cal.betaDj),
             'betaMj':Variable("exo", cal.betaMj),
+            'thetaj':Variable("exo", cal.thetaj),
+            'csij':Variable("exo", cal.csij),
             'sigmaXj':Variable("exo", cal.sigmaXj),
             'sigmaSj':Variable("exo", cal.sigmaSj),
             'aYij':Variable("exo", cal.aYij),
@@ -338,6 +340,9 @@ bounds={
     'sG':(0,1),
     'aYij':(0,np.inf),
     'Yij':(0,np.inf),
-    'delta':(0,1)
+    'delta':(0,1),
+    'thetaj':(-np.inf,np.inf),
+    'csij':(-np.inf,np.inf),
+
         }
 
