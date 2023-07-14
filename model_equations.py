@@ -62,7 +62,7 @@ def eqpYj(pYj,pCj,aKLj,pKLj,aYij, tauYj):
     return zero
 
 
-def eqCET(Zj, thetaj, alphaXj,alphaYj,Xj,Yj,sigmaj):
+def eqCES(Zj, thetaj, alphaXj,alphaYj,Xj,Yj,sigmaj):
 
     etaj = (sigmaj-1)/sigmaj
 
@@ -74,7 +74,7 @@ def eqCET(Zj, thetaj, alphaXj,alphaYj,Xj,Yj,sigmaj):
 
 #eqCET(Zj=d["Sj"], alphaXj=d["betaDj"],alphaYj=d["betaMj"],Xj=d["Dj"],Yj=d["Mj"],sigmaj=d["sigmaSj"])
 
-def eqCESquantity(Xj, Zj, thetaj, alphaXj, alphaYj, pXj, pYj, sigmaj, _index=None):
+def eqCESquantity(Xj, Zj, thetaj, alphaXj, alphaYj, pXj, pYj, sigmaj, _index=None, theta=1):
         
     if isinstance(_index, np.ndarray):
         Xj=Xj[_index]
@@ -89,17 +89,17 @@ def eqCESquantity(Xj, Zj, thetaj, alphaXj, alphaYj, pXj, pYj, sigmaj, _index=Non
     partj = np.float_power(alphaXj, sigmaj, out=np.zeros(len(alphaXj)),where=(alphaXj!=0)) * np.float_power(pXj,1-sigmaj) + np.float_power(alphaYj,sigmaj, out=np.zeros(len(alphaYj)),where=(alphaYj!=0))* np.float_power(pYj,1-sigmaj)
     
     zero= -1 + Xj / (
-        np.float_power(alphaXj/pXj, sigmaj) * np.float_power(partj , sigmaj/(1-sigmaj) ) * Zj * np.float_power(thetaj,-1)
+        np.float_power(alphaXj/pXj, sigmaj) * np.float_power(partj , sigmaj/(1-sigmaj) ) * Zj * np.float_power(thetaj*theta,-1)
     )
     return zero
 
 
-def eqCESprice(pZj,pXj,pYj,alphaXj,alphaYj,sigmaj, thetaj):
+def eqCESprice(pZj,pXj,pYj,alphaXj,alphaYj,sigmaj, thetaj, theta=1):
 
     partj= np.float_power(alphaXj,sigmaj, out=np.zeros(len(alphaXj)),where=(alphaXj!=0)) * np.float_power(pXj,1-sigmaj) + np.float_power(alphaYj,sigmaj, out=np.zeros(len(alphaYj)),where=(alphaYj!=0)) * np.float_power(pYj,1-sigmaj)
 
     zero= -1 + pZj / (  
-        np.float_power(thetaj, -1) *
+        np.float_power(theta*thetaj, -1) *
         np.float_power(partj, 1/(1-sigmaj) )
     )
 
