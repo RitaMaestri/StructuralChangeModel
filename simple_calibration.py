@@ -6,6 +6,9 @@ import sys
 from scipy import optimize
 #import pandas as pd
 
+tau=imp.labor_taxes / (imp.pLLj - imp.labor_taxes)
+pL=1
+w=pL/(1+tau)
 
 def division_by_zero(num,den):
     if len(num)==len(den):
@@ -44,13 +47,17 @@ class calibrationVariables:
         #taxes
         
         self.tauYj0 = imp.production_taxes/( imp.pYjYj - imp.production_taxes)
+        print("tauY0", self.tauYj0)
+
         self.tauSj0 = imp.sales_taxes / (imp.pCiYij.sum(axis=1)+imp.pCjCj+imp.pCjGj+imp.pCjIj - imp.sales_taxes)
         self.tauL0 = imp.labor_taxes / (imp.pLLj - imp.labor_taxes)
+        print("tauL0", type(self.tauL0))
         self.pCj0 = (1+self.tauSj0)*self.pSj0
         self.w=self.pL0/(1+self.tauL0)
+        print("w",type(self.w))
         
         #quantità
-        
+        print("pciIi",type(imp.pCjIj))
         self.Ij0 = imp.pCjIj/self.pCj0
         self.Cj0 = imp.pCjCj/self.pCj0
         self.Gj0 = imp.pCjGj/self.pCj0
