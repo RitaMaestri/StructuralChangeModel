@@ -16,7 +16,7 @@ import collections
 
 now = datetime.now()
 dt_string = now.strftime("%d-%m-%Y_%H:%M")
-exogenous_data="REMIND_exogenous_data_balanced"
+exogenous_data="REMIND_exogenous_data"
 ###### PARAMETERS SETTING ###########
 
 # closure : "johansen" , "neoclassic", "kaldorian", "keynes-marshall", "keynes", "keynes-kaldor","neokeynesian1", "neokeynesian2"   ########
@@ -68,17 +68,16 @@ calibration = calibrationDict(closure, Lg_rate[0], endoKnext)
 variables_calibration = calibration.endogeouns_dict
 
 parameters_calibration = calibration.exogenous_dict
-
 ## Build the systen ##
 
 System=sys_df(years, growth_ratios, variables_calibration, parameters_calibration)
 
+
+
+
 ####### check for errors ########
 
-for item in variables_calibration.keys():
-    if item in parameters_calibration:
-        print("the same variable is both in variables and parameters")
-        sys.exit()
+
 
 for k in parameters_calibration.keys():
     for par in np.array([parameters_calibration[k]]).flatten() :
@@ -92,14 +91,38 @@ for k in variables_calibration.keys():
             print("variable ", k ," out of bounds")
             sys.exit()
 
-def system(var, par, write=True):
+def fill_nans(par_value, var_value):
+    if isinstance(par_value, np.ndarray):
+        par_copy = par_value.copy()
+        if par_copy.ndim == 2:
+            mask_par = np.isnan(par_copy)
+            row_idx, col_idx = np.where(mask_par)
+            par_copy[row_idx, col_idx] = var_value.flatten()
+        else:
+            mask_par = np.isnan(par_copy)
+            par_copy[mask_par] = var_value
+        return par_copy
+    else:
+        return var_value
 
-    d = {**var, **par}
 
-    if write:
-        np.savez('var.npz', **var)
-        np.savez('par.npz', **par)
+def joint_dict(par, var):
+    # Create a new dictionary to store the updated values
+    d = par.copy()
+    # Iterate through keys of A that are also present in B
+    for key in var.keys() & par.keys():
+        if np.isscalar(var[key]):
+            d[key] = fill_nans(par[key], np.array([var[key]]))
+        else:
+            d[key] = fill_nans(par[key], var[key])
+    return d
 
+a=joint_dict(parameters_calibration,variables_calibration)
+
+def system(var, par):
+
+    d=joint_dict(par,var)
+    print(d)
     equations= {
                 
         "eqCESquantityKj":eq.eqCESquantity(Xj=d['Kj'], Zj=d['KLj'], alphaXj=d['alphaKj'], alphaYj=d['alphaLj'], pXj=d['pK'], pYj=d['pL'], sigmaj=d['sigmaKLj'], thetaj=d['bKLj'], theta=d['bKL']),#e-5
@@ -316,13 +339,12 @@ def system(var, par, write=True):
         sys.exit()
         
 #### Calibration check ####
-max_err_cal=max(abs(system(variables_calibration, parameters_calibration, False)))
+max_err_cal=max(abs(system(variables_calibration, parameters_calibration)))
 print("maxerrcal", max_err_cal)
 
 if max_err_cal>1e-07:
-    d={**variables_calibration,**parameters_calibration}
+    d=joint_dict(parameters_calibration,variables_calibration)
     print("the system is not correctly calibrated")
-    d = {**variables_calibration, **parameters_calibration}
     sys.exit()
 
 #### set the bounds in the good format for the solver ####
@@ -392,7 +414,7 @@ for t in range(len(years)):
         variables=System.df_to_dict(var=True, t=years[t-1]) #kick(System.df_to_dict(var=True, t=years[t-1]))
     
     parameters=System.df_to_dict(var=False, t=years[t])
-
+    print(parameters)
     sol = dict_least_squares( system, variables, parameters, bounds_variables, N, verb=1, check=False)
     
     maxerror=max(abs( system(sol.dvar, parameters)))
