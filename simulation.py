@@ -117,12 +117,10 @@ def joint_dict(par, var):
             d[key] = fill_nans(par[key], var[key])
     return d
 
-a=joint_dict(parameters_calibration,variables_calibration)
 
 def system(var, par):
 
     d=joint_dict(par,var)
-    print(d)
     equations= {
                 
         "eqCESquantityKj":eq.eqCESquantity(Xj=d['Kj'], Zj=d['KLj'], alphaXj=d['alphaKj'], alphaYj=d['alphaLj'], pXj=d['pK'], pYj=d['pL'], sigmaj=d['sigmaKLj'], thetaj=d['bKLj'], theta=d['bKL']),#e-5
@@ -340,7 +338,7 @@ def system(var, par):
         
 #### Calibration check ####
 max_err_cal=max(abs(system(variables_calibration, parameters_calibration)))
-print("maxerrcal", max_err_cal)
+# print("maxerrcal", max_err_cal)
 
 if max_err_cal>1e-07:
     d=joint_dict(parameters_calibration,variables_calibration)
@@ -410,12 +408,13 @@ if maxerror>1e-5:
 for t in range(len(years)):
     if t==0:
         variables=variables_calibration #kick(variables_calibration)
+
     else:
         variables=System.df_to_dict(var=True, t=years[t-1]) #kick(System.df_to_dict(var=True, t=years[t-1]))
     
     parameters=System.df_to_dict(var=False, t=years[t])
-    print(parameters)
-    sol = dict_least_squares( system, variables, parameters, bounds_variables, N, verb=1, check=False)
+
+    sol = dict_least_squares( system, variables, parameters, bounds_variables, N, verb=1, check=True)
     
     maxerror=max(abs( system(sol.dvar, parameters)))
     
@@ -553,3 +552,42 @@ def count_elements(dictionary):
         else:
             print("Unsupported type:", type(value))
     return count
+
+
+
+def filter_nan_values(original_dict):
+    new_dict = {}
+    
+    for key, value in original_dict.items():
+        if isinstance(value, np.ndarray):
+            if not np.any(np.isnan(value)):
+                new_dict[key] = value
+        elif np.isnan(value):
+            continue
+        else:
+            new_dict[key] = value
+    
+    return new_dict
+
+def compare_dictionaries(dict1, dict2):
+    unequal_keys = []
+
+    for key in dict1.keys():
+        if key in dict2.keys():
+            value1 = dict1[key]
+            value2 = dict2[key]
+
+            if isinstance(value1, np.ndarray) and isinstance(value2, np.ndarray):
+                if not np.array_equal(value1, value2):
+                    unequal_keys.append(key)
+            elif value1 != value2:
+                unequal_keys.append(key)
+        else:
+            unequal_keys.append(key)
+
+    # Check for keys that exist in dict2 but not in dict1
+    for key in dict2.keys():
+        if key not in dict1.keys():
+            unequal_keys.append(key)
+
+    return unequal_keys

@@ -3,7 +3,7 @@ import import_GTAP_data as imp
 from import_GTAP_data import N
 from solvers import dict_least_squares
 import sys
-from scipy import optimize
+import copy
 #import pandas as pd
 
 tau=imp.labor_taxes / (imp.pLLj - imp.labor_taxes)
@@ -27,12 +27,12 @@ class calibrationVariables:
         #labor
         if L0 is None:   
             self.pL0 = 1
-            self.Lj0= imp.pLLj / self.pL0
-            self.L0=sum(self.Lj0)
+            self.Lj0= imp.pLLj / copy.deepcopy(self.pL0)
+            self.L0=sum(copy.deepcopy(self.Lj0))
         else:
             self.L0=L0
             self.pL0=sum(imp.pLLj)/L0
-            self.Lj0 = imp.pLLj / self.pL0
+            self.Lj0 = imp.pLLj / copy.deepcopy(self.pL0)
         
         #prezzi
         
@@ -50,20 +50,20 @@ class calibrationVariables:
 
         self.tauSj0 = imp.sales_taxes / (imp.pCiYij.sum(axis=1)+imp.pCjCj+imp.pCjGj+imp.pCjIj - imp.sales_taxes)
         self.tauL0 = imp.labor_taxes / (imp.pLLj - imp.labor_taxes)
-        self.pCj0 = (1+self.tauSj0)*self.pSj0
-        self.w=self.pL0/(1+self.tauL0)
+        self.pCj0 = (1+copy.deepcopy(self.tauSj0))*copy.deepcopy(self.pSj0)
+        self.w= copy.deepcopy(self.pL0)/(1+copy.deepcopy(self.tauL0))
         
         #quantità
-        self.Ij0 = imp.pCjIj/self.pCj0
-        self.Cj0 = imp.pCjCj/self.pCj0
-        self.Gj0 = imp.pCjGj/self.pCj0
-        self.Yij0 = imp.pCiYij/self.pCj0[:,None]
-        self.KLj0= imp.pKLjKLj / self.pKLj0
-        self.Xj0= imp.pXjXj / self.pXj0
-        self.Mj0= imp.pMjMj / self.pMj0
-        self.Dj0= imp.pDjDj / self.pDj0
-        self.Sj0= imp.pSjSj / self.pSj0
-        self.Yj0= imp.pYjYj / self.pYj0
+        self.Ij0 = imp.pCjIj/ copy.deepcopy(self.pCj0)
+        self.Cj0 = imp.pCjCj/ copy.deepcopy(self.pCj0)
+        self.Gj0 = imp.pCjGj/ copy.deepcopy(self.pCj0)
+        self.Yij0 = imp.pCiYij/ copy.deepcopy(self.pCj0[:,None])
+        self.KLj0= imp.pKLjKLj / copy.deepcopy(self.pKLj0)
+        self.Xj0= imp.pXjXj / copy.deepcopy(self.pXj0)
+        self.Mj0= imp.pMjMj / copy.deepcopy(self.pMj0)
+        self.Dj0= imp.pDjDj / copy.deepcopy(self.pDj0)
+        self.Sj0= imp.pSjSj / copy.deepcopy(self.pSj0)
+        self.Yj0= imp.pYjYj / copy.deepcopy(self.pYj0)
         
         #scalari
         
@@ -72,7 +72,7 @@ class calibrationVariables:
         self.R0= sum(imp.pCjCj)
         self.Ri0= sum(imp.pCjIj)
         self.Rg0= sum(imp.pCjGj)
-        self.l0=sum(self.Lj0/self.KLj0)
+        self.l0=sum(copy.deepcopy(self.Lj0)/ copy.deepcopy(self.KLj0))
         self.uL0 = 0.105
         self.sigmaw= 0.
         self.uK0 = 0.105
@@ -90,8 +90,8 @@ class calibrationVariables:
         self.etaXj=(imp.sigmaXj-1)/imp.sigmaXj
         self.etaKLj=(imp.sigmaKLj-1)/imp.sigmaKLj
 
-        self.aYij= self.Yij0 / self.Yj0[None,:]
-        self.aKLj=self.KLj0/self.Yj0
+        self.aYij= copy.deepcopy(self.Yij0) / copy.deepcopy(self.Yj0[None,:])
+        self.aKLj= copy.deepcopy(self.KLj0)/ copy.deepcopy(self.Yj0)
         
         def compute_alphas_CES(Q1j,Q2j,p1j,p2j,etaj):
             alphaj = 1 / (
@@ -109,33 +109,33 @@ class calibrationVariables:
             return thetaj
         
 
-        self.alphaXj= compute_alphas_CES(Q1j=self.Xj0,Q2j=self.Dj0,p1j=self.pXj0,p2j=self.pDj0,etaj=self.etaXj)
-        self.alphaDj= compute_alphas_CES(Q1j=self.Dj0,Q2j=self.Xj0,p1j=self.pDj0,p2j=self.pXj0,etaj=self.etaXj)
-        self.thetaj = compute_theta_CES(Zj=self.Yj0, alpha1j=self.alphaXj, alpha2j=self.alphaDj, Q1j=self.Xj0, Q2j=self.Dj0,etaj=self.etaXj)
+        self.alphaXj= compute_alphas_CES(Q1j= copy.deepcopy(self.Xj0),Q2j= copy.deepcopy(self.Dj0),p1j= copy.deepcopy(self.pXj0),p2j= copy.deepcopy(self.pDj0),etaj= copy.deepcopy(self.etaXj))
+        self.alphaDj= compute_alphas_CES(Q1j= copy.deepcopy(self.Dj0),Q2j= copy.deepcopy(self.Xj0),p1j= copy.deepcopy(self.pDj0),p2j= copy.deepcopy(self.pXj0),etaj= copy.deepcopy(self.etaXj))
+        self.thetaj = compute_theta_CES(Zj= copy.deepcopy(self.Yj0), alpha1j= copy.deepcopy(self.alphaXj), alpha2j= copy.deepcopy(self.alphaDj), Q1j= copy.deepcopy(self.Xj0), Q2j= copy.deepcopy(self.Dj0),etaj= copy.deepcopy(self.etaXj))
         
-        self.betaMj= compute_alphas_CES(Q1j=self.Mj0,Q2j=self.Dj0,p1j=self.pMj0,p2j=self.pDj0,etaj=self.etaSj)
-        self.betaDj= compute_alphas_CES(Q1j=self.Dj0,Q2j=self.Mj0,p1j=self.pDj0,p2j=self.pMj0,etaj=self.etaSj)
-        self.csij = compute_theta_CES(Zj=self.Sj0,alpha1j=self.betaMj,alpha2j=self.betaDj,Q1j=self.Mj0,Q2j=self.Dj0,etaj=self.etaSj)
+        self.betaMj= compute_alphas_CES(Q1j= copy.deepcopy(self.Mj0),Q2j= copy.deepcopy(self.Dj0),p1j= copy.deepcopy(self.pMj0),p2j= copy.deepcopy(self.pDj0),etaj= copy.deepcopy(self.etaSj))
+        self.betaDj= compute_alphas_CES(Q1j= copy.deepcopy(self.Dj0),Q2j= copy.deepcopy(self.Mj0),p1j= copy.deepcopy(self.pDj0),p2j= copy.deepcopy(self.pMj0),etaj= copy.deepcopy(self.etaSj))
+        self.csij = compute_theta_CES(Zj= copy.deepcopy(self.Sj0),alpha1j= copy.deepcopy(self.betaMj),alpha2j= copy.deepcopy(self.betaDj),Q1j= copy.deepcopy(self.Mj0),Q2j= copy.deepcopy(self.Dj0),etaj= copy.deepcopy(self.etaSj))
         
-        self.alphaCj = imp.pCjCj/self.R0
-        self.alphaGj = imp.pCjGj/self.Rg0
-        self.alphalj = self.Lj0/(self.KLj0*self.l0)
-        self.alphaw = self.w/(self.uL0**self.sigmaw)
-        self.wB = self.B0/self.GDP0
-        self.wG = self.Rg0/self.GDP0
-        self.wI = self.Ri0/self.GDP0
-        self.GDPreal=self.GDP0
-        self.pCjtp=self.pCj0
-        self.pXtp=self.pXj
-        self.Ctp=self.Cj0
-        self.Gtp=self.Gj0
-        self.Itp=self.Ij0
-        self.pXtp=self.pXj
-        self.Xtp=self.Xj0
-        self.Mtp = self.Mj0
+        self.alphaCj = imp.pCjCj/ copy.deepcopy(self.R0)
+        self.alphaGj = imp.pCjGj/ copy.deepcopy(self.Rg0)
+        self.alphalj = copy.deepcopy(self.Lj0)/(copy.deepcopy(self.KLj0)*copy.deepcopy(self.l0))
+        self.alphaw = copy.deepcopy(self.w)/(copy.deepcopy(self.uL0)**copy.deepcopy(self.sigmaw))
+        self.wB = copy.deepcopy(self.B0)/ copy.deepcopy(self.GDP0)
+        self.wG = copy.deepcopy(self.Rg0)/ copy.deepcopy(self.GDP0)
+        self.wI = copy.deepcopy(self.Ri0)/ copy.deepcopy(self.GDP0)
+        self.GDPreal= copy.deepcopy(self.GDP0)
+        self.pCjtp= copy.deepcopy(self.pCj0)
+        self.pXtp= copy.deepcopy(self.pXj)
+        self.Ctp= copy.deepcopy(self.Cj0)
+        self.Gtp= copy.deepcopy(self.Gj0)
+        self.Itp= copy.deepcopy(self.Ij0)
+        self.pXtp= copy.deepcopy(self.pXj)
+        self.Xtp= copy.deepcopy(self.Xj0)
+        self.Mtp = copy.deepcopy(self.Mj0)
         #self.betaRj= (imp.epsilonPCj+1)/(self.alphaCj-1)
         #self.epsilonRj=imp.epsilonRj
-        self.sD0=sum(imp.pCjIj+imp.pXjXj-imp.pMjMj)/self.GDP0
+        self.sD0=sum(imp.pCjIj+imp.pXjXj-imp.pMjMj)/ copy.deepcopy(self.GDP0)
         
         #calibrate alphaIj, I and pI
         
@@ -180,22 +180,22 @@ class calibrationVariables:
         self.alphaIj[imp.pCjIj!=0]=solI.dvar['alphaIj']
         self.delta=0.04
         self.g0=L_gr0
-        self.pK0 = (sum(imp.pKKj)*(self.g0+self.delta))/self.I0
-        self.Kj0= imp.pKKj / self.pK0
+        self.pK0 = (sum(imp.pKKj)*(copy.deepcopy(self.g0)+copy.deepcopy(self.delta)))/ copy.deepcopy(self.I0)
+        self.Kj0= imp.pKKj / copy.deepcopy(self.pK0)
         self.K0=sum(self.Kj0)
-        self.alphapK = self.pK0/(self.uK0**self.sigmapK)
-        self.alphaIK = self.Ri0/self.K0
-        self.K0next = self.K0 * (1-self.delta) + self.I0
-        self.L0u=sum(self.Lj0)/(1-self.uL0)
-        self.K0u=sum(self.Kj0)/(1-self.uK0)
-        self.K0u_next= self.K0u * (1-self.delta) + self.I0
+        self.alphapK = copy.deepcopy(self.pK0)/(copy.deepcopy(self.uK0)**copy.deepcopy(self.sigmapK))
+        self.alphaIK = copy.deepcopy(self.Ri0)/ copy.deepcopy(self.K0)
+        self.K0next = copy.deepcopy(self.K0) * (1-copy.deepcopy(self.delta)) + copy.deepcopy(self.I0)
+        self.L0u=sum(self.Lj0)/(1-copy.deepcopy(self.uL0))
+        self.K0u=sum(self.Kj0)/(1-copy.deepcopy(self.uK0))
+        self.K0u_next= copy.deepcopy(self.K0u) * (1-copy.deepcopy(self.delta)) + copy.deepcopy(self.I0)
         self.GDPPI=1
         self.CPI=1
-        self.alphaLj= compute_alphas_CES(Q1j=self.Lj0,Q2j=self.Kj0,p1j=self.pL0,p2j=self.pK0,etaj=self.etaKLj)
-        self.alphaKj= compute_alphas_CES(Q1j=self.Kj0,Q2j=self.Lj0,p1j=self.pK0,p2j=self.pL0,etaj=self.etaKLj)
-        self.gammaj = compute_theta_CES(Zj=self.KLj0, alpha1j=self.alphaKj, alpha2j=self.alphaLj, Q1j=self.Kj0, Q2j=self.Lj0,etaj=self.etaKLj)
+        self.alphaLj= compute_alphas_CES(Q1j= copy.deepcopy(self.Lj0),Q2j= copy.deepcopy(self.Kj0),p1j= copy.deepcopy(self.pL0),p2j= copy.deepcopy(self.pK0),etaj= copy.deepcopy(self.etaKLj))
+        self.alphaKj= compute_alphas_CES(Q1j= copy.deepcopy(self.Kj0),Q2j= copy.deepcopy(self.Lj0),p1j= copy.deepcopy(self.pK0),p2j= copy.deepcopy(self.pL0),etaj= copy.deepcopy(self.etaKLj))
+        self.gammaj = compute_theta_CES(Zj= copy.deepcopy(self.KLj0), alpha1j= copy.deepcopy(self.alphaKj), alpha2j= copy.deepcopy(self.alphaLj), Q1j= copy.deepcopy(self.Kj0), Q2j= copy.deepcopy(self.Lj0),etaj= copy.deepcopy(self.etaKLj))
         self.bKL=1
-        self.bKLj = self.KLj0*self.bKL/np.float_power(self.alphaLj*np.float_power(self.Lj0,self.etaKLj) + self.alphaKj * np.float_power(self.Kj0,self.etaKLj), 1/self.etaKLj)
+        self.bKLj = copy.deepcopy(self.KLj0)*copy.deepcopy(self.bKL)/np.float_power(copy.deepcopy(self.alphaLj)*np.float_power(copy.deepcopy(self.Lj0),copy.deepcopy(self.etaKLj)) + copy.deepcopy(self.alphaKj) * np.float_power(copy.deepcopy(self.Kj0),copy.deepcopy(self.etaKLj)), 1/ copy.deepcopy(self.etaKLj))
 
 
 #CALIBRATE betaRj WITH REVENUE ELASTICITY OF CONSUMPTION (INSTEAD OF PRICE ELASTICITY) 

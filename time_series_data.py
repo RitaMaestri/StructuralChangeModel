@@ -118,7 +118,6 @@ class sys_df:
         #L=Lgrowth*[self.calib_par_dict['L']]
         
         self.dynamic_parameters={
-        
             **self.evolve_par(),
             **self.dynamic_parameters
         }

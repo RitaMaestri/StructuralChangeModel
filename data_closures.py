@@ -11,6 +11,44 @@ class endo_exo_indexes:
         
     def full_exo(self):
         return slice(None)
+    
+    def idx_1D(self, exo_names=None, endo_names=None):
+        if (not exo_names == None) and endo_names==None:
+            indices_list = [index for index, value in enumerate(self.sectors_names) if value in exo_names]
+        elif (not endo_names==None) and exo_names == None:
+            indices_list = [index for index, value in enumerate(self.sectors_names) if value not in exo_names]
+        else:
+            print("wrong arguments for idx_1D")
+            sys.exit()
+        return indices_list
+    
+    
+    
+    #takes couple of sectors names: first name is the row identifier, second name is the column identifier. expected [(sec1,sec2),(sec1,sec3),(sec2,sec4)]   
+    def idx_2D(self, exo_names=None, endo_names=None):
+        
+        if (not exo_names == None) and endo_names==None:
+            indexes_list = [(self.sectors_names.index(row), sectors.index(col)) for row, col in exo_names]
+            # Sort the indexes_list based on the first element (index_a) and then the second element (index_b)
+            sorted_indexes_list = sorted(indexes_list, key=lambda x: (x[0], x[1]))
+            rows,cols=zip(*sorted_indexes_list)
+
+        elif (not endo_names==None) and exo_names == None:
+            indexes_list = [(sectors.index(row), sectors.index(col)) for row, col in endo_names]
+            matrix_size = len(self.sectors_names)
+            all_indexes_set = set(product(range(matrix_size), repeat=2))
+            # Create a set of present indexes (row_index, column_index) pairs
+            present_indexes_set = set(indexes_list)
+            # Find the complementary set of indexes (not present in the matrix)
+            complementary_indexes_set = all_indexes_set.difference(present_indexes_set)
+            # Sort the complementary indexes to maintain order
+            sorted_indexes_list = sorted(list(complementary_indexes_set))
+        else:
+            print("wrong arguments for idx_2D")
+            sys.exit()
+        
+        rows,cols=zip(*sorted_indexes_list)
+        return [list(rows), list(cols)]
 
 
 #######  Class Variable  #############
@@ -34,9 +72,8 @@ class Variable(endo_exo_indexes):
         else:
         #I convert my exo_indexes to a bolean mask.
             self.exo_mask= bool(exo_indexes == self.full_exo())
-            self.endo_mask= bool(exo_indexes == self.full_endo())
+            self.endo_mask= not self.exo_mask
 
-   
     def __call__(self):
             print(list([self.exo_mask, self.value]))
 
@@ -47,15 +84,11 @@ class Variable(endo_exo_indexes):
 
 class calibrationDict(endo_exo_indexes):
     
-    
     def assignClosure(self,cal):
-        
         
         sKLneoclassic = (cal.Ri0+cal.B0)/(cal.w * sum(cal.Lj0) + cal.pK0 * sum(cal.Kj0))
         
         sLkaldorian = (cal.Ri0+cal.B0)/(cal.w*sum(cal.Lj0))
-        
-        
         if self.closure == "johansen":
             return {**self.commonDict, 
                          **{'sD':Variable(self.full_endo(), cal.sD0),
@@ -66,7 +99,7 @@ class calibrationDict(endo_exo_indexes):
                             'L':Variable(self.full_exo(), cal.L0)
                             }
                          }
-        
+
         elif self.closure == "neoclassic":
             return {**self.commonDict, 
                          **{'K':Variable(self.full_exo(), cal.K0),
@@ -76,7 +109,7 @@ class calibrationDict(endo_exo_indexes):
                             'wB':Variable(self.full_exo(), cal.wB),
                             'L':Variable(self.full_exo(), cal.L0)}
                          }
-        
+
         elif self.closure == "kaldorian":
             return {**self.commonDict, 
                          **{'l':Variable(self.full_endo(), cal.l0),
@@ -196,70 +229,21 @@ class calibrationDict(endo_exo_indexes):
                 masked_array = variable.value[variable.endo_mask]
                 if masked_array.size > 0:
                     result_dict[key] = masked_array
-            else:
+            elif variable.endo_mask:
                 result_dict[key]=variable.value  
         
         return result_dict
-
+    
     
     def to_exo_dict(self):
         result_dict = {}
         for key, variable in self.variables_dict.items():
             result_dict[key]=variable.value
             if isinstance(variable.value, np.ndarray):
-                result_dict[key][variable.endo_mask]=float("nan")
+                result_dict[key][variable.endo_mask]=float("nan")  
             elif variable.endo_mask:
                     result_dict[key] = float("nan")  
         return result_dict
-    
-    
-    def idx_1D(self, exo_names=None, endo_names=None):
-        if (not exo_names == None) and endo_names==None:
-            indices_list = [index for index, value in enumerate(self.sectors_names) if value in exo_names]
-        elif (not endo_names==None) and exo_names == None:
-            indices_list = [index for index, value in enumerate(self.sectors_names) if value not in exo_names]
-        else:
-            print("wrong arguments for idx_1D")
-            sys.exit()
-        return indices_list
-    
-    
-    
-    #takes couple of sectors names: first name is the row identifier, second name is the column identifier. expected [(sec1,sec2),(sec1,sec3),(sec2,sec4)]   
-    def idx_2D(self, exo_names=None, endo_names=None):
-        
-        if (not exo_names == None) and endo_names==None:
-            indexes_list = [(self.sectors_names.index(row), sectors.index(col)) for row, col in exo_names]
-            # Sort the indexes_list based on the first element (index_a) and then the second element (index_b)
-            sorted_indexes_list = sorted(indexes_list, key=lambda x: (x[0], x[1]))
-            rows,cols=zip(*sorted_indexes_list)
-
-        elif (not endo_names==None) and exo_names == None:
-            indexes_list = [(sectors.index(row), sectors.index(col)) for row, col in endo_names]
-            print(indexes_list)
-            # Get a set of all possible indexes
-            matrix_size = len(self.sectors_names)
-            
-            # Create a set of all possible indexes (row_index, column_index) pairs
-            all_indexes_set = set(product(range(matrix_size), repeat=2))
-            
-            # Create a set of present indexes (row_index, column_index) pairs
-            present_indexes_set = set(indexes_list)
-            print("pres",present_indexes_set)
-            # Find the complementary set of indexes (not present in the matrix)
-            complementary_indexes_set = all_indexes_set.difference(present_indexes_set)
-            print("comp",complementary_indexes_set)
-            # Sort the complementary indexes to maintain order
-            sorted_indexes_list = sorted(list(complementary_indexes_set))
-            
-            print(sorted_indexes_list)
-        else:
-            print("wrong arguments for idx_2D")
-            sys.exit()
-        
-        rows,cols=zip(*sorted_indexes_list)
-        print(rows)
-        return [list(rows), list(cols)]
     
 
     
@@ -268,7 +252,6 @@ class calibrationDict(endo_exo_indexes):
         self.sectors_names = sectors
         
         cal = calibrationVariables(initial_L_gr)
-        
         self.commonDict = {
             'pL': Variable(self.full_endo(), cal.pL0),
             'pK':Variable(self.full_endo(), cal.pK0),
@@ -302,7 +285,7 @@ class calibrationDict(endo_exo_indexes):
             'pSj': Variable(self.full_endo(), cal.pSj0),
             'Gj': Variable(self.full_endo(),cal.Gj0),
             'Ij': Variable(self.full_endo(), cal.Ij0),
-            'Yij': Variable(self.full_endo(), cal.Yij0),
+            'Yij': Variable(self.idx_2D(exo_names=[("PRIMARY","SECONDARY")]), cal.Yij0),
             'I':Variable(self.full_endo(), cal.I0),
             'w':Variable(self.full_endo(), cal.w),
             
@@ -335,20 +318,21 @@ class calibrationDict(endo_exo_indexes):
             'sigmaXj':Variable(self.full_exo(), cal.sigmaXj),
             'sigmaSj':Variable(self.full_exo(), cal.sigmaSj),
             'sigmaKLj':Variable(self.full_exo(), cal.sigmaKLj),
-            'aYij':Variable(self.full_exo(), cal.aYij),
+            'aYij':Variable(self.idx_2D(endo_names=[("PRIMARY","SECONDARY")]), cal.aYij),
             'delta':Variable(self.full_exo(), cal.delta)
             }
-        
         Knext = Variable(self.full_endo(), cal.K0u_next) if closure in ["neokeynesian1","neokeynesian2"] else Variable(self.full_endo(), cal.K0next)
         
         self.commonDict = {**self.commonDict, **{'Knext': Knext}} if endoKnext else self.commonDict
         
         self.closure=closure
-        
+
         self.variables_dict = self.assignClosure(cal)
         
-        self.endogeouns_dict = self.to_endo_dict()
+        print("Xtp",self.variables_dict["Xj"].value)
         
+        self.endogeouns_dict = self.to_endo_dict()
+
         self.exogenous_dict = self.to_exo_dict()
         
 
