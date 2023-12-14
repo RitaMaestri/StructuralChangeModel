@@ -18,7 +18,7 @@ class endo_exo_indexes:
         if (not exo_names == None) and endo_names==None:
             indices_list = [index for index, value in enumerate(self.sectors_names) if value in exo_names]
         elif (not endo_names==None) and exo_names == None:
-            indices_list = [index for index, value in enumerate(self.sectors_names) if value not in exo_names]
+            indices_list = [index for index, value in enumerate(self.sectors_names) if value not in endo_names]
         else:
             print("wrong arguments for idx_1D")
             sys.exit()
@@ -299,7 +299,7 @@ class calibrationDict(endo_exo_indexes):
             #'tau_Ej':Variable(self.full_exo(), cal.tau_Ej),
             'lambda_E':Variable(self.full_endo(), cal.lambda_E),
             'lambda_nE':Variable(self.full_endo(), cal.lambda_nE),
-            'lambda_KL':Variable(self.full_endo(), cal.lambda_KL),
+            #'lambda_KL':Variable(self.full_endo(), cal.lambda_KL),
             
             'wG':Variable(self.full_exo(), cal.wG),
             'GDPreal':Variable(self.full_exo(),cal.GDPreal ),
@@ -317,7 +317,7 @@ class calibrationDict(endo_exo_indexes):
             'Mtp':Variable(self.full_exo(), cal.Mtp),
             'alphaKj':Variable(self.full_exo(), cal.alphaKj),
             'alphaLj':Variable(self.full_exo(), cal.alphaLj),
-            'aKLj':Variable(self.full_exo(), cal.aKLj),
+            'aKLj':Variable(self.idx_1D(endo_names = ["ENERGY"]), cal.aKLj),
             'alphaCj0':Variable(self.full_exo(), cal.alphaCj0),
             'alphaGj':Variable(self.full_exo(), cal.alphaGj),
             'alphaIj':Variable(self.full_exo(), cal.alphaIj),
@@ -477,6 +477,6 @@ bounds={
     'lambda_nE':(0,np.inf),
     'pE_Ej':(0,np.inf),
     'YE_Ej':(0,np.inf),
-    'lambda_KL':(0,np.inf),
+    #'lambda_KL':(0,np.inf),
         }
 

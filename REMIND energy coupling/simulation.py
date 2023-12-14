@@ -134,7 +134,7 @@ def system(var, par):
 
         "eqYij":eq.eqYij(Yij=d['Yij'],aYij=d['aYij'],Yj=d['Yj'], _index=non_zero_index_Yij),
         
-        "eqKL":eq.eqKL_lambda(KLj=d['KLj'],aKLj=d['aKLj'],Yj=d['Yj'], lambda_KL=d["lambda_KL"]),
+        "eqKL":eq.eqKL(KLj=d['KLj'],aKLj=d['aKLj'],Yj=d['Yj']),
         
         #"eqpYj":eq.eqpYj(pYj=d['pYj'],pCj=d['pCj'],aKLj=d['aKLj'],pKLj=d['pKLj'],aYij=d['aYij'], tauYj=d['tauYj']),
         
