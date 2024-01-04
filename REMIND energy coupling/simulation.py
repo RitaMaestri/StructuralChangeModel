@@ -194,11 +194,11 @@ def system(var, par):
         
         "eqpC_E":eq.eqsum_pEYE(p_CE=d['pC_Ej'], C_E=d['Cj'][E], Y_Ej=d['Yij'][E,:], pE_B=d['pE_B'], C_EB=d['C_EB'], YE_Bj=d['YE_Bj'], pE_Pj=d['pE_Pj'], YE_Pj=d['YE_Pj'], pE_TnT=d['pE_TnT'], pE_TT=d['pE_TT'], C_ET=d['C_ET'], YE_Tj=d['YE_Tj'], pE_Ej=d['pE_Ej'], YE_Ej=d['YE_Ej']),
         
-        #"eqE_P":eq.eqsum_scalar(d['E_P'], d['YE_Pj']),
+       # "eqE_P":eq.eqsum_scalar(d['E_P'], d['YE_Pj']),
         
-        #"eqE_B":eq.eqsum_scalar(d['E_B'], d['YE_Bj'], d['C_EB']),
+       # "eqE_B":eq.eqsum_scalar(d['E_B'], d['YE_Bj'], d['C_EB']),
         
-        #"eqE_T":eq.eqsum_scalar(d['E_T'], d['YE_Tj'], d['C_ET']),
+       # "eqE_T":eq.eqsum_scalar(d['E_T'], d['YE_Tj'], d['C_ET']),
         
         "eqCj_new":eq.eqCobbDouglasj_lambda(Qj=d['Cj'], alphaQj=d['alphaCj0'],pCj=d['pCj'],Q=d['R'], lambda_E=d["lambda_E"], lambda_nE=d["lambda_nE"], p_CE=d["pC_Ej"][-1], _index=non_zero_index_C),
         
@@ -432,6 +432,7 @@ if maxerror>1e-5:
 
 
 for t in range(len(years)):
+    print("year: ", years[t])
     if t==0:
         variables=variables_calibration #kick(variables_calibration)
 
@@ -449,7 +450,7 @@ for t in range(len(years)):
     if maxerror>1e-06:
         print("the system doesn't converge, maxerror=",maxerror)
         sys.exit()
-    print("year: ", t)
+
     
     #print("\n \n", closure," closure \n max of the system of equations calculated at the solution: \n")
     #print(maxerror, "\n")

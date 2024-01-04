@@ -293,14 +293,13 @@ class calibrationDict(endo_exo_indexes):
             'aYij':Variable(self.idx_2D(endo_names = endo_aYij_indexes), cal.aYij),
             
             'pC_Ej':Variable(self.full_endo(), cal.pC_Ej),
-            #'E_P':Variable(self.full_endo(), cal.E_P),
-            #'E_T':Variable(self.full_endo(), cal.E_T),
-            #'E_B':Variable(self.full_endo(), cal.E_B),
-            #'tau_Ej':Variable(self.full_exo(), cal.tau_Ej),
+           #'E_P':Variable(self.full_endo(), cal.E_P),
+           # 'E_T':Variable(self.full_endo(), cal.E_T),
+           # 'E_B':Variable(self.full_endo(), cal.E_B),
+            
             'lambda_E':Variable(self.full_endo(), cal.lambda_E),
             'lambda_nE':Variable(self.full_endo(), cal.lambda_nE),
-            #'lambda_KL':Variable(self.full_endo(), cal.lambda_KL),
-            
+           
             'wG':Variable(self.full_exo(), cal.wG),
             'GDPreal':Variable(self.full_exo(),cal.GDPreal ),
             'tauL':Variable(self.full_exo(), cal.tauL0),
@@ -344,8 +343,7 @@ class calibrationDict(endo_exo_indexes):
             'pE_Pj':Variable(self.full_exo(), cal.pE_Pj),
             'pE_Ej':Variable(self.full_exo(), cal.pE_Ej),
             'YE_Ej':Variable(self.full_exo(), cal.YE_Ej),
-            
-            
+
             }
         
         Knext = Variable(self.full_endo(), cal.K0u_next) if closure in ["neokeynesian1","neokeynesian2"] else Variable(self.full_endo(), cal.K0next)

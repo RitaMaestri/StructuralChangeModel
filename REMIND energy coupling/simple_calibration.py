@@ -4,6 +4,7 @@ from import_GTAP_data import N,sectors
 from solvers import dict_least_squares
 import sys
 from copy import deepcopy as cp
+import csv
 #import pandas as pd
 
 A = sectors.index("AGRICULTURE")
@@ -249,12 +250,12 @@ class calibrationVariables:
         
         #ENERGY FOR TRANSPORT
         self.YE_Tj = np.array([float(0)]*N)        
-        s_LDV = 0.459509001531155
-        s_trucks = 0.227480975484387
-        s_other = 0.313010022984458
+        self.s_LDV = 0.459509001531155
+        self.s_trucks = 0.227480975484387
+        self.s_other = 0.313010022984458
         
-        self.YE_Tj[T]=(s_LDV*0.009+s_trucks*0.65+s_other)*cp(self.E_T)
-        self.C_ET = 0.9 * (s_LDV * cp(self.E_T))
+        self.YE_Tj[T]=(self.s_LDV*0.009+self.s_trucks*0.65+self.s_other)*cp(self.E_T)
+        self.C_ET = 0.9 * (self.s_LDV * cp(self.E_T))
         nonT = [A,M,SE,ST,CH,E]
         for i in nonT:    
             self.YE_Tj[i]=cp(self.KLj0[i]) / cp(self.KLj0[nonT].sum()) * (cp(self.E_T)-cp(self.YE_Tj[T])-cp(self.C_ET)) 
@@ -298,21 +299,63 @@ class calibrationVariables:
         self.pE_Ej = np.array([float(0)]*(N))
         self.pE_Ej[E] = (imp.pCiYij[E,E] - cp(self.pE_TnT) * cp(self.YE_Tj[E]) ) / cp(self.Y_EE)
         
-        #specific margins
-        #self.tau_Ej =   cp(self.pC_Ej) / cp(self.pCj0[E]) - 1
-        
-        #self.smj = np.array([float(0)]*(N+1))
-        
-        #for i in [A,M,SE,ST,CH,E,T]:
-        #    self.smj[i] = cp(self.tau_Ej[i])*cp(self.Yij0[E,i])
-        #self.smj[-1]=cp(self.tau_Ej[-1])*cp(self.Cj0[E])
-        
+
         #adjusted variables
         self.aYij= cp(self.Yij0) / cp(self.Yj0[None,:])
 
-a=calibrationVariables(0.05)
-a.E_P
-a.Sj0[E]*0.194478926474159
+a=calibrationVariables(0.003985893420850095)
+
+
+export_calib_dict={
+        "YE_T_A" : a.YE_Tj[A],
+        "YE_T_M" : a.YE_Tj[M],
+        "YE_T_SE" : a.YE_Tj[SE],
+        "YE_T_E" : a.YE_Tj[E],
+        "YE_T_ST" : a.YE_Tj[ST],
+        "YE_T_CH" : a.YE_Tj[CH],
+        "YE_T_T" : a.YE_Tj[T],
+        "C_ET": a.C_ET,
+        "E_T":a.E_T,
+        "s_LDV": a.s_LDV,
+        "s_trucks" : a.s_trucks,
+        "s_other" : a.s_other,
+    }
+
+with open('transport_calibration.csv', 'w') as f:  # You will need 'wb' mode in Python 2.x
+    w = csv.DictWriter(f, export_calib_dict.keys())
+    w.writeheader()
+    w.writerow(export_calib_dict)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#specific margins
+#self.tau_Ej =   cp(self.pC_Ej) / cp(self.pCj0[E]) - 1
+
+#self.smj = np.array([float(0)]*(N+1))
+
+#for i in [A,M,SE,ST,CH,E,T]:
+#    self.smj[i] = cp(self.tau_Ej[i])*cp(self.Yij0[E,i])
+#self.smj[-1]=cp(self.tau_Ej[-1])*cp(self.Cj0[E])
+        
+
+
 #CALIBRATE betaRj WITH REVENUE ELASTICITY OF CONSUMPTION (INSTEAD OF PRICE ELASTICITY) 
 
 # def eqbetaRj(epsilonRj,betaRj,alphaCj):
