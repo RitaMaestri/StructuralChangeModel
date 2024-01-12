@@ -29,7 +29,7 @@ closure="johansen"
 #stop=2017
 #step=1
 #years = np.array(range(2015, stop+1, step))
-add_string="REMIND-3sectors"
+add_string="REMIND-"+N+"sectors"
 
 growth_ratios_df = pd.read_csv("data/"+exogenous_data+".csv", index_col="variable")#[years.astype(str)]
 growth_ratios_df_T = growth_ratios_df.T.reset_index().drop(columns="index")
@@ -194,11 +194,11 @@ def system(var, par):
         
         "eqpC_E":eq.eqsum_pEYE(p_CE=d['pC_Ej'], C_E=d['Cj'][E], Y_Ej=d['Yij'][E,:], pE_B=d['pE_B'], C_EB=d['C_EB'], YE_Bj=d['YE_Bj'], pE_Pj=d['pE_Pj'], YE_Pj=d['YE_Pj'], pE_TnT=d['pE_TnT'], pE_TT=d['pE_TT'], C_ET=d['C_ET'], YE_Tj=d['YE_Tj'], pE_Ej=d['pE_Ej'], YE_Ej=d['YE_Ej']),
         
-       # "eqE_P":eq.eqsum_scalar(d['E_P'], d['YE_Pj']),
-        
-       # "eqE_B":eq.eqsum_scalar(d['E_B'], d['YE_Bj'], d['C_EB']),
-        
-       # "eqE_T":eq.eqsum_scalar(d['E_T'], d['YE_Tj'], d['C_ET']),
+        # "eqE_P":eq.eqsum_scalar(d['E_P'], d['YE_Pj']),
+         
+        # "eqE_B":eq.eqsum_scalar(d['E_B'], d['YE_Bj'], d['C_EB']),
+         
+        # "eqE_T":eq.eqsum_scalar(d['E_T'], d['YE_Tj'], d['C_ET']),
         
         "eqCj_new":eq.eqCobbDouglasj_lambda(Qj=d['Cj'], alphaQj=d['alphaCj0'],pCj=d['pCj'],Q=d['R'], lambda_E=d["lambda_E"], lambda_nE=d["lambda_nE"], p_CE=d["pC_Ej"][-1], _index=non_zero_index_C),
         
