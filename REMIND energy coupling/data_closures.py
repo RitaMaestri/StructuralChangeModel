@@ -292,7 +292,7 @@ class calibrationDict(endo_exo_indexes):
             'w':Variable(self.full_endo(), cal.w),            
             'aYij':Variable(self.idx_2D(endo_names = endo_aYij_indexes), cal.aYij),
             
-            'pC_Ej':Variable(self.full_endo(), cal.pC_Ej),
+            'pY_Ej':Variable(self.full_endo(), cal.pY_Ej),
            #'E_P':Variable(self.full_endo(), cal.E_P),
            # 'E_T':Variable(self.full_endo(), cal.E_T),
            # 'E_B':Variable(self.full_endo(), cal.E_B),
@@ -466,7 +466,7 @@ bounds={
     'pE_TnT':(0,np.inf),
     'pE_B':(0,np.inf),
     'pE_Pj':(0,np.inf),
-    'pC_Ej':(0,np.inf),
+    'pY_Ej':(0,np.inf),
     'E_P':(0,np.inf),
     'E_T':(0,np.inf),
     'E_B':(0,np.inf),

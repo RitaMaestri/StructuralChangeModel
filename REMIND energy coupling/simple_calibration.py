@@ -144,9 +144,7 @@ class calibrationVariables:
         self.wG = cp(self.Rg0)/ cp(self.GDP0)
         self.wI = cp(self.Ri0)/ cp(self.GDP0)
         self.GDPreal= cp(self.GDP0)
-        self.pCjtp= cp(self.pCj0)
         self.pXtp= cp(self.pXj)
-        self.Ctp= cp(self.Cj0)
         self.Gtp= cp(self.Gj0)
         self.Itp= cp(self.Ij0)
         self.pXtp= cp(self.pXj)
@@ -277,13 +275,15 @@ class calibrationVariables:
         ############ ENERGY PRICES   #############
         
         #consumption
-        self.pC_Ej = np.array([float(0)]*(N+1))
+        self.pY_Ej = np.array([float(0)]*(N))
         for i in [A,M,SE,ST,CH,E,T]:
-            self.pC_Ej[i] = imp.pCiYij[E,i]/cp(self.Yij0[E,i])
-        self.pC_Ej[-1] = imp.pCjCj[E]/cp(self.Cj0[E])
+            self.pY_Ej[i] = imp.pCiYij[E,i]/cp(self.Yij0[E,i])
+        # self.pY_Ej[-1] = imp.pCjCj[E]/cp(self.Cj0[E])
+        
+        self.pCj0[E] = imp.pCjCj[E]/cp(self.Cj0[E])
         
         #transport
-        self.pE_TT = self.pC_Ej[i]
+        self.pE_TT = self.pY_Ej[T]
         self.pE_TnT = (( cp(self.C_EB)*imp.pCiYij[E,SE] - imp.pCjCj[E] * cp(self.YE_Bj[SE]) ) /
                  ( cp(self.C_EB) * cp(self.YE_Tj[SE]) - cp(self.C_ET) * cp(self.YE_Bj[SE] ) ) )
         
@@ -302,6 +302,15 @@ class calibrationVariables:
 
         #adjusted variables
         self.aYij= cp(self.Yij0) / cp(self.Yj0[None,:])
+        
+        self.pCjtp= cp(self.pCj0)
+        self.Ctp= cp(self.Cj0)
+        
+        
+        
+        
+
+
 
 a=calibrationVariables(0.003985893420850095)
 
@@ -346,7 +355,7 @@ with open('transport_calibration.csv', 'w') as f:  # You will need 'wb' mode in 
 
 
 #specific margins
-#self.tau_Ej =   cp(self.pC_Ej) / cp(self.pCj0[E]) - 1
+#self.tau_Ej =   cp(self.pY_Ej) / cp(self.pCj0[E]) - 1
 
 #self.smj = np.array([float(0)]*(N+1))
 

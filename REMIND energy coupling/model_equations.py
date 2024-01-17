@@ -71,7 +71,7 @@ def eqpYj(pYj,pCj,aKLj,pKLj,aYij, tauYj):
     return zero
 
 
-def eqpYj_E(pYj,pCj,aKLj,pKLj,aYij,pC_Ej, tauYj):
+def eqpYj_E(pYj, pCj, aKLj, pKLj, aYij, pY_Ej, tauYj):
     pCjnE = np.delete(pCj, E)
     
     aYijnE = np.delete(aYij, (E), axis=0)
@@ -79,7 +79,7 @@ def eqpYj_E(pYj,pCj,aKLj,pKLj,aYij,pC_Ej, tauYj):
     pCjd=np.diag(pCjnE)
     
     zero= -1 + pYj / (
-        ( aKLj * pKLj + np.dot(pCjd,aYijnE).sum(axis=0) + aYij[E]*pC_Ej)*(1+tauYj) #AXIS=0 sum over the rows CHECKED
+        ( aKLj * pKLj + np.dot(pCjd,aYijnE).sum(axis=0) + aYij[E]*pY_Ej)*(1+tauYj) #AXIS=0 sum over the rows CHECKED
     )
     
     return zero
@@ -227,7 +227,6 @@ def eqID(x,y):
 def eqGDP(GDP,pCj,Cj,Gj,Ij,pXj,Xj,pMj,Mj):
     #print("eqGDP")
 
-
     zero= -1 + GDP / sum(pCj*(Cj+Gj+Ij)+pXj*Xj-pMj*Mj)
 
     return zero
@@ -330,10 +329,13 @@ def eqT(T,tauYj, pYj, Yj, tauSj, pSj, Sj, tauL, w, Lj):
         )
     return zero
 
-def eqPriceTax(pGross,pNet, tau):
+def eqPriceTax(pGross,pNet, tau, exclude_idx=None):
+    idx=np.array(range(len(pGross)))
+    mask = ~np.isin(idx, exclude_idx)
+    idx = idx[mask]
     
-    zero = - 1 + pGross / (
-        pNet*(1+tau)
+    zero = - 1 + pGross[idx] / (
+        pNet[idx]*(1+tau[idx])
         )
     return zero
 
@@ -409,22 +411,24 @@ def eqsum_scalar(tot, *args):
     return zero
 
 
-def eqsum_pEYE(p_CE, C_E, Y_Ej, pE_B, C_EB, YE_Bj, pE_Pj, YE_Pj, pE_TnT, pE_TT, C_ET, YE_Tj, pE_Ej, YE_Ej):
-    Q_E=np.append(Y_Ej,C_E)
+def eqsum_pEYE(p_CE, pY_Ej, C_E, Y_Ej, pE_B, C_EB, YE_Bj, pE_Pj, YE_Pj, pE_TnT, pE_TT, C_ET, YE_Tj, pE_Ej, YE_Ej):
+    p_Ej=np.append(pY_Ej,p_CE)
+    Q_Ej=np.append(Y_Ej,C_E)
     Q_EB=np.append(YE_Bj,C_EB)
     Q_EP=np.append(YE_Pj,0)
     Q_ET=np.append(YE_Tj,C_ET)
     Q_EE=np.append(YE_Ej,0)
     pE_Pj=np.append(pE_Pj,0)
-    pE_Tj=np.array([pE_TnT]*(len(Q_E)))
+    pE_Tj=np.array([pE_TnT]*(len(Q_Ej)))
     pE_Tj[T]=pE_TT
     pE_Ej = np.append(pE_Ej,0)
-    zero = 1 - p_CE*Q_E / (pE_B * Q_EB + pE_Tj * Q_ET + pE_Pj * Q_EP + pE_Ej * Q_EE)
+    zero = 1 - p_Ej*Q_Ej / (pE_B * Q_EB + pE_Tj * Q_ET + pE_Pj * Q_EP + pE_Ej * Q_EE)
     return zero
 
-def eqsum_pESE(p_CE, S_E,Y_Ej,C_E, pC_Ej):
-    Q_E=np.append(Y_Ej,C_E)
-    zero = 1 - p_CE*S_E / sum((pC_Ej*Q_E))
+def eqsum_pESE(p_SE, tauSE, S_E,Y_Ej,C_E, pY_Ej, p_CE):
+    p_E = np.append(pY_Ej,p_CE)
+    Q_E = np.append(Y_Ej,C_E)
+    zero = 1 - p_SE*S_E*(1+tauSE) / sum((p_E*Q_E))
     return zero
 
 def compute_new_E(n_sectors, idx_E, _index):
@@ -433,8 +437,8 @@ def compute_new_E(n_sectors, idx_E, _index):
     new_E = idx_E - E_diff
     return new_E
 
-def eqCobbDouglasj_lambda(Qj,alphaQj,pCj,Q, lambda_E, lambda_nE, p_CE, _index=None):
-    
+def eqCobbDouglasj_lambda(Qj,alphaQj,pCj,Q, lambda_E, lambda_nE, _index=None):
+    p_CE=pCj[E]
     C_E =  lambda_E * alphaQj[E] * (Q/ p_CE) 
     
     if isinstance(_index, np.ndarray):
@@ -458,8 +462,8 @@ def eqlambda_nE(alphaCj,lambda_E, lambda_nE):
     
     sum_alpha_Cj = sum(value for index, value in enumerate(alphaCj) if index != E)
     
-    
     zero = 1 -  1/ (lambda_nE * sum_alpha_Cj + lambda_E * alphaCj[E])
+    
     return zero
 
 
