@@ -330,13 +330,13 @@ def eqT(T,tauYj, pYj, Yj, tauSj, pSj, Sj, tauL, w, Lj):
     return zero
 
 def eqPriceTax(pGross,pNet, tau, exclude_idx=None):
-    idx=np.array(range(len(pGross)))
+    idx=np.array(range(len(pNet)))
     mask = ~np.isin(idx, exclude_idx)
     idx = idx[mask]
     
-    zero = - 1 + pGross[idx] / (
-        pNet[idx]*(1+tau[idx])
-        )
+    zero = - 1 + (pGross / (
+        pNet*(1+tau)
+        ))[idx]
     return zero
 
 def eqRi(Ri,sL,w,Lj,sK,Kj,pK,sG,T,Rg,B):
