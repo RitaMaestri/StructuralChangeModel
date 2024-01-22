@@ -71,7 +71,11 @@ def eqpYj(pYj,pCj,aKLj,pKLj,aYij, tauYj):
     return zero
 
 
-def eqpYj_E(pYj, pCj, aKLj, pKLj, aYij, pY_Ej, tauYj):
+def eqpYj_E(pYj, pCj, aKLj, pKLj, aYij, pY_Ej, tauYj, lambda_KLM):
+    lambda_array=np.array([float(1)]*(len(aKLj)))
+    
+    lambda_array[E]=lambda_KLM
+    
     pCjnE = np.delete(pCj, E)
     
     aYijnE = np.delete(aYij, (E), axis=0)
@@ -79,7 +83,7 @@ def eqpYj_E(pYj, pCj, aKLj, pKLj, aYij, pY_Ej, tauYj):
     pCjd=np.diag(pCjnE)
     
     zero= -1 + pYj / (
-        ( aKLj * pKLj + np.dot(pCjd,aYijnE).sum(axis=0) + aYij[E]*pY_Ej)*(1+tauYj) #AXIS=0 sum over the rows CHECKED
+        ( lambda_array * aKLj * pKLj + lambda_array * np.dot(pCjd,aYijnE).sum(axis=0) +  lambda_array * aYij[E]*pY_Ej)*(1+tauYj) #AXIS=0 sum over the rows CHECKED
     )
     
     return zero

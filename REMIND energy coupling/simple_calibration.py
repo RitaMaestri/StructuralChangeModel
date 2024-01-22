@@ -306,6 +306,8 @@ class calibrationVariables:
         self.pCjtp= cp(self.pCj0)
         self.Ctp= cp(self.Cj0)
         
+        self.lambda_KLM = 1
+        
         
         
         

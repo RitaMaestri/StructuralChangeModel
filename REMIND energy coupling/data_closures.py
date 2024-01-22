@@ -268,6 +268,7 @@ class calibrationDict(endo_exo_indexes):
             'GDPPI':Variable(self.full_endo(), cal.GDPPI),
             'GDP':Variable(self.full_endo(), cal.GDPreal),
             'T':Variable(self.full_endo(), cal.T0),
+            'lambda_KLM':Variable(self.full_endo(), cal.lambda_KLM),
 
             'Kj':Variable(self.full_endo(), cal.Kj0),
             'Lj':Variable(self.full_endo(), cal.Lj0),
@@ -316,7 +317,7 @@ class calibrationDict(endo_exo_indexes):
             'Mtp':Variable(self.full_exo(), cal.Mtp),
             'alphaKj':Variable(self.full_exo(), cal.alphaKj),
             'alphaLj':Variable(self.full_exo(), cal.alphaLj),
-            'aKLj':Variable(self.idx_1D(endo_names = ["ENERGY"]), cal.aKLj),
+            'aKLj':Variable(self.full_exo(), cal.aKLj),
             'alphaCj0':Variable(self.full_exo(), cal.alphaCj0),
             'alphaGj':Variable(self.full_exo(), cal.alphaGj),
             'alphaIj':Variable(self.full_exo(), cal.alphaIj),
@@ -475,6 +476,7 @@ bounds={
     'lambda_nE':(0,np.inf),
     'pE_Ej':(0,np.inf),
     'YE_Ej':(0,np.inf),
+    'lambda_KLM':(0,np.inf),
     #'lambda_KL':(0,np.inf),
         }
 

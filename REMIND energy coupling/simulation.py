@@ -138,7 +138,7 @@ def system(var, par):
         
         #"eqpYj":eq.eqpYj(pYj=d['pYj'],pCj=d['pCj'],aKLj=d['aKLj'],pKLj=d['pKLj'],aYij=d['aYij'], tauYj=d['tauYj']),
         
-        "eqpYj_E":eq.eqpYj_E(pYj=d['pYj'],pCj=d['pCj'],aKLj=d['aKLj'],pKLj=d['pKLj'],aYij=d['aYij'], pY_Ej=d["pY_Ej"], tauYj=d['tauYj']),
+        "eqpYj_E":eq.eqpYj_E(pYj=d['pYj'],pCj=d['pCj'],aKLj=d['aKLj'],pKLj=d['pKLj'],aYij=d['aYij'], pY_Ej=d["pY_Ej"], tauYj=d['tauYj'], lambda_KLM=d['lambda_KLM']),
         
         "eqCESquantityX":eq.eqCESquantity(Xj=d['Xj'], Zj=d['Yj'] , alphaXj=d['alphaXj'], alphaYj=d['alphaDj'], pXj=d['pXj'], pYj=d['pDj'], sigmaj=d['sigmaXj'], thetaj=d['thetaj'],_index=non_zero_index_X),#e-5
         
