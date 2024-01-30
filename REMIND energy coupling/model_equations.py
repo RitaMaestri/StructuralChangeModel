@@ -31,7 +31,7 @@ def eqlj(l, alphalj, KLj, Lj):
     return zero
 
 def eqYij(Yij,aYij,Yj, _index=None):
-    
+
     Yjd=np.diag(Yj)
     
     if isinstance(_index, np.ndarray):
@@ -52,13 +52,13 @@ def eqKL(KLj,aKLj,Yj):
 
     return zero
 
-def eqKL_lambda(KLj,aKLj,Yj,lambda_KL):
-    comp_KLj = np.multiply(aKLj,Yj)
-    comp_KLj[E]=aKLj[E]*Yj[E]*lambda_KL
+# def eqKL_lambda(KLj,aKLj,Yj,lambda_KL):
+#     comp_KLj = np.multiply(aKLj,Yj)
+#     comp_KLj[E]=aKLj[E]*Yj[E]*lambda_KL
     
-    zero=-1 + KLj / comp_KLj
+#     zero=-1 + KLj / comp_KLj
 
-    return zero
+#     return zero
 
 def eqpYj(pYj,pCj,aKLj,pKLj,aYij, tauYj):
 
@@ -72,9 +72,6 @@ def eqpYj(pYj,pCj,aKLj,pKLj,aYij, tauYj):
 
 
 def eqpYj_E(pYj, pCj, aKLj, pKLj, aYij, pY_Ej, tauYj, lambda_KLM):
-    lambda_array=np.array([float(1)]*(len(aKLj)))
-    
-    lambda_array[E]=lambda_KLM
     
     pCjnE = np.delete(pCj, E)
     
@@ -83,7 +80,7 @@ def eqpYj_E(pYj, pCj, aKLj, pKLj, aYij, pY_Ej, tauYj, lambda_KLM):
     pCjd=np.diag(pCjnE)
     
     zero= -1 + pYj / (
-        ( lambda_array * aKLj * pKLj + lambda_array * np.dot(pCjd,aYijnE).sum(axis=0) +  lambda_array * aYij[E]*pY_Ej)*(1+tauYj) #AXIS=0 sum over the rows CHECKED
+        ( lambda_KLM * aKLj * pKLj + lambda_KLM[E]*np.dot(pCjd,aYijnE).sum(axis=0) + aYij[E]*pY_Ej)*(1+tauYj) #AXIS=0 sum over the rows CHECKED
     )
     
     return zero

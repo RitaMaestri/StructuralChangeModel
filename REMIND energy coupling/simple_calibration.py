@@ -49,15 +49,24 @@ class calibrationVariables:
             self.pL0=sum(imp.pLLj)/L0
             self.Lj0 = imp.pLLj / cp(self.pL0)
         
+
+        
         #prezzi
         
-        self.pYj0=np.array([float(1)]*N)
-        self.pSj0=np.array([float(1)]*N)
-        self.pKLj0=np.array([float(6)]*N)
-        self.pXj0=np.array([float(1)]*N)
-        self.pMj0=np.array([float(1)]*N)
-        self.pDj0=np.array([float(1)]*N)
-        self.pXj=np.array([float(1)]*N)
+        self.pYj0=np.array([float(5000)]*N)
+        self.pSj0=np.array([float(5000)]*N)
+        self.pKLj0=np.array([float(10000)]*N)
+        self.pXj0=np.array([float(5000)]*N)
+        self.pDj0=np.array([float(5000)]*N)
+        self.pXj=np.array([float(5000)]*N)
+        self.pMj0=cp(self.pXj0)
+        #adjusting energy quantity and price
+        self.Sj0= imp.pSjSj / cp(self.pSj0)
+        self.Sj0[E]=91.9143818
+        self.pSj0[E]=imp.pSjSj[E] / cp(self.Sj0[E])
+
+        
+        
         
         #taxes
         
@@ -78,7 +87,7 @@ class calibrationVariables:
         self.Xj0= imp.pXjXj / cp(self.pXj0)
         self.Mj0= imp.pMjMj / cp(self.pMj0)
         self.Dj0= imp.pDjDj / cp(self.pDj0)
-        self.Sj0= imp.pSjSj / cp(self.pSj0)
+        #self.Sj0= imp.pSjSj / cp(self.pSj0)
         self.Yj0= imp.pYjYj / cp(self.pYj0)
 
         #scalari
@@ -223,7 +232,7 @@ class calibrationVariables:
 #                                                                                    
         
         #i don't have to determine pC_E because it is endogenously determined. 
-        sE_P = 0.194478926474159 #from excel
+        sE_P = 0.196684710770692#from excel
         sE_T = 0.187353170012835
         sE_B = 0.194478926474159
         sY_E_PE = 1-(sE_P+sE_T+sE_B)
@@ -306,7 +315,7 @@ class calibrationVariables:
         self.pCjtp= cp(self.pCj0)
         self.Ctp= cp(self.Cj0)
         
-        self.lambda_KLM = 1
+        self.lambda_KLM = np.array([float(1)]*(N))
         
         
         

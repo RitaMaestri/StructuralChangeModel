@@ -132,19 +132,19 @@ def system(var, par):
         
         "eqCESpriceKL":eq.eqCESprice(pZj=d['pKLj'], pXj=d['pL'], pYj=d['pK'], alphaXj=d['alphaLj'], alphaYj=d['alphaKj'], sigmaj=d['sigmaKLj'], thetaj=d['bKLj'], theta = d['bKL']),
         
-        "eqYij":eq.eqYij(Yij=d['Yij'],aYij=d['aYij'],Yj=d['Yj'], _index=non_zero_index_Yij),
+        "eqYij":eq.eqYij(Yij=d['Yij'], aYij=np.array([d["lambda_KLM"],]*N)*d['aYij'],Yj=d['Yj'], _index=non_zero_index_Yij),
         
-        "eqKL":eq.eqKL(KLj=d['KLj'],aKLj=d['aKLj'],Yj=d['Yj']),
+        "eqKL":eq.eqKL(KLj=d['KLj'],aKLj=d['lambda_KLM']*d['aKLj'],Yj=d['Yj']),
         
         #"eqpYj":eq.eqpYj(pYj=d['pYj'],pCj=d['pCj'],aKLj=d['aKLj'],pKLj=d['pKLj'],aYij=d['aYij'], tauYj=d['tauYj']),
         
         "eqpYj_E":eq.eqpYj_E(pYj=d['pYj'],pCj=d['pCj'],aKLj=d['aKLj'],pKLj=d['pKLj'],aYij=d['aYij'], pY_Ej=d["pY_Ej"], tauYj=d['tauYj'], lambda_KLM=d['lambda_KLM']),
         
-        "eqCESquantityX":eq.eqCESquantity(Xj=d['Xj'], Zj=d['Yj'] , alphaXj=d['alphaXj'], alphaYj=d['alphaDj'], pXj=d['pXj'], pYj=d['pDj'], sigmaj=d['sigmaXj'], thetaj=d['thetaj'],_index=non_zero_index_X),#e-5
+        "eqCESquantityX":eq.eqCESquantity(Xj=d['Xj'], Zj=d['Yj'] , alphaXj=d['alphaXj'], alphaYj=d['alphaDj'], pXj=d['lambda_KLM']*d['pXj'], pYj=d['pDj'], sigmaj=d['sigmaXj'], thetaj=d['thetaj'],_index=non_zero_index_X),#e-5
         
-        "eqCESquantityDy":eq.eqCESquantity(Xj=d['Dj'], Zj=d['Yj'], alphaXj=d['alphaDj'], alphaYj=d['alphaXj'], pXj=d['pDj'], pYj=d['pXj'], sigmaj=d['sigmaXj'],  thetaj=d['thetaj']),
+        "eqCESquantityDy":eq.eqCESquantity(Xj=d['Dj'], Zj=d['Yj'], alphaXj=d['alphaDj'], alphaYj=d['alphaXj'], pXj=d['pDj'], pYj=d['lambda_KLM']*d['pXj'], sigmaj=d['sigmaXj'],  thetaj=d['thetaj']),
         
-        "eqCESpriceY":eq.eqCESprice(pZj=d['pYj'], pXj=d['pXj'], pYj=d['pDj'], alphaXj=d['alphaXj'], alphaYj=d['alphaDj'], sigmaj=d['sigmaXj'],  thetaj=d['thetaj']),
+        "eqCESpriceY":eq.eqCESprice(pZj=d['pYj'], pXj=d['lambda_KLM']*d['pXj'], pYj=d['pDj'], alphaXj=d['alphaXj'], alphaYj=d['alphaDj'], sigmaj=d['sigmaXj'],  thetaj=d['thetaj']),
         
         "eqCESquantityDs":eq.eqCESquantity(Xj=d['Dj'], Zj=d['Sj'], alphaXj=d['betaDj'], alphaYj=d['betaMj'], pXj=d['pDj'], pYj=d['pMj'], sigmaj=d['sigmaSj'], thetaj=d['csij']),
         
@@ -152,9 +152,9 @@ def system(var, par):
         
         "eqCESpriceS":eq.eqCESprice(pZj=d['pSj'],pXj=d['pMj'],pYj=d['pDj'],alphaXj=d['betaMj'],alphaYj=d['betaDj'],sigmaj=d['sigmaSj'], thetaj=d['csij']),
         
-        "eqB":eq.eqB(B=d['B'],pXj=d['pXj'],Xj=d['Xj'],pMj=d['pMj'],Mj=d['Mj']),
+        "eqB":eq.eqB(B=d['B'],pXj=d['lambda_KLM']*d['pXj'],Xj=d['Xj'],pMj=d['pMj'],Mj=d['Mj']),
         
-        "eqIDpX":eq.eqID(x=d['pXj'],y=d['pMj']),
+        "eqIDpX":eq.eqID(x=d['lambda_KLM']*d['pXj'],y=d['pMj']),
         
         #"eqCobbDouglasjC":eq.eqCobbDouglasj(Qj=d['Cj'],alphaQj=d['alphaCj'],pCj=d['pCj'],Q=d['R'], _index=non_zero_index_C),
         
@@ -165,10 +165,10 @@ def system(var, par):
         "eqMultRg":eq.eqMult(result=d['Rg'],mult1=d['wG'],mult2=d['GDP']),
         
         "eqSj":eq.eqSj(Sj=d['Sj'],Cj=d['Cj'], Gj=d['Gj'], Ij=d['Ij'], Yij=d['Yij']),
-
-        "eqGDP":eq.eqGDP(GDP=d['GDP'],pCj=d['pCj'],Cj=d['Cj'],Gj=d['Gj'],Ij=d['Ij'],pXj=d['pXj'],Xj=d['Xj'],pMj=d['pMj'],Mj=d['Mj']),
         
-        "eqGDPPI":eq.eqGDPPI(GDPPI = d['GDPPI'], pCj=d['pCj'], pXj=d['pXj'], pCtp= d['pCtp'], pXtp=d['pXtp'], Cj= d['Cj'], Gj= d['Gj'], Ij= d['Ij'], Xj=d['Xj'], Mj=d['Mj'], Ctp= d['Ctp'], Gtp= d['Gtp'], Itp= d['Itp'], Xtp=d['Xtp'], Mtp=d['Mtp']),
+        "eqGDP":eq.eqGDP(GDP=d['GDP'],pCj=d['pCj'],Cj=d['Cj'],Gj=d['Gj'],Ij=d['Ij'],pXj=d['lambda_KLM']*d['pXj'],Xj=d['Xj'],pMj=d['pMj'],Mj=d['Mj']),
+        
+        "eqGDPPI":eq.eqGDPPI(GDPPI = d['GDPPI'], pCj=d['pCj'], pXj=d['lambda_KLM']*d['pXj'], pCtp= d['pCtp'], pXtp=d['pXtp'], Cj= d['Cj'], Gj= d['Gj'], Ij= d['Ij'], Xj=d['Xj'], Mj=d['Mj'], Ctp= d['Ctp'], Gtp= d['Gtp'], Itp= d['Itp'], Xtp=d['Xtp'], Mtp=d['Mtp']),
         
         "eqGDPreal":eq.eqGDPreal(GDPreal=d['GDPreal'],GDP=d['GDP'], GDPPI=d['GDPPI']), #expected GDPPI time series
         
@@ -215,7 +215,7 @@ def system(var, par):
                       
 
     if closure=="johansen": 
-        equations.update({"eqsD":eq.eqsD(sD=d['sD'], Ij=d['Ij'], pCj=d['pCj'], Mj=d['Mj'], Xj=d['Xj'], pXj=d['pXj'], GDP=d['GDP']),
+        equations.update({"eqsD":eq.eqsD(sD=d['sD'], Ij=d['Ij'], pCj=d['pCj'], Mj=d['Mj'], Xj=d['Xj'], pXj=d['lambda_KLM']*d['pXj'], GDP=d['GDP']),
         
                                 "eqMultwI":eq.eqMult(result=d['Ri'],mult1=d['wI'],mult2=d['GDP']),
                                 
@@ -433,7 +433,7 @@ print(maxerror)
 if maxerror>1e-5:
     print("the system is not at equilibrium")
 
-
+#end = np.where(years == 2050)[0][0]
 for t in range(len(years)):
     print("year: ", years[t])
     if t==0:
@@ -462,11 +462,29 @@ for t in range(len(years)):
     
     if endoKnext and years[t]<years[-2] :
         System.evolve_K(t+1)
+    if t>0 and t<len(years)-2:
+        System.evolve_tp(t)
+
+par_csv=copy.deepcopy(System.parameters_df)
+var_csv=copy.deepcopy(System.variables_df)
+# Identify the NaN values in DataFrame A
+common_indexes = set(par_csv.index) & set(var_csv.index)
+
+for i in common_indexes :
+    index_positions = np.array([j for j, label in enumerate(par_csv.index) if label == i])
+    if len(index_positions)>1:
+        par_mask=par_csv.loc[i].isna().any(axis=1)
+        par_csv.iloc[index_positions[par_mask]]=var_csv.loc[i]
+    else:
+        par_csv.iloc[index_positions]=var_csv.loc[i]
+
+        
+# Update the NaN values in DataFrame A with values from DataFrame B
 
 
-results=pd.concat([System.variables_df,System.parameters_df], ignore_index=False)
 
-results.to_csv(name)
+#results=pd.concat([System.variables_df,System.parameters_df], ignore_index=False)
+par_csv.to_csv(name)
    
             
 # bounds_variables = flatten_bounds_dict(bounds, variables)

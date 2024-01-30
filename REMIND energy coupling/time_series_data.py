@@ -124,6 +124,15 @@ class sys_df:
 
     def evolve_K(self,t):
         self.parameters_df[t+1].loc['K'] = self.variables_df[t].loc['Knext']
+
+    def evolve_tp(self,t):
+        self.parameters_df.loc['pCtp',self.years[t+1]] = np.array(self.variables_df.loc['pCj',self.years[t-1]])
+        self.parameters_df.loc['Ctp',self.years[t+1]] = np.array(self.variables_df.loc['Cj',self.years[t]])
+        self.parameters_df.loc['Gtp',self.years[t+1]] = np.array(self.variables_df.loc['Gj',self.years[t]])
+        self.parameters_df.loc['Itp',self.years[t+1]] = np.array(self.variables_df.loc['Ij',self.years[t]])
+        self.parameters_df.loc['pXtp',self.years[t+1]] = np.array(self.parameters_df.loc['pXj',self.years[t]])
+        self.parameters_df.loc['Xtp',self.years[t+1]] = np.array(self.variables_df.loc['Xj',self.years[t]])
+        self.parameters_df.loc['Mtp',self.years[t+1]] = np.array(self.variables_df.loc['Mj',self.years[t]])
     
     def __init__(self, Years, Growth_ratios, Variables_dict, Parameters_dict, Dynamic_parameters={}):
 

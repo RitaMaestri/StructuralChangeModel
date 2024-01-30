@@ -268,7 +268,7 @@ class calibrationDict(endo_exo_indexes):
             'GDPPI':Variable(self.full_endo(), cal.GDPPI),
             'GDP':Variable(self.full_endo(), cal.GDPreal),
             'T':Variable(self.full_endo(), cal.T0),
-            'lambda_KLM':Variable(self.full_endo(), cal.lambda_KLM),
+            'lambda_KLM':Variable(self.idx_1D(endo_names = ["ENERGY"]), cal.lambda_KLM),
 
             'Kj':Variable(self.full_endo(), cal.Kj0),
             'Lj':Variable(self.full_endo(), cal.Lj0),
