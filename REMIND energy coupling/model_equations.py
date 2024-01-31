@@ -45,6 +45,25 @@ def eqYij(Yij,aYij,Yj, _index=None):
 
     return zero
 
+def eqYij_E(Yij,aYij,Yj, lambda_KLM, _index=None):
+    
+    lambda_KLM_2d=np.array([lambda_KLM]*len(aYij))
+    lambda_KLM_2d[E,E]=1
+    aYij_adj=aYij*lambda_KLM_2d
+    
+    Yjd=np.diag(Yj)
+    
+    if isinstance(_index, np.ndarray):
+        #print("Yij check: ",(Yij[_index[0],_index[1]]==dt.variables['Yijn0']).all())
+        
+        zero= -1 + Yij[_index[0],_index[1]] / np.dot(aYij_adj,Yjd)[_index[0],_index[1]]
+    else:
+        zero= -1 + Yij / np.dot(aYij_adj,Yjd)
+        zero=zero.flatten()
+    #convert matrix to vector
+
+    return zero
+
 
 def eqKL(KLj,aKLj,Yj):
 
@@ -72,15 +91,17 @@ def eqpYj(pYj,pCj,aKLj,pKLj,aYij, tauYj):
 
 
 def eqpYj_E(pYj, pCj, aKLj, pKLj, aYij, pY_Ej, tauYj, lambda_KLM):
-    
+    #creo una matrice N-1xN (ha una riga in meno)
     pCjnE = np.delete(pCj, E)
     
     aYijnE = np.delete(aYij, (E), axis=0)
     
     pCjd=np.diag(pCjnE)
-    
+    #il risultato è un vettore riga.
+    #sommo su tutta la colonna (i costi). 
+    #per il settore dell'energia, i costi di tutti i materiali salvo l'energia sono moltiplicati per lambda_KLM. 
     zero= -1 + pYj / (
-        ( lambda_KLM * aKLj * pKLj + lambda_KLM[E]*np.dot(pCjd,aYijnE).sum(axis=0) + aYij[E]*pY_Ej)*(1+tauYj) #AXIS=0 sum over the rows CHECKED
+        ( lambda_KLM * aKLj * pKLj + lambda_KLM*np.dot(pCjd,aYijnE).sum(axis=0) + aYij[E]*pY_Ej)*(1+tauYj) #AXIS=0 sum over the rows CHECKED
     )
     
     return zero
