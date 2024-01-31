@@ -510,9 +510,9 @@ def eqaKLj0(aKLj0, aKLj, lambda_KLM):
 
  
 def eqaYij0(aYij0, aYij, lambda_KLM):
-    lambda_KLM_2d=np.array([lambda_KLM]*len(aYij))
-    lambda_KLM_2d[E,E]=1
-    aYij_adj=aYij*lambda_KLM_2d
+    lambda_KLM_2d=np.array([lambda_KLM]*(len(aYij)-1) )
+
+    aYij_adj=aYij[]*lambda_KLM_2d
     
     zero= 1-aYij/aYij_adj
     zero=zero.flatten()
