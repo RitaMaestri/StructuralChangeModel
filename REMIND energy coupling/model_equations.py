@@ -90,7 +90,23 @@ def eqpYj(pYj,pCj,aKLj,pKLj,aYij, tauYj):
     return zero
 
 
-def eqpYj_E(pYj, pCj, aKLj, pKLj, aYij, pY_Ej, tauYj, lambda_KLM):
+# def eqpYj_E(pYj, pCj, aKLj, pKLj, aYij, pY_Ej, tauYj, lambda_KLM):
+#     #creo una matrice N-1xN (ha una riga in meno)
+#     pCjnE = np.delete(pCj, E)
+    
+#     aYijnE = np.delete(aYij, (E), axis=0)
+    
+#     pCjd=np.diag(pCjnE)
+#     #il risultato è un vettore riga.
+#     #sommo su tutta la colonna (i costi). 
+#     #per il settore dell'energia, i costi di tutti i materiali salvo l'energia sono moltiplicati per lambda_KLM. 
+#     zero= -1 + pYj / (
+#         ( lambda_KLM * aKLj * pKLj + lambda_KLM*np.dot(pCjd,aYijnE).sum(axis=0) + aYij[E]*pY_Ej)*(1+tauYj) #AXIS=0 sum over the rows CHECKED
+#     )
+    
+#     return zero
+
+def eqpYj_E(pYj, pCj, aKLj, pKLj, aYij, pY_Ej, tauYj):
     #creo una matrice N-1xN (ha una riga in meno)
     pCjnE = np.delete(pCj, E)
     
@@ -99,12 +115,12 @@ def eqpYj_E(pYj, pCj, aKLj, pKLj, aYij, pY_Ej, tauYj, lambda_KLM):
     pCjd=np.diag(pCjnE)
     #il risultato è un vettore riga.
     #sommo su tutta la colonna (i costi). 
-    #per il settore dell'energia, i costi di tutti i materiali salvo l'energia sono moltiplicati per lambda_KLM. 
     zero= -1 + pYj / (
-        ( lambda_KLM * aKLj * pKLj + lambda_KLM*np.dot(pCjd,aYijnE).sum(axis=0) + aYij[E]*pY_Ej)*(1+tauYj) #AXIS=0 sum over the rows CHECKED
+        ( aKLj * pKLj + np.dot(pCjd,aYijnE).sum(axis=0) + aYij[E]*pY_Ej)*(1+tauYj) #AXIS=0 sum over the rows CHECKED
     )
     
     return zero
+
 
 def eqCES(Zj, thetaj, alphaXj,alphaYj,Xj,Yj,sigmaj):
 
@@ -488,8 +504,19 @@ def eqlambda_nE(alphaCj,lambda_E, lambda_nE):
     
     return zero
 
+def eqaKLj0(aKLj0, aKLj, lambda_KLM):
+    zero= 1-aKLj/aKLj0*lambda_KLM
+    return zero
 
-
+ 
+def eqaYij0(aYij0, aYij, lambda_KLM):
+    lambda_KLM_2d=np.array([lambda_KLM]*len(aYij))
+    lambda_KLM_2d[E,E]=1
+    aYij_adj=aYij*lambda_KLM_2d
+    
+    zero= 1-aYij/aYij_adj
+    zero=zero.flatten()
+    return zero
 
 # def GPI(GDPPI,pCj,pCtp,pXj,pXtp,Cj,Gj,Ij,Xj,Mj,Yij,Ctp,Gtp,Itp,Xtp,Mtp,Yijtp,idxC=len(Cj),idxG,idxI,idxX)
 

@@ -317,6 +317,8 @@ class calibrationVariables:
         
         self.lambda_KLM = np.array([float(1)]*(N))
         
+        self.aKLj0=cp(self.aKLj)
+        self.aYij0=cp(self.aYij)
         
         
         
