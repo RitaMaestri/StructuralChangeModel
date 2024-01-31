@@ -446,9 +446,12 @@ for t in range(len(years)):
     
     sol = dict_least_squares( system, variables, parameters, bounds_variables, N, verb=1, check=True)
     
+    #d=joint_dict(parameters,variables)
+    
     maxerror=max(abs( system(sol.dvar, parameters)))
     
     system(sol.dvar, parameters)
+    
     
     #System.dict_to_df(sol.dvar, years[t])
 
@@ -480,8 +483,25 @@ for i in common_indexes :
     else:
         par_csv.iloc[index_positions]=var_csv.loc[i]
 
-        
-# Update the NaN values in DataFrame A with values from DataFrame B
+equilibrium = ( pLLj + pKKj + production_taxes + sales_taxes + pMjMj + pCiYij.sum(axis=0) - 
+               (pCjCj + pCjGj + pCjIj + pXjXj + pCiYij.sum(axis=1))
+               )
+              
+def equilibrium(pKLj, KLj, pMj, Mj, pYj, Yj, pCj, pY_Ej, pXj, Yij, Cj, Gj, Ij, Xj, tauSj, tauYj):
+    #build prices matrix
+    
+    pCj_matrix=np.array([pCj]*(len(pCj))).T
+    pCj_matrix[E]=pY_Ej
+    
+    total_consumption_j= pCj*Cj + pCj*Gj + pCj*Ij  + (pCj_matrix*Yij).sum(axis=1)
+    
+    error=1- ( pKLj*KLj+ pYj*Yj*tauYj/(1+tauYj)+ total_consumption_j * tauSj / (1+tauSj) + pMj*Mj + (pCj_matrix*Yij).sum(axis=0)  - pXj*Xj  )/ total_consumption_j
+    
+    return error 
+
+
+
+equilibrium(pKLj=d["pKLj"], KLj=d["KLj"], pMj=d["pMj"], Mj=d["Mj"], pYj=d["pYj"], Yj=d["Yj"], pCj=d["pCj"], pY_Ej=d["pY_Ej"], pXj=d["pXj"], Yij=d["Yij"], Cj=d["Cj"], Gj=d["Gj"], Ij=d["Ij"], Xj=d["Xj"], tauSj=d["tauSj"], tauYj=d["tauYj"])
 
 
 
