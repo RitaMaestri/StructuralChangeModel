@@ -132,19 +132,19 @@ def system(var, par):
         
         "eqCESpriceKL":eq.eqCESprice(pZj=d['pKLj'], pXj=d['pL'], pYj=d['pK'], alphaXj=d['alphaLj'], alphaYj=d['alphaKj'], sigmaj=d['sigmaKLj'], thetaj=d['bKLj'], theta = d['bKL']),
         
-        "eqYij":eq.eqYij_E(Yij=d['Yij'], aYij=d['aYij'],Yj=d['Yj'], lambda_KLM=d['lambda_KLM'], _index=non_zero_index_Yij),
+        "eqYij":eq.eqYij(Yij=d['Yij'], aYij=d['aYij'],Yj=d['Yj'], _index=non_zero_index_Yij),
         
-        "eqKL":eq.eqKL(KLj=d['KLj'],aKLj=d['lambda_KLM']*d['aKLj'],Yj=d['Yj']),
+        "eqKL":eq.eqKL(KLj=d['KLj'],aKLj=d['aKLj'],Yj=d['Yj']),
         
         #"eqpYj":eq.eqpYj(pYj=d['pYj'],pCj=d['pCj'],aKLj=d['aKLj'],pKLj=d['pKLj'],aYij=d['aYij'], tauYj=d['tauYj']),
         
-        "eqpYj_E":eq.eqpYj_E(pYj=d['pYj'],pCj=d['pCj'],aKLj=d['aKLj'],pKLj=d['pKLj'],aYij=d['aYij'], pY_Ej=d["pY_Ej"], tauYj=d['tauYj'], lambda_KLM=d['lambda_KLM']),
+        "eqpYj_E":eq.eqpYj_E(pYj=d['pYj'],pCj=d['pCj'],aKLj=d['aKLj'],pKLj=d['pKLj'],aYij=d['aYij'], pY_Ej=d["pY_Ej"], tauYj=d['tauYj']),
         
-        "eqCESquantityX":eq.eqCESquantity(Xj=d['Xj'], Zj=d['Yj'] , alphaXj=d['alphaXj'], alphaYj=d['alphaDj'], pXj=d["lambda_KLM"]*d['pXj'], pYj=d['pDj'], sigmaj=d['sigmaXj'], thetaj=d['thetaj'],_index=non_zero_index_X),#e-5
+        "eqCESquantityX":eq.eqCESquantity(Xj=d['Xj'], Zj=d['Yj'] , alphaXj=d['alphaXj'], alphaYj=d['alphaDj'], pXj=d['pXj'], pYj=d['pDj'], sigmaj=d['sigmaXj'], thetaj=d['thetaj'],_index=non_zero_index_X),#e-5
         
         "eqCESquantityDy":eq.eqCESquantity(Xj=d['Dj'], Zj=d['Yj'], alphaXj=d['alphaDj'], alphaYj=d['alphaXj'], pXj=d['pDj'], pYj=d['pXj'], sigmaj=d['sigmaXj'],  thetaj=d['thetaj']),
         
-        "eqCESpriceY":eq.eqCESprice(pZj=d['pYj'], pXj=d["lambda_KLM"]*d['pXj'], pYj=d['pDj'], alphaXj=d['alphaXj'], alphaYj=d['alphaDj'], sigmaj=d['sigmaXj'],  thetaj=d['thetaj']),
+        "eqCESpriceY":eq.eqCESprice(pZj=d['pYj'], pXj=d['pXj'], pYj=d['pDj'], alphaXj=d['alphaXj'], alphaYj=d['alphaDj'], sigmaj=d['sigmaXj'],  thetaj=d['thetaj']),
         
         "eqCESquantityDs":eq.eqCESquantity(Xj=d['Dj'], Zj=d['Sj'], alphaXj=d['betaDj'], alphaYj=d['betaMj'], pXj=d['pDj'], pYj=d['pMj'], sigmaj=d['sigmaSj'], thetaj=d['csij']),
         
@@ -152,7 +152,7 @@ def system(var, par):
         
         "eqCESpriceS":eq.eqCESprice(pZj=d['pSj'],pXj=d['pMj'],pYj=d['pDj'],alphaXj=d['betaMj'],alphaYj=d['betaDj'],sigmaj=d['sigmaSj'], thetaj=d['csij']),
         
-        "eqB":eq.eqB(B=d['B'],pXj=d["lambda_KLM"]*d['pXj'],Xj=d['Xj'],pMj=d['pMj'],Mj=d['Mj']),
+        "eqB":eq.eqB(B=d['B'],pXj=d['pXj'],Xj=d['Xj'],pMj=d['pMj'],Mj=d['Mj']),
         
         "eqIDpX":eq.eqID(x=d['pXj'],y=d['pMj']),
         
@@ -166,9 +166,9 @@ def system(var, par):
         
         "eqSj":eq.eqSj(Sj=d['Sj'],Cj=d['Cj'], Gj=d['Gj'], Ij=d['Ij'], Yij=d['Yij']),
         
-        "eqGDP":eq.eqGDP(GDP=d['GDP'],pCj=d['pCj'],Cj=d['Cj'],Gj=d['Gj'],Ij=d['Ij'],pXj=d["lambda_KLM"]*d['pXj'],Xj=d['Xj'],pMj=d['pMj'],Mj=d['Mj']),
+        "eqGDP":eq.eqGDP(GDP=d['GDP'],pCj=d['pCj'],Cj=d['Cj'],Gj=d['Gj'],Ij=d['Ij'],pXj=d['pXj'],Xj=d['Xj'],pMj=d['pMj'],Mj=d['Mj']),
         
-        "eqGDPPI":eq.eqGDPPI(GDPPI = d['GDPPI'], pCj=d['pCj'], pXj=d["lambda_KLM"]*d['pXj'], pCtp= d['pCtp'], pXtp=d['pXtp'], Cj= d['Cj'], Gj= d['Gj'], Ij= d['Ij'], Xj=d['Xj'], Mj=d['Mj'], Ctp= d['Ctp'], Gtp= d['Gtp'], Itp= d['Itp'], Xtp=d['Xtp'], Mtp=d['Mtp']),
+        "eqGDPPI":eq.eqGDPPI(GDPPI = d['GDPPI'], pCj=d['pCj'], pXj=d['pXj'], pCtp= d['pCtp'], pXtp=d['pXtp'], Cj= d['Cj'], Gj= d['Gj'], Ij= d['Ij'], Xj=d['Xj'], Mj=d['Mj'], Ctp= d['Ctp'], Gtp= d['Gtp'], Itp= d['Itp'], Xtp=d['Xtp'], Mtp=d['Mtp']),
         
         "eqGDPreal":eq.eqGDPreal(GDPreal=d['GDPreal'],GDP=d['GDP'], GDPPI=d['GDPPI']), #expected GDPPI time series
         
@@ -207,7 +207,11 @@ def system(var, par):
         
         "eqlambda_nE":eq.eqlambda_nE(alphaCj=d['alphaCj0'],lambda_E=d['lambda_E'], lambda_nE=d['lambda_nE']),
         
-        "eqpCE":eq.eqsum_pESE(p_SE=d['pSj'][E], tauSE=d['tauSj'][E], S_E=d['Sj'][E], Y_Ej=d['Yij'][E,:], C_E=d['Cj'][E], pY_Ej=d['pY_Ej'], p_CE=d['pCj'][E])
+        "eqpCE":eq.eqsum_pESE(p_SE=d['pSj'][E], tauSE=d['tauSj'][E], S_E=d['Sj'][E], Y_Ej=d['Yij'][E,:], C_E=d['Cj'][E], pY_Ej=d['pY_Ej'], p_CE=d['pCj'][E]),
+        
+        "eqaKLj0":eq.eqaKLj0(aKLj0=d['aKLj0'], aKLj=d['aKLj'], lambda_KLM=d['lambda_KLM']),
+        
+        'eqaYij0':eq.eqaYij0(aYij0=d['aYij0'], aYij=d['aYij'], lambda_KLM=d['lambda_KLM'])
         }
 
     if endoKnext:
@@ -215,7 +219,7 @@ def system(var, par):
                       
 
     if closure=="johansen": 
-        equations.update({"eqsD":eq.eqsD(sD=d['sD'], Ij=d['Ij'], pCj=d['pCj'], Mj=d['Mj'], Xj=d['Xj'], pXj=d["lambda_KLM"]*d['pXj'], GDP=d['GDP']),
+        equations.update({"eqsD":eq.eqsD(sD=d['sD'], Ij=d['Ij'], pCj=d['pCj'], Mj=d['Mj'], Xj=d['Xj'], pXj=d['pXj'], GDP=d['GDP']),
         
                                 "eqMultwI":eq.eqMult(result=d['Ri'],mult1=d['wI'],mult2=d['GDP']),
                                 
@@ -365,14 +369,25 @@ def system(var, par):
         print("the closure doesn't exist")
         sys.exit()
         
-#### Calibration check ####
+        
+########################################################################
+########################  CALIBRATION CHECK  ###########################
+########################################################################
+
+
 max_err_cal=max(abs(system(variables_calibration, parameters_calibration)))
-# print("maxerrcal", max_err_cal)
 
 if max_err_cal>1e-07:
     d=joint_dict(parameters_calibration,variables_calibration)
     print("the system is not correctly calibrated")
     sys.exit()
+    
+
+########################################################################
+##########################  CREATE BOUNDS  #############################
+########################################################################
+
+
 
 #### set the bounds in the good format for the solver ####
 def multiply_bounds_len(key,this_bounds,this_variables):
@@ -400,17 +415,17 @@ bounds_variables = [[row[i] for row in flatten_bounds_dict(bounds, non_zero_vari
 
 #number_modified=10, percentage_modified=0.1, modification=0.1, seed=4
 
+
+########################################################################
+##########################  KICK FUNCTION  #############################
+########################################################################
+
 seed = random.randrange(sys.maxsize)
 
 def kick(variables, number_modified=10, percentage_modified=0.1, modification=0.1, seed=seed):
     random.seed(seed)
     kicked_variables = copy.deepcopy(variables)
     keys = random.sample(list(variables.keys()), k=number_modified)
-#    print("Variables kicked at:", keys,
-#          "\n number modified: ", number_modified,
-#          "\n percentage: ",percentage_modified,
-#          "\n modification: ",modification,
-#          "\n seed: ",seed,)
 
     for v_key in keys:
         if v_key in kicked_variables:
@@ -426,14 +441,12 @@ def kick(variables, number_modified=10, percentage_modified=0.1, modification=0.
 
     return kicked_variables
 
-######  SYSTEM SOLUTION  ######
 
-maxerror=max(abs( system(variables_calibration, parameters_calibration)))
-print(maxerror)
-if maxerror>1e-5:
-    print("the system is not at equilibrium")
+########################################################################################
+##################################  SYSTEM SOLUTION  ###################################
+########################################################################################
 
-#end = np.where(years == 2050)[0][0]
+
 for t in range(len(years)):
     print("year: ", years[t])
     if t==0:
@@ -450,25 +463,21 @@ for t in range(len(years)):
     
     maxerror=max(abs( system(sol.dvar, parameters)))
     
-    system(sol.dvar, parameters)
-    
-    
-    #System.dict_to_df(sol.dvar, years[t])
+    System.dict_to_df(sol.dvar, years[t])
 
     if maxerror>1e-06:
         print("the system doesn't converge, maxerror=",maxerror)
         sys.exit()
 
-    
-    #print("\n \n", closure," closure \n max of the system of equations calculated at the solution: \n")
-    #print(maxerror, "\n")
-
-    System.dict_to_df(sol.dvar, years[t])
-    
     if endoKnext and years[t]<years[-2] :
         System.evolve_K(t+1)
     if t>0 and t<len(years)-2:
         System.evolve_tp(t)
+
+########################################################################
+############################  SAVE CSV  ################################
+########################################################################
+
 
 par_csv=copy.deepcopy(System.parameters_df)
 var_csv=copy.deepcopy(System.variables_df)
@@ -508,79 +517,12 @@ equilibrium(pKLj=d["pKLj"], KLj=d["KLj"], pMj=d["pMj"], Mj=d["Mj"], pYj=d["pYj"]
 #results=pd.concat([System.variables_df,System.parameters_df], ignore_index=False)
 par_csv.to_csv(name)
    
-            
-# bounds_variables = flatten_bounds_dict(bounds, variables)
-# mybounds=MyBounds(bounds_variables)
-# sol= dict_minimize(system, variables, parameters, mybounds.bounds)
 
-# print("\n \n", closure," closure \n max of the system of equations calculated at the solution: \n")
-# print(max(abs( system(sol.dvar, parameters))))
-
-# d = {**sol.dvar, **parameters}
+########################################################################
+########################  USEFUL FUNCTIONS  ############################
+########################################################################
 
 
-#EXPORT TO CSV
-
-# def augment_dict(d, key0, indexes, value_key):
-#     array=np.zeros(N)
-#     array[indexes] = d[value_key]
-#     d[key0] = array
-    
-# def augment_dict2D(d, key0, indexes, value_key):
-#     array=np.zeros([N,N])
-#     for i,j,k in zip(indexes[0], indexes[1], range(len(indexes[0]))):
-#             array[i,j]=d[value_key][k]
-#     d[key0] = array
-
-# #to_dict(sol.dvar,variables,is_variable=True)
-
-# augment_dict(sol.dvar, 'Gj', non_zero_index_G,'Gjn0')
-# augment_dict(sol.dvar, 'Ij', non_zero_index_I, 'Ijn0')
-# augment_dict(sol.dvar, 'Cj', non_zero_index_C, 'Cjn0')
-# augment_dict(sol.dvar, 'Xj', non_zero_index_X, 'Xjn0')
-# augment_dict(sol.dvar, 'Mj', non_zero_index_M, 'Mjn0')
-# augment_dict2D(sol.dvar, 'Yij', non_zero_index_Yij, 'Yijn0')
-    
-# keysN=[k for k, v in sol.dvar.items() if np.shape(v) == np.shape(sol.dvar["Kj"])]
-# keys1=[k for k, v in sol.dvar.items() if np.shape(v) == np.shape(sol.dvar["R"])]
-
-# sol_N=pd.DataFrame({ key: sol.dvar[key] for key in keysN })
-# sol_1=pd.DataFrame({ key: sol.dvar[key] for key in keys1 })
-# sol_Yij=pd.DataFrame(sol.dvar["Yij"])
-
-# sol_N.to_csv("results/classic_N.csv")
-# sol_1.to_csv("results/classic_1.csv")
-# sol_Yij.to_csv("results/classic_Yij.csv")    
-
-
-
-# array_zero_keys = []
-# scalar_zero_keys = []
-
-# for key, value in variables.items():
-#     if isinstance(value, list) and 0 in value:
-#         array_zero_keys.append(key)
-#     elif isinstance(value, (int, float)) and value == 0:
-#         scalar_zero_keys.append(key)
-
-# print("Keys with at least one zero array element:", array_zero_keys)
-# print("Keys with zero scalar value:", scalar_zero_keys)
-
-
-# loaded_data = np.load('var.npz')
-# loaded_dict_var = {key: loaded_data[key] for key in loaded_data.files}
-
-# # Close the loaded_data object to release the resources
-# loaded_data.close()
-
-# loaded_data = np.load('par.npz')
-# loaded_dict_par = {key: loaded_data[key] for key in loaded_data.files}
-
-# # Close the loaded_data object to release the resources
-# loaded_data.close()
-
-# f0 = loadtxt('f0.csv', delimiter=',')
-# pars = loadtxt('par.csv', delimiter=',')
 
 def compare_dictionaries(dict1, dict2):
     if dict1.keys() != dict2.keys():
@@ -688,3 +630,81 @@ def find_keys_with_large_elements(dictionary):
 
 def column(matrix, i):
     return [row[i] for row in matrix]
+
+            
+# bounds_variables = flatten_bounds_dict(bounds, variables)
+# mybounds=MyBounds(bounds_variables)
+# sol= dict_minimize(system, variables, parameters, mybounds.bounds)
+
+# print("\n \n", closure," closure \n max of the system of equations calculated at the solution: \n")
+# print(max(abs( system(sol.dvar, parameters))))
+
+# d = {**sol.dvar, **parameters}
+
+
+#EXPORT TO CSV
+
+# def augment_dict(d, key0, indexes, value_key):
+#     array=np.zeros(N)
+#     array[indexes] = d[value_key]
+#     d[key0] = array
+    
+# def augment_dict2D(d, key0, indexes, value_key):
+#     array=np.zeros([N,N])
+#     for i,j,k in zip(indexes[0], indexes[1], range(len(indexes[0]))):
+#             array[i,j]=d[value_key][k]
+#     d[key0] = array
+
+# #to_dict(sol.dvar,variables,is_variable=True)
+
+# augment_dict(sol.dvar, 'Gj', non_zero_index_G,'Gjn0')
+# augment_dict(sol.dvar, 'Ij', non_zero_index_I, 'Ijn0')
+# augment_dict(sol.dvar, 'Cj', non_zero_index_C, 'Cjn0')
+# augment_dict(sol.dvar, 'Xj', non_zero_index_X, 'Xjn0')
+# augment_dict(sol.dvar, 'Mj', non_zero_index_M, 'Mjn0')
+# augment_dict2D(sol.dvar, 'Yij', non_zero_index_Yij, 'Yijn0')
+    
+# keysN=[k for k, v in sol.dvar.items() if np.shape(v) == np.shape(sol.dvar["Kj"])]
+# keys1=[k for k, v in sol.dvar.items() if np.shape(v) == np.shape(sol.dvar["R"])]
+
+# sol_N=pd.DataFrame({ key: sol.dvar[key] for key in keysN })
+# sol_1=pd.DataFrame({ key: sol.dvar[key] for key in keys1 })
+# sol_Yij=pd.DataFrame(sol.dvar["Yij"])
+
+# sol_N.to_csv("results/classic_N.csv")
+# sol_1.to_csv("results/classic_1.csv")
+# sol_Yij.to_csv("results/classic_Yij.csv")    
+
+
+
+# array_zero_keys = []
+# scalar_zero_keys = []
+
+# for key, value in variables.items():
+#     if isinstance(value, list) and 0 in value:
+#         array_zero_keys.append(key)
+#     elif isinstance(value, (int, float)) and value == 0:
+#         scalar_zero_keys.append(key)
+
+# print("Keys with at least one zero array element:", array_zero_keys)
+# print("Keys with zero scalar value:", scalar_zero_keys)
+
+
+# loaded_data = np.load('var.npz')
+# loaded_dict_var = {key: loaded_data[key] for key in loaded_data.files}
+
+# # Close the loaded_data object to release the resources
+# loaded_data.close()
+
+# loaded_data = np.load('par.npz')
+# loaded_dict_par = {key: loaded_data[key] for key in loaded_data.files}
+
+# # Close the loaded_data object to release the resources
+# loaded_data.close()
+
+# f0 = loadtxt('f0.csv', delimiter=',')
+# pars = loadtxt('par.csv', delimiter=',')
+
+
+
+

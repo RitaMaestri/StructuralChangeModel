@@ -6,6 +6,8 @@ import sys
 from itertools import product
 
 endo_aYij_indexes = [("ENERGY",x) for x in sectors]
+sectors_nE=n = [x for x in sectors if x != "ENERGY"]
+endo_aYij_indexes.extend([(x,"ENERGY") for x in sectors_nE])
 
 class endo_exo_indexes:
     def full_endo(self):
@@ -293,6 +295,7 @@ class calibrationDict(endo_exo_indexes):
             'w':Variable(self.full_endo(), cal.w),            
             'aYij':Variable(self.idx_2D(endo_names = endo_aYij_indexes), cal.aYij),
             
+            
             'pY_Ej':Variable(self.full_endo(), cal.pY_Ej),
            #'E_P':Variable(self.full_endo(), cal.E_P),
            # 'E_T':Variable(self.full_endo(), cal.E_T),
@@ -317,7 +320,7 @@ class calibrationDict(endo_exo_indexes):
             'Mtp':Variable(self.full_exo(), cal.Mtp),
             'alphaKj':Variable(self.full_exo(), cal.alphaKj),
             'alphaLj':Variable(self.full_exo(), cal.alphaLj),
-            'aKLj':Variable(self.full_exo(), cal.aKLj),
+            'aKLj':Variable(self.full_endo(), cal.aKLj),
             'alphaCj0':Variable(self.full_exo(), cal.alphaCj0),
             'alphaGj':Variable(self.full_exo(), cal.alphaGj),
             'alphaIj':Variable(self.full_exo(), cal.alphaIj),
@@ -344,6 +347,10 @@ class calibrationDict(endo_exo_indexes):
             'pE_Pj':Variable(self.full_exo(), cal.pE_Pj),
             'pE_Ej':Variable(self.full_exo(), cal.pE_Ej),
             'YE_Ej':Variable(self.full_exo(), cal.YE_Ej),
+            
+            'aKLj0':Variable(self.full_exo(), cal.aKLj0),
+            'aYij0':Variable(self.full_exo(), cal.aYij0),
+            
 
             }
         
@@ -477,6 +484,8 @@ bounds={
     'pE_Ej':(0,np.inf),
     'YE_Ej':(0,np.inf),
     'lambda_KLM':(0,np.inf),
+    'aKLj0':(0,np.inf),
+    'aYij0':(0,np.inf),
     #'lambda_KL':(0,np.inf),
         }
 

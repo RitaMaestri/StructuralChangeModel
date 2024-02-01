@@ -359,6 +359,9 @@ plot_varj_evol(var="Mj", pq="pq", diff=False)
 ##################  rebuild IO matrix  #############
 def flatten_index(m, n, num_columns):
     return m * num_columns + n
+
+indexes_E=np.array(range(E, len(sectors)**2, len(sectors) ))
+
 EE_idx=flatten_index(E, E, len(sectors))
 Yij_array=df.loc[ df['variable'] == "Yij" ]
 Y_EE=Yij_array.iloc[EE_idx][1:]
@@ -384,4 +387,6 @@ calibration_value_scalar("pE_B")
 
 plot_varj_evol(var="KLj", pq="pq", diff=False)
 plot_variable_1D("GDPreal", "q", diff=False)
+
+Y_iE=Yij_array.iloc[indexes_E]
 

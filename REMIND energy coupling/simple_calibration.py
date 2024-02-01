@@ -64,8 +64,6 @@ class calibrationVariables:
         self.Sj0= imp.pSjSj / cp(self.pSj0)
         self.Sj0[E]=91.9143818
         self.pSj0[E]=imp.pSjSj[E] / cp(self.Sj0[E])
-
-        
         
         
         #taxes
@@ -317,6 +315,8 @@ class calibrationVariables:
         
         self.lambda_KLM = np.array([float(1)]*(N))
         
+        self.aKLj0=cp(self.aKLj)
+        self.aYij0=cp(self.aYij)
         
         
         
