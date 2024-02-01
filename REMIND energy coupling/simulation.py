@@ -369,14 +369,25 @@ def system(var, par):
         print("the closure doesn't exist")
         sys.exit()
         
-#### Calibration check ####
+        
+########################################################################
+########################  CALIBRATION CHECK  ###########################
+########################################################################
+
+
 max_err_cal=max(abs(system(variables_calibration, parameters_calibration)))
-# print("maxerrcal", max_err_cal)
 
 if max_err_cal>1e-07:
     d=joint_dict(parameters_calibration,variables_calibration)
     print("the system is not correctly calibrated")
     sys.exit()
+    
+
+########################################################################
+##########################  CREATE BOUNDS  #############################
+########################################################################
+
+
 
 #### set the bounds in the good format for the solver ####
 def multiply_bounds_len(key,this_bounds,this_variables):
@@ -404,17 +415,17 @@ bounds_variables = [[row[i] for row in flatten_bounds_dict(bounds, non_zero_vari
 
 #number_modified=10, percentage_modified=0.1, modification=0.1, seed=4
 
+
+########################################################################
+##########################  KICK FUNCTION  #############################
+########################################################################
+
 seed = random.randrange(sys.maxsize)
 
 def kick(variables, number_modified=10, percentage_modified=0.1, modification=0.1, seed=seed):
     random.seed(seed)
     kicked_variables = copy.deepcopy(variables)
     keys = random.sample(list(variables.keys()), k=number_modified)
-#    print("Variables kicked at:", keys,
-#          "\n number modified: ", number_modified,
-#          "\n percentage: ",percentage_modified,
-#          "\n modification: ",modification,
-#          "\n seed: ",seed,)
 
     for v_key in keys:
         if v_key in kicked_variables:
@@ -430,14 +441,12 @@ def kick(variables, number_modified=10, percentage_modified=0.1, modification=0.
 
     return kicked_variables
 
-######  SYSTEM SOLUTION  ######
 
-maxerror=max(abs( system(variables_calibration, parameters_calibration)))
-print(maxerror)
-if maxerror>1e-5:
-    print("the system is not at equilibrium")
+########################################################################################
+##################################  SYSTEM SOLUTION  ###################################
+########################################################################################
 
-#end = np.where(years == 2050)[0][0]
+
 for t in range(len(years)):
     print("year: ", years[t])
     if t==0:
@@ -452,24 +461,21 @@ for t in range(len(years)):
     
     maxerror=max(abs( system(sol.dvar, parameters)))
     
-    system(sol.dvar, parameters)
-    
-    #System.dict_to_df(sol.dvar, years[t])
+    System.dict_to_df(sol.dvar, years[t])
 
     if maxerror>1e-06:
         print("the system doesn't converge, maxerror=",maxerror)
         sys.exit()
 
-    
-    #print("\n \n", closure," closure \n max of the system of equations calculated at the solution: \n")
-    #print(maxerror, "\n")
-
-    System.dict_to_df(sol.dvar, years[t])
-    
     if endoKnext and years[t]<years[-2] :
         System.evolve_K(t+1)
     if t>0 and t<len(years)-2:
         System.evolve_tp(t)
+
+########################################################################
+############################  SAVE CSV  ################################
+########################################################################
+
 
 par_csv=copy.deepcopy(System.parameters_df)
 var_csv=copy.deepcopy(System.variables_df)
@@ -484,87 +490,15 @@ for i in common_indexes :
     else:
         par_csv.iloc[index_positions]=var_csv.loc[i]
 
-        
-# Update the NaN values in DataFrame A with values from DataFrame B
 
-
-
-#results=pd.concat([System.variables_df,System.parameters_df], ignore_index=False)
 par_csv.to_csv(name)
    
-            
-# bounds_variables = flatten_bounds_dict(bounds, variables)
-# mybounds=MyBounds(bounds_variables)
-# sol= dict_minimize(system, variables, parameters, mybounds.bounds)
 
-# print("\n \n", closure," closure \n max of the system of equations calculated at the solution: \n")
-# print(max(abs( system(sol.dvar, parameters))))
-
-# d = {**sol.dvar, **parameters}
+########################################################################
+########################  USEFUL FUNCTIONS  ############################
+########################################################################
 
 
-#EXPORT TO CSV
-
-# def augment_dict(d, key0, indexes, value_key):
-#     array=np.zeros(N)
-#     array[indexes] = d[value_key]
-#     d[key0] = array
-    
-# def augment_dict2D(d, key0, indexes, value_key):
-#     array=np.zeros([N,N])
-#     for i,j,k in zip(indexes[0], indexes[1], range(len(indexes[0]))):
-#             array[i,j]=d[value_key][k]
-#     d[key0] = array
-
-# #to_dict(sol.dvar,variables,is_variable=True)
-
-# augment_dict(sol.dvar, 'Gj', non_zero_index_G,'Gjn0')
-# augment_dict(sol.dvar, 'Ij', non_zero_index_I, 'Ijn0')
-# augment_dict(sol.dvar, 'Cj', non_zero_index_C, 'Cjn0')
-# augment_dict(sol.dvar, 'Xj', non_zero_index_X, 'Xjn0')
-# augment_dict(sol.dvar, 'Mj', non_zero_index_M, 'Mjn0')
-# augment_dict2D(sol.dvar, 'Yij', non_zero_index_Yij, 'Yijn0')
-    
-# keysN=[k for k, v in sol.dvar.items() if np.shape(v) == np.shape(sol.dvar["Kj"])]
-# keys1=[k for k, v in sol.dvar.items() if np.shape(v) == np.shape(sol.dvar["R"])]
-
-# sol_N=pd.DataFrame({ key: sol.dvar[key] for key in keysN })
-# sol_1=pd.DataFrame({ key: sol.dvar[key] for key in keys1 })
-# sol_Yij=pd.DataFrame(sol.dvar["Yij"])
-
-# sol_N.to_csv("results/classic_N.csv")
-# sol_1.to_csv("results/classic_1.csv")
-# sol_Yij.to_csv("results/classic_Yij.csv")    
-
-
-
-# array_zero_keys = []
-# scalar_zero_keys = []
-
-# for key, value in variables.items():
-#     if isinstance(value, list) and 0 in value:
-#         array_zero_keys.append(key)
-#     elif isinstance(value, (int, float)) and value == 0:
-#         scalar_zero_keys.append(key)
-
-# print("Keys with at least one zero array element:", array_zero_keys)
-# print("Keys with zero scalar value:", scalar_zero_keys)
-
-
-# loaded_data = np.load('var.npz')
-# loaded_dict_var = {key: loaded_data[key] for key in loaded_data.files}
-
-# # Close the loaded_data object to release the resources
-# loaded_data.close()
-
-# loaded_data = np.load('par.npz')
-# loaded_dict_par = {key: loaded_data[key] for key in loaded_data.files}
-
-# # Close the loaded_data object to release the resources
-# loaded_data.close()
-
-# f0 = loadtxt('f0.csv', delimiter=',')
-# pars = loadtxt('par.csv', delimiter=',')
 
 def compare_dictionaries(dict1, dict2):
     if dict1.keys() != dict2.keys():
@@ -672,3 +606,81 @@ def find_keys_with_large_elements(dictionary):
 
 def column(matrix, i):
     return [row[i] for row in matrix]
+
+            
+# bounds_variables = flatten_bounds_dict(bounds, variables)
+# mybounds=MyBounds(bounds_variables)
+# sol= dict_minimize(system, variables, parameters, mybounds.bounds)
+
+# print("\n \n", closure," closure \n max of the system of equations calculated at the solution: \n")
+# print(max(abs( system(sol.dvar, parameters))))
+
+# d = {**sol.dvar, **parameters}
+
+
+#EXPORT TO CSV
+
+# def augment_dict(d, key0, indexes, value_key):
+#     array=np.zeros(N)
+#     array[indexes] = d[value_key]
+#     d[key0] = array
+    
+# def augment_dict2D(d, key0, indexes, value_key):
+#     array=np.zeros([N,N])
+#     for i,j,k in zip(indexes[0], indexes[1], range(len(indexes[0]))):
+#             array[i,j]=d[value_key][k]
+#     d[key0] = array
+
+# #to_dict(sol.dvar,variables,is_variable=True)
+
+# augment_dict(sol.dvar, 'Gj', non_zero_index_G,'Gjn0')
+# augment_dict(sol.dvar, 'Ij', non_zero_index_I, 'Ijn0')
+# augment_dict(sol.dvar, 'Cj', non_zero_index_C, 'Cjn0')
+# augment_dict(sol.dvar, 'Xj', non_zero_index_X, 'Xjn0')
+# augment_dict(sol.dvar, 'Mj', non_zero_index_M, 'Mjn0')
+# augment_dict2D(sol.dvar, 'Yij', non_zero_index_Yij, 'Yijn0')
+    
+# keysN=[k for k, v in sol.dvar.items() if np.shape(v) == np.shape(sol.dvar["Kj"])]
+# keys1=[k for k, v in sol.dvar.items() if np.shape(v) == np.shape(sol.dvar["R"])]
+
+# sol_N=pd.DataFrame({ key: sol.dvar[key] for key in keysN })
+# sol_1=pd.DataFrame({ key: sol.dvar[key] for key in keys1 })
+# sol_Yij=pd.DataFrame(sol.dvar["Yij"])
+
+# sol_N.to_csv("results/classic_N.csv")
+# sol_1.to_csv("results/classic_1.csv")
+# sol_Yij.to_csv("results/classic_Yij.csv")    
+
+
+
+# array_zero_keys = []
+# scalar_zero_keys = []
+
+# for key, value in variables.items():
+#     if isinstance(value, list) and 0 in value:
+#         array_zero_keys.append(key)
+#     elif isinstance(value, (int, float)) and value == 0:
+#         scalar_zero_keys.append(key)
+
+# print("Keys with at least one zero array element:", array_zero_keys)
+# print("Keys with zero scalar value:", scalar_zero_keys)
+
+
+# loaded_data = np.load('var.npz')
+# loaded_dict_var = {key: loaded_data[key] for key in loaded_data.files}
+
+# # Close the loaded_data object to release the resources
+# loaded_data.close()
+
+# loaded_data = np.load('par.npz')
+# loaded_dict_par = {key: loaded_data[key] for key in loaded_data.files}
+
+# # Close the loaded_data object to release the resources
+# loaded_data.close()
+
+# f0 = loadtxt('f0.csv', delimiter=',')
+# pars = loadtxt('par.csv', delimiter=',')
+
+
+
+

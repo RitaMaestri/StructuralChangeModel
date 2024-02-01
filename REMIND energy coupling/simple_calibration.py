@@ -64,8 +64,6 @@ class calibrationVariables:
         self.Sj0= imp.pSjSj / cp(self.pSj0)
         self.Sj0[E]=91.9143818
         self.pSj0[E]=imp.pSjSj[E] / cp(self.Sj0[E])
-
-        
         
         
         #taxes

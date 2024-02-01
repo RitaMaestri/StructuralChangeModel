@@ -510,12 +510,11 @@ def eqaKLj0(aKLj0, aKLj, lambda_KLM):
 
  
 def eqaYij0(aYij0, aYij, lambda_KLM):
-    lambda_KLM_2d=np.array([lambda_KLM]*(len(aYij)-1) )
-
-    aYij_adj=aYij[]*lambda_KLM_2d
+    aYiE=np.delete(aYij[:,E], E)
+    aYiE0=np.delete(aYij0[:,E], E)
     
-    zero= 1-aYij/aYij_adj
-    zero=zero.flatten()
+    aYiE_adj=lambda_KLM[E]*aYiE0
+    zero= 1-aYiE/aYiE_adj
     return zero
 
 # def GPI(GDPPI,pCj,pCtp,pXj,pXtp,Cj,Gj,Ij,Xj,Mj,Yij,Ctp,Gtp,Itp,Xtp,Mtp,Yijtp,idxC=len(Cj),idxG,idxI,idxX)

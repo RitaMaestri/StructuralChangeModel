@@ -6,6 +6,8 @@ import sys
 from itertools import product
 
 endo_aYij_indexes = [("ENERGY",x) for x in sectors]
+sectors_nE=n = [x for x in sectors if x != "ENERGY"]
+endo_aYij_indexes.extend([(x,"ENERGY") for x in sectors_nE])
 
 class endo_exo_indexes:
     def full_endo(self):
