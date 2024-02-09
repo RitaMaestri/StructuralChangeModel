@@ -270,7 +270,8 @@ class calibrationDict(endo_exo_indexes):
             'GDPPI':Variable(self.full_endo(), cal.GDPPI),
             'GDP':Variable(self.full_endo(), cal.GDPreal),
             'T':Variable(self.full_endo(), cal.T0),
-            'lambda_KLM':Variable(self.idx_1D(endo_names = ["ENERGY"]), cal.lambda_KLM),
+            #'lambda_KLM':Variable(self.idx_1D(endo_names = ["ENERGY"]), cal.lambda_KLM),
+            
 
             'Kj':Variable(self.full_endo(), cal.Kj0),
             'Lj':Variable(self.full_endo(), cal.Lj0),
@@ -303,13 +304,19 @@ class calibrationDict(endo_exo_indexes):
             
             'lambda_E':Variable(self.full_endo(), cal.lambda_E),
             'lambda_nE':Variable(self.full_endo(), cal.lambda_nE),
+            
+            'pE_TT':Variable(self.full_endo(), cal.pE_TT),
+            'pE_TnT':Variable(self.full_endo(), cal.pE_TnT),
+            'pE_B':Variable(self.full_endo(), cal.pE_B),
+            'pE_Pj':Variable(self.full_endo(), cal.pE_Pj),
+            'pE_Ej':Variable(self.idx_1D(endo_names = ["ENERGY"]), cal.pE_Ej),
            
             'wG':Variable(self.full_exo(), cal.wG),
             'GDPreal':Variable(self.full_exo(),cal.GDPreal ),
             'tauL':Variable(self.full_exo(), cal.tauL0),
             'tauSj':Variable(self.full_exo(), cal.tauSj0),
             'tauYj':Variable(self.full_exo(), cal.tauYj0),
-            'pXj':Variable(self.full_exo(), cal.pXj),
+            #'pXj':Variable(self.idx_1D(endo_names = ["ENERGY"]), cal.pXj),
             'bKLj':Variable(self.full_exo(), cal.bKLj),
             'pCtp':Variable(self.full_exo(), cal.pCjtp),
             'Ctp':Variable(self.full_exo(), cal.Ctp),
@@ -320,7 +327,7 @@ class calibrationDict(endo_exo_indexes):
             'Mtp':Variable(self.full_exo(), cal.Mtp),
             'alphaKj':Variable(self.full_exo(), cal.alphaKj),
             'alphaLj':Variable(self.full_exo(), cal.alphaLj),
-            'aKLj':Variable(self.full_endo(), cal.aKLj),
+            'aKLj':Variable(self.idx_1D(endo_names = ["ENERGY"]), cal.aKLj),
             'alphaCj0':Variable(self.full_exo(), cal.alphaCj0),
             'alphaGj':Variable(self.full_exo(), cal.alphaGj),
             'alphaIj':Variable(self.full_exo(), cal.alphaIj),
@@ -341,17 +348,20 @@ class calibrationDict(endo_exo_indexes):
             'YE_Bj':Variable(self.full_exo(), cal.YE_Bj),
             'C_EB':Variable(self.full_exo(), cal.C_EB),
             'C_ET':Variable(self.full_exo(), cal.C_ET),
-            'pE_TT':Variable(self.full_exo(), cal.pE_TT),
-            'pE_TnT':Variable(self.full_exo(), cal.pE_TnT),
-            'pE_B':Variable(self.full_exo(), cal.pE_B),
-            'pE_Pj':Variable(self.full_exo(), cal.pE_Pj),
-            'pE_Ej':Variable(self.full_exo(), cal.pE_Ej),
+
             'YE_Ej':Variable(self.full_exo(), cal.YE_Ej),
             
             'aKLj0':Variable(self.full_exo(), cal.aKLj0),
             'aYij0':Variable(self.full_exo(), cal.aYij0),
+            'pXj':Variable(self.full_exo(), cal.pXj0),
             
-
+            'rhoB':Variable(self.full_exo(), cal.rhoB),
+            'rhoTT':Variable(self.full_exo(), cal.rhoTT),
+            'rhoTnT':Variable(self.full_exo(), cal.rhoTnT),
+            'rhoPj':Variable(self.full_exo(), cal.rhoPj),
+            
+            'lambda_KLM':Variable(self.full_exo(), cal.lambda_KLM),
+            
             }
         
         Knext = Variable(self.full_endo(), cal.K0u_next) if closure in ["neokeynesian1","neokeynesian2"] else Variable(self.full_endo(), cal.K0next)
@@ -486,6 +496,11 @@ bounds={
     'lambda_KLM':(0,np.inf),
     'aKLj0':(0,np.inf),
     'aYij0':(0,np.inf),
+    'pXj0':(0,np.inf),
+    'rhoB':(0,np.inf),
+    'rhoTT':(0,np.inf),
+    'rhoTnT':(0,np.inf),
+    'rhoPj':(0,np.inf),
     #'lambda_KL':(0,np.inf),
         }
 

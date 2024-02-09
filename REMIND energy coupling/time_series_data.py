@@ -97,8 +97,21 @@ class sys_df:
 
     def dict_to_df(self,dictionary, t):
         for key, value in dictionary.items():
+            value_t=value.flatten() if isinstance(value, np.ndarray) else value
+            self.variables_df[t].loc[key] = value_t
+            t_idx=np.where(self.years==t)[0][0]
+            self.fill_parameters_df(key,value_t,t_idx)
 
-            self.variables_df[t].loc[key] = value.flatten() if isinstance(value, np.ndarray) else value
+    def fill_parameters_df(self, key, value,t):
+        index_positions = np.array([j for j, label in enumerate(self.parameters_df.index) if label == key])
+        if key=="pXj":
+            None
+        if len(index_positions)>1:
+            par_mask=self.parameters_df.loc[key].isna().any(axis=1)
+            self.parameters_df.iloc[index_positions[par_mask],t]=value
+        else:
+            self.parameters_df.iloc[index_positions,t]=value
+    
     
     def df_to_dict(self, var, t):
         calib_dict = self.calib_var_dict if var else self.calib_par_dict
@@ -126,13 +139,13 @@ class sys_df:
         self.parameters_df[t+1].loc['K'] = self.variables_df[t].loc['Knext']
 
     def evolve_tp(self,t):
-        self.parameters_df.loc['pCtp',self.years[t+1]] = np.array(self.variables_df.loc['pCj',self.years[t-1]])
-        self.parameters_df.loc['Ctp',self.years[t+1]] = np.array(self.variables_df.loc['Cj',self.years[t]])
-        self.parameters_df.loc['Gtp',self.years[t+1]] = np.array(self.variables_df.loc['Gj',self.years[t]])
-        self.parameters_df.loc['Itp',self.years[t+1]] = np.array(self.variables_df.loc['Ij',self.years[t]])
+        self.parameters_df.loc['pCtp',self.years[t+1]] = np.array(self.parameters_df.loc['pCj',self.years[t-1]])
+        self.parameters_df.loc['Ctp',self.years[t+1]] = np.array(self.parameters_df.loc['Cj',self.years[t]])
+        self.parameters_df.loc['Gtp',self.years[t+1]] = np.array(self.parameters_df.loc['Gj',self.years[t]])
+        self.parameters_df.loc['Itp',self.years[t+1]] = np.array(self.parameters_df.loc['Ij',self.years[t]])
         self.parameters_df.loc['pXtp',self.years[t+1]] = np.array(self.parameters_df.loc['pXj',self.years[t]])
-        self.parameters_df.loc['Xtp',self.years[t+1]] = np.array(self.variables_df.loc['Xj',self.years[t]])
-        self.parameters_df.loc['Mtp',self.years[t+1]] = np.array(self.variables_df.loc['Mj',self.years[t]])
+        self.parameters_df.loc['Xtp',self.years[t+1]] = np.array(self.parameters_df.loc['Xj',self.years[t]])
+        self.parameters_df.loc['Mtp',self.years[t+1]] = np.array(self.parameters_df.loc['Mj',self.years[t]])
     
     def __init__(self, Years, Growth_ratios, Variables_dict, Parameters_dict, Dynamic_parameters={}):
 

@@ -125,6 +125,7 @@ def joint_dict(par, var):
 def system(var, par):
 
     d=joint_dict(par,var)
+    non_zero_index_pE_Pj=np.array(np.where(d["pE_Pj"] != 0)).flatten()
     global equations
     equations= {
         
@@ -211,7 +212,16 @@ def system(var, par):
         
         "eqaKLj0":eq.eqaKLj0(aKLj0=d['aKLj0'], aKLj=d['aKLj'], lambda_KLM=d['lambda_KLM']),
         
-        'eqaYij0':eq.eqaYij0(aYij0=d['aYij0'], aYij=d['aYij'], lambda_KLM=d['lambda_KLM'])
+        'eqaYij0':eq.eqaYij0(aYij0=d['aYij0'], aYij=d['aYij'], lambda_KLM=d['lambda_KLM']),
+        
+        "eqrhoB": eq.eqrho(pEi=d['pE_B'], p_EE=d['pE_Ej'][E], rho=d["rhoB"]),
+        
+        "eqrhoTT": eq.eqrho(pEi=d['pE_TT'], p_EE=d['pE_Ej'][E], rho=d["rhoTT"]),
+        
+        "eqrhoTnT": eq.eqrho(pEi=d['pE_TnT'], p_EE=d['pE_Ej'][E], rho=d["rhoTnT"]),
+        
+        "eqrhoPj": eq.eqrho(pEi=d['pE_Pj'], p_EE=d['pE_Ej'][E], rho=d["rhoPj"],_index=non_zero_index_pE_Pj ),
+        
         }
 
     if endoKnext:
@@ -229,7 +239,8 @@ def system(var, par):
                                 
                                 "eqFK":eq.eqF(F=d['K'],Fj=d['Kj']),
                                 
-                                "eqMultB":eq.eqMult(result=d['B'],mult1=d['wB'],mult2=d['GDP'])}
+                                "eqMultB":eq.eqMult(result=d['B'],mult1=d['wB'],mult2=d['GDP'])
+                                }
                                 )
         
         solution = np.hstack(list(equations.values()))
@@ -442,6 +453,23 @@ def kick(variables, number_modified=10, percentage_modified=0.1, modification=0.
     return kicked_variables
 
 
+
+def equilibrium(pKLj, KLj, pMj, Mj, pYj, Yj, pCj, pY_Ej, pXj, Yij, Cj, Gj, Ij, Xj, tauSj, tauYj):
+    # build prices matrix
+    pCj_matrix = np.array([pCj] * (len(pCj))).T
+    pCj_matrix[E] = pY_Ej
+    total_consumption_j = pCj * Cj + pCj * Gj + pCj * Ij + (pCj_matrix * Yij).sum(axis=1)
+    error = 1 - (pKLj * KLj + pYj * Yj * tauYj / (1 + tauYj) + total_consumption_j * tauSj / (1 + tauSj) + pMj * Mj + (pCj_matrix * Yij).sum(axis=0) - pXj * Xj) / total_consumption_j
+    if max(abs(error)) > 10e-6:
+        is_equilibrium = False
+    else:
+        is_equilibrium = True
+    return (is_equilibrium,error)
+
+
+
+
+
 ########################################################################################
 ##################################  SYSTEM SOLUTION  ###################################
 ########################################################################################
@@ -464,9 +492,21 @@ for t in range(len(years)):
     maxerror=max(abs( system(sol.dvar, parameters)))
     
     System.dict_to_df(sol.dvar, years[t])
+    
+    d=joint_dict(parameters, sol.dvar)
+    
+    equilibrium_t=equilibrium(pKLj=d["pKLj"], KLj=d["KLj"], pMj=d["pMj"], Mj=d["Mj"], pYj=d["pYj"], Yj=d["Yj"], pCj=d["pCj"], pY_Ej=d["pY_Ej"], pXj=d["pXj"], Yij=d["Yij"], Cj=d["Cj"], Gj=d["Gj"], Ij=d["Ij"], Xj=d["Xj"], tauSj=d["tauSj"], tauYj=d["tauYj"])
+    is_equilibrium=equilibrium_t[0]
+    error=equilibrium_t[1]
+    
+
 
     if maxerror>1e-06:
         print("the system doesn't converge, maxerror=",maxerror)
+        sys.exit()
+        
+    if not is_equilibrium:
+        print("the system is not at equilibrium", equilibrium_t[1])
         sys.exit()
 
     if endoKnext and years[t]<years[-2] :
@@ -479,43 +519,23 @@ for t in range(len(years)):
 ########################################################################
 
 
-par_csv=copy.deepcopy(System.parameters_df)
-var_csv=copy.deepcopy(System.variables_df)
-# Identify the NaN values in DataFrame A
-common_indexes = set(par_csv.index) & set(var_csv.index)
+# par_csv=copy.deepcopy(System.parameters_df)
+# var_csv=copy.deepcopy(System.variables_df)
+# # Identify the NaN values in DataFrame A
+# common_indexes = set(par_csv.index) & set(var_csv.index)
 
-for i in common_indexes :
-    index_positions = np.array([j for j, label in enumerate(par_csv.index) if label == i])
-    if len(index_positions)>1:
-        par_mask=par_csv.loc[i].isna().any(axis=1)
-        par_csv.iloc[index_positions[par_mask]]=var_csv.loc[i]
-    else:
-        par_csv.iloc[index_positions]=var_csv.loc[i]
+# for i in common_indexes :
+#     index_positions = np.array([j for j, label in enumerate(par_csv.index) if label == i])
+#     if len(index_positions)>1:
+#         par_mask=par_csv.loc[i].isna().any(axis=1)
+#         par_csv.iloc[index_positions[par_mask]]=var_csv.loc[i]
+#     else:
+#         par_csv.iloc[index_positions]=var_csv.loc[i]
 
-equilibrium = ( pLLj + pKKj + production_taxes + sales_taxes + pMjMj + pCiYij.sum(axis=0) - 
-               (pCjCj + pCjGj + pCjIj + pXjXj + pCiYij.sum(axis=1))
-               )
-              
-def equilibrium(pKLj, KLj, pMj, Mj, pYj, Yj, pCj, pY_Ej, pXj, Yij, Cj, Gj, Ij, Xj, tauSj, tauYj):
-    #build prices matrix
-    
-    pCj_matrix=np.array([pCj]*(len(pCj))).T
-    pCj_matrix[E]=pY_Ej
-    
-    total_consumption_j= pCj*Cj + pCj*Gj + pCj*Ij  + (pCj_matrix*Yij).sum(axis=1)
-    
-    error=1- ( pKLj*KLj+ pYj*Yj*tauYj/(1+tauYj)+ total_consumption_j * tauSj / (1+tauSj) + pMj*Mj + (pCj_matrix*Yij).sum(axis=0)  - pXj*Xj  )/ total_consumption_j
-    
-    return error 
-
-
-
-equilibrium(pKLj=d["pKLj"], KLj=d["KLj"], pMj=d["pMj"], Mj=d["Mj"], pYj=d["pYj"], Yj=d["Yj"], pCj=d["pCj"], pY_Ej=d["pY_Ej"], pXj=d["pXj"], Yij=d["Yij"], Cj=d["Cj"], Gj=d["Gj"], Ij=d["Ij"], Xj=d["Xj"], tauSj=d["tauSj"], tauYj=d["tauYj"])
-
-
+             
 
 #results=pd.concat([System.variables_df,System.parameters_df], ignore_index=False)
-par_csv.to_csv(name)
+System.parameters_df.to_csv(name)
    
 
 ########################################################################

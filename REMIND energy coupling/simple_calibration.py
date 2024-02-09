@@ -64,7 +64,7 @@ class calibrationVariables:
         self.Sj0= imp.pSjSj / cp(self.pSj0)
         self.Sj0[E]=91.9143818
         self.pSj0[E]=imp.pSjSj[E] / cp(self.Sj0[E])
-        
+        self.pXj0=cp(self.pXj)
         
         #taxes
         
@@ -317,6 +317,11 @@ class calibrationVariables:
         
         self.aKLj0=cp(self.aKLj)
         self.aYij0=cp(self.aYij)
+        
+        self.rhoB=cp(self.pE_B)/cp(self.pE_Ej[E])
+        self.rhoTT=cp(self.pE_TT)/cp(self.pE_Ej[E])
+        self.rhoTnT=cp(self.pE_TnT)/cp(self.pE_Ej[E])
+        self.rhoPj= cp(self.pE_Pj)/cp(self.pE_Ej[E])
         
         
         

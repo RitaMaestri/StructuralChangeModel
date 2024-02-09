@@ -457,7 +457,7 @@ def eqsum_pEYE(p_CE, pY_Ej, C_E, Y_Ej, pE_B, C_EB, YE_Bj, pE_Pj, YE_Pj, pE_TnT, 
     Q_ET=np.append(YE_Tj,C_ET)
     Q_EE=np.append(YE_Ej,0)
     pE_Pj=np.append(pE_Pj,0)
-    pE_Tj=np.array([pE_TnT]*(len(Q_Ej)))
+    pE_Tj=np.array([float(pE_TnT)]*(len(Q_Ej)))
     pE_Tj[T]=pE_TT
     pE_Ej = np.append(pE_Ej,0)
     zero = 1 - p_Ej*Q_Ej / (pE_B * Q_EB + pE_Tj * Q_ET + pE_Pj * Q_EP + pE_Ej * Q_EE)
@@ -505,7 +505,7 @@ def eqlambda_nE(alphaCj,lambda_E, lambda_nE):
     return zero
 
 def eqaKLj0(aKLj0, aKLj, lambda_KLM):
-    zero= 1-aKLj/aKLj0*lambda_KLM
+    zero= 1-aKLj[E]/aKLj0[E]*lambda_KLM[E]
     return zero
 
  
@@ -515,6 +515,19 @@ def eqaYij0(aYij0, aYij, lambda_KLM):
     
     aYiE_adj=lambda_KLM[E]*aYiE0
     zero= 1-aYiE/aYiE_adj
+    return zero
+
+def eqpXj0(pXj0, pXj, lambda_KLM):
+    
+    zero= 1-pXj[E]/pXj0[E]*lambda_KLM[E]
+    return zero
+
+
+def eqrho(pEi, p_EE, rho, _index=None):
+    if isinstance(_index, np.ndarray):
+        zero= 1-rho[_index]/(pEi[_index]/p_EE)        #print("Yij check: ",(Yij[_index[0],_index[1]]==dt.variables['Yijn0']).all())
+    else:    
+        zero= 1-rho/(pEi/p_EE)
     return zero
 
 # def GPI(GDPPI,pCj,pCtp,pXj,pXtp,Cj,Gj,Ij,Xj,Mj,Yij,Ctp,Gtp,Itp,Xtp,Mtp,Yijtp,idxC=len(Cj),idxG,idxI,idxX)
